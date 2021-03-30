@@ -1,3 +1,22 @@
+/**
+ * Copyright 2021 Markus Bordihn
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package de.markusbordihn.advancementstracker.client.gui.overview;
 
 import java.util.Set;
@@ -44,7 +63,7 @@ public class OverviewScreen extends ScreenBuilder {
         this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, this.x + 2, this.y + 10);
       }
       int yNext = drawTextWithShadow(matrixStack, this.advancement.title, this.x + 20, this.y + 4, 0xFFFFFF);
-      drawText(matrixStack, this.advancement.description, x + 20, yNext + 2, this.advancement.descriptionColor);
+      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2, this.advancement.descriptionColor);
     }
 
     public AdvancementEntry getAdvancement() {
@@ -78,8 +97,8 @@ public class OverviewScreen extends ScreenBuilder {
         blit(matrixStack, xMax - 18, y + 2, 20, 2, 14, 14);
       }
 
-      int yNext = drawTrimmedTextWithShadow(matrixStack, this.advancement.title, width - 42, x + 20, y + 6, 0xFFFFFF);
-      drawText(matrixStack, this.advancement.description, x + 20, yNext + 2, this.advancement.descriptionColor);
+      int yNext = drawTrimmedTextWithShadow(matrixStack, this.advancement.title, x + 20, y + 6, width - 42, 0xFFFFFF);
+      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2, this.advancement.descriptionColor);
       hLine(matrixStack, x + 40, xMax - 40, yMax, 0x20CCCCCC);
     }
 
@@ -142,7 +161,7 @@ public class OverviewScreen extends ScreenBuilder {
 
     AdvancementCategoryPanel(Minecraft minecraft, int width, int height, int top, int left) {
       super(minecraft, width, height, top, left);
-      Set<AdvancementEntry> rootAdvancements = AdvancementsManager.getSortedRootAdvancements();
+      Set<AdvancementEntry> rootAdvancements = AdvancementsManager.getRootAdvancementsByTile();
       if (rootAdvancements == null) {
         return;
       }
@@ -187,7 +206,7 @@ public class OverviewScreen extends ScreenBuilder {
       }
       this.background = rootAdvancement.background;
       this.clearContent();
-      Set<AdvancementEntry> advancements = AdvancementsManager.getAdvancements(rootAdvancement);
+      Set<AdvancementEntry> advancements = AdvancementsManager.getAdvancementsByStatus(rootAdvancement);
       if (advancements == null) {
         log.error("Unable to get content for root advancement {}", rootAdvancement);
         return;

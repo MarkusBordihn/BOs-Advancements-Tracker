@@ -1,3 +1,22 @@
+/**
+ * Copyright 2021 Markus Bordihn
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package de.markusbordihn.advancementstracker.client.gui.component;
 
 import java.util.HashMap;
@@ -30,6 +49,7 @@ public class ScrollPanelManager extends ScrollPanel {
   protected Minecraft minecraft;
   protected ResourceLocation background;
   protected TextureManager textureManager;
+  protected int backgroundAlpha = 0x80;
   protected int contentHeight = 0;
   protected int contentX = 0;
   protected int contentY = 0;
@@ -138,13 +158,13 @@ public class ScrollPanelManager extends ScrollPanel {
       this.textureManager.bind(this.background);
       BufferBuilder buffer = tessellator.getBuilder();
       buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR_TEX);
-      buffer.vertex(this.left, this.bottom, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
+      buffer.vertex(this.left, this.bottom, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
           .uv(this.left / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      buffer.vertex(this.right, this.bottom, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
+      buffer.vertex(this.right, this.bottom, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
           .uv(this.right / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      buffer.vertex(this.right, this.top, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
+      buffer.vertex(this.right, this.top, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
           .uv(this.right / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      buffer.vertex(this.left, this.top, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
+      buffer.vertex(this.left, this.top, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
           .uv(this.left / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
       tessellator.end();
     }

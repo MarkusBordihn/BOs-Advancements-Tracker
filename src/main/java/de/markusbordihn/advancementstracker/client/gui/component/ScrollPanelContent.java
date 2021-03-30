@@ -1,27 +1,35 @@
+/**
+ * Copyright 2021 Markus Bordihn
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+ * associated documentation files (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ * sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+ * NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
 package de.markusbordihn.advancementstracker.client.gui.component;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
-
-import org.lwjgl.opengl.GL11;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.IReorderingProcessor;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
+
+import de.markusbordihn.advancementstracker.client.gui.utils.BackgroundUtils;
+import de.markusbordihn.advancementstracker.client.gui.utils.TextUtils;
 
 public abstract class ScrollPanelContent extends AbstractGui {
 
@@ -30,10 +38,12 @@ public abstract class ScrollPanelContent extends AbstractGui {
   protected Minecraft minecraft;
   protected ResourceLocation background;
   protected String name;
+  protected TextUtils textUtils;
   protected TextureManager textureManager;
   protected boolean hasScrollBar = false;
   protected boolean isActive = false;
   protected float scrollDistance;
+  protected int backgroundAlpha = 0x80;
   protected int baseX;
   protected int baseY;
   protected int height;
@@ -45,6 +55,7 @@ public abstract class ScrollPanelContent extends AbstractGui {
   protected int y;
   protected int yMax;
   static final float TEXTURE_SCALE = 32.0F;
+  private BackgroundUtils backgroundUtils;
 
   protected ScrollPanelContent(String contentName, int width, int height) {
     this.name = contentName;
@@ -57,57 +68,19 @@ public abstract class ScrollPanelContent extends AbstractGui {
   }
 
   protected void drawBackground(MatrixStack matrixStack, Tessellator tessellator) {
-    if (this.background != null && this.background != TextureManager.INTENTIONAL_MISSING_TEXTURE) {
-      this.textureManager.bind(this.background);
-      BufferBuilder buffer = tessellator.getBuilder();
-      buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR_TEX);
-      buffer.vertex(this.x, this.yMax, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
-          .uv(this.x / TEXTURE_SCALE, (this.yMax + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      buffer.vertex(this.xMax, this.yMax, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
-          .uv(this.xMax / TEXTURE_SCALE, (this.yMax + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      buffer.vertex(this.xMax, this.y, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
-          .uv(this.xMax / TEXTURE_SCALE, (this.y + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      buffer.vertex(this.x, this.y, 0.0D).color(0x50, 0x50, 0x50, 0xFF)
-          .uv(this.x / TEXTURE_SCALE, (this.y + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      tessellator.end();
-    }
+    this.backgroundUtils.drawBackground(tessellator, this.background, this.x, this.y, this.width, this.height);
   }
 
   protected int drawText(MatrixStack matrixStack, String text, int x, int y, int color) {
-    int maxTextLength = this.xMax - x - 5;
-    if (this.fontRenderer.width(text) > maxTextLength) {
-      List<IReorderingProcessor> textList = new ArrayList<>();
-      textList.addAll(LanguageMap.getInstance().getVisualOrder(this.fontRenderer.getSplitter().splitLines(text, maxTextLength, Style.EMPTY)));
-      Float ySplitPosition = (float) y;
-      for (IReorderingProcessor textLine : textList) {
-        if (ySplitPosition + fontRenderer.lineHeight < yMax) {
-          RenderSystem.enableBlend();
-          this.fontRenderer.draw(matrixStack, textLine, (float) x, ySplitPosition, color);
-          ySplitPosition = ySplitPosition + fontRenderer.lineHeight + 2;
-          RenderSystem.disableBlend();
-        }
-      }
-      return Math.round(ySplitPosition);
-    } else {
-      this.fontRenderer.draw(matrixStack, text, (float) x, (float) y, color);
-    }
-    return y + fontRenderer.lineHeight;
+    return textUtils.drawText(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y), color);
   }
 
   protected int drawTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int color) {
-    fontRenderer.drawShadow(matrixStack, text, (float) x, (float) y, color);
-    return y + fontRenderer.lineHeight;
+    return textUtils.drawTextWithShadow(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y), color);
   }
 
-  protected int drawTrimmedTextWithShadow(MatrixStack matrixStack, String text, int width, int x, int y, int color) {
-    if (fontRenderer.width(text) >= width) {
-      ITextComponent textComponent = new StringTextComponent(text);
-      ITextProperties trimTextComponent = fontRenderer.substrByWidth(textComponent, width - 3);
-      fontRenderer.drawShadow(matrixStack, trimTextComponent.getString() + "...", (float) x, (float) y, color);
-    } else {
-      fontRenderer.drawShadow(matrixStack, text, (float) x, (float) y, color);
-    }
-    return y + fontRenderer.lineHeight;
+  protected int drawTrimmedTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int width, int color) {
+    return this.textUtils.drawTrimmedTextWithShadow(matrixStack, text, x, y, width, color);
   }
 
   protected void handleClick(double mouseX, double mouseY, int button) {
@@ -115,8 +88,10 @@ public abstract class ScrollPanelContent extends AbstractGui {
   }
 
   public void setMinecraftInstance(Minecraft minecraft) {
-    this.minecraft = minecraft;
+    this.backgroundUtils = new BackgroundUtils(minecraft);
     this.fontRenderer = minecraft.font;
+    this.minecraft = minecraft;
+    this.textUtils = new TextUtils(minecraft);
     this.textureManager = minecraft.getTextureManager();
   }
 

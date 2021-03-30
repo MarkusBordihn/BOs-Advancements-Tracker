@@ -24,11 +24,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
@@ -160,7 +160,12 @@ public class AdvancementsManager {
         }
         AdvancementProgress advancementProgress = getAdvancementProgress(advancement);
         AdvancementEntry advancementEntry = new AdvancementEntry(advancement, advancementProgress);
-        addAdvancement(advancementEntry);
+        Set<AdvancementEntry> childAdvancements = advancementsMap.get(advancementEntry.rootId);
+        if (childAdvancements == null) {
+          childAdvancements = new HashSet<>();
+          advancementsMap.put(advancementEntry.rootId, childAdvancements);
+        }
+        childAdvancements.add(advancementEntry);
         log.info("Adding child advancement {}", advancementEntry);
       }
     }
@@ -173,26 +178,6 @@ public class AdvancementsManager {
     if (!areAdvancementsMapped) {
       areAdvancementsMapped = true;
     }
-  }
-
-  private static void addAdvancement(AdvancementEntry advancement) {
-    Set<AdvancementEntry> childAdvancements = advancementsMap.get(advancement.rootId);
-    if (childAdvancements == null) {
-      childAdvancements = new HashSet<>();
-      advancementsMap.put(advancement.rootId, childAdvancements);
-    }
-    AdvancementEntry existingAdvancementEntry = null;
-    for (AdvancementEntry advancementEntry : childAdvancements) {
-      if (advancementEntry.id == advancement.id) {
-        existingAdvancementEntry = advancementEntry;
-        break;
-      }
-    }
-    if (existingAdvancementEntry != null) {
-      log.debug("Remove existing advancement {}", existingAdvancementEntry);
-      childAdvancements.remove(existingAdvancementEntry);
-    }
-    childAdvancements.add(advancement);
   }
 
   public static boolean hasRootAdvancement(Advancement advancement) {
@@ -221,13 +206,17 @@ public class AdvancementsManager {
     return rootAdvancements;
   }
 
-  public static Set<AdvancementEntry> getSortedRootAdvancements() {
-    Set<AdvancementEntry> rootAdvancements = getRootAdvancements();
-    if (rootAdvancements == null) {
+  public static Set<AdvancementEntry> getSortedRootAdvancements(Comparator<AdvancementEntry> comparator) {
+    Set<AdvancementEntry> advancements = getRootAdvancements();
+    if (advancements == null) {
       return new HashSet<>();
     }
-    return rootAdvancements.stream().sorted(Comparator.comparing(AdvancementEntry::getTitle))
-        .collect(Collectors.toCollection(TreeSet::new));
+    return advancements.stream().sorted(comparator)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  public static Set<AdvancementEntry> getRootAdvancementsByTile() {
+    return getSortedRootAdvancements(AdvancementEntry.sortByTitle());
   }
 
   public static Set<AdvancementEntry> getAdvancements(AdvancementEntry rootAdvancement) {
@@ -239,6 +228,23 @@ public class AdvancementsManager {
       return new HashSet<>();
     }
     return advancementsMap.get(rootAdvancement.id);
+  }
+
+  public static Set<AdvancementEntry> getSortedAdvancements(AdvancementEntry rootAdvancement, Comparator<AdvancementEntry> comparator) {
+    Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
+    if (advancements == null) {
+      return new HashSet<>();
+    }
+    return advancements.stream().sorted(comparator)
+        .collect(Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  public static Set<AdvancementEntry> getAdvancementsByTile(AdvancementEntry rootAdvancement) {
+    return getSortedAdvancements(rootAdvancement, AdvancementEntry.sortByTitle());
+  }
+
+  public static Set<AdvancementEntry> getAdvancementsByStatus(AdvancementEntry rootAdvancement) {
+    return getSortedAdvancements(rootAdvancement, AdvancementEntry.sortByStatus());
   }
 
   public static void setAdvancementProgress(Advancement advancement, AdvancementProgress advancementProgress) {
@@ -311,7 +317,7 @@ public class AdvancementsManager {
   }
 
   private static void updateTrackerWidget() {
-    TrackerWidget.trackedAdvancements = trackedAdvancements;
+    TrackerWidget.setTrackedAdvancements(trackedAdvancements);
   }
 
   public static AdvancementEntry getSelectedAdvancement() {
