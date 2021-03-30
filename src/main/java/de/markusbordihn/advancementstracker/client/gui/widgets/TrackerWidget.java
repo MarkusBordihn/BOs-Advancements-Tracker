@@ -31,13 +31,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
+import de.markusbordihn.advancementstracker.client.advancements.AdvancementsManager;
 import de.markusbordihn.advancementstracker.client.gui.WidgetBuilder;
 import de.markusbordihn.advancementstracker.client.gui.utils.TextUtils;
 import de.markusbordihn.advancementstracker.config.ClientConfig;
@@ -56,6 +56,8 @@ public class TrackerWidget extends WidgetBuilder {
   private int top;
   private int topMax;
   private int width;
+  private String noAdvancementsText =  new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements").getString();
+  private String noTrackedAdvancementsText =  new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements").getString();
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
   private static TranslationTextComponent widgetTitle;
   private static boolean active = true;
@@ -63,6 +65,7 @@ public class TrackerWidget extends WidgetBuilder {
   private static double configLeft = ClientConfig.CLIENT.widgetLeft.get();
   private static double configTop = ClientConfig.CLIENT.widgetTop.get();
   private static double configWidth = ClientConfig.CLIENT.widgetWidth.get();
+  private static int maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
 
   protected static TrackerWidget trackerWidget;
 
@@ -78,11 +81,12 @@ public class TrackerWidget extends WidgetBuilder {
     configLeft = ClientConfig.CLIENT.widgetLeft.get();
     configTop = ClientConfig.CLIENT.widgetTop.get();
     configWidth = ClientConfig.CLIENT.widgetWidth.get();
+    maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
   }
 
   @SubscribeEvent
-  public static void handleRenderGameOverlayEventPost(RenderGameOverlayEvent.Post event) {
-    if (event.getType() != ElementType.ALL) {
+  public static void handleRenderGameOverlayEventPre(RenderGameOverlayEvent.Pre event) {
+    if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) {
       return;
     }
     if (trackerWidget == null) {
@@ -97,17 +101,19 @@ public class TrackerWidget extends WidgetBuilder {
     if (!active) {
       return;
     }
+    GL11.glPushMatrix();
+
     // Calculate position and height, but only if width and height changed.
-    int scaledWidth = mainWindow.getGuiScaledWidth();
-    int scaledHeight = mainWindow.getGuiScaledHeight();
-    if (this.scaledWidth != scaledWidth || this.scaledHeight != scaledHeight) {
-      this.scaledWidth = scaledWidth;
-      this.scaledHeight = scaledHeight;
-      this.height = (int) (this.scaledHeight * this.configHeight);
-      this.width = (int) (this.scaledWidth * this.configWidth);
-      this.top = (int) ((this.scaledHeight - this.height) * this.configHeight);
+    int guiScaledWidth = mainWindow.getGuiScaledWidth();
+    int guiScaledHeight = mainWindow.getGuiScaledHeight();
+    if (this.scaledWidth != guiScaledWidth || this.scaledHeight != guiScaledHeight) {
+      this.scaledWidth = guiScaledWidth;
+      this.scaledHeight = guiScaledHeight;
+      this.height = (int) (this.scaledHeight * configHeight);
+      this.width = (int) (this.scaledWidth * configWidth);
+      this.top = (int) ((this.scaledHeight - this.height) * configHeight);
       this.topMax = this.top + this.height;
-      this.left = (int) ((this.scaledWidth - this.width) * this.configLeft);
+      this.left = (int) ((this.scaledWidth - this.width) * configLeft);
       this.leftMax = this.left + this.width;
       this.backgroundMax = this.topMax;
     }
@@ -115,45 +121,51 @@ public class TrackerWidget extends WidgetBuilder {
     boolean hasTrackedAdvancements = !trackedAdvancements.isEmpty();
 
     // Draw background
-    fill(matrixStack, this.left, this.top, this.leftMax, this.backgroundMax, 0x10000000);
+    fill(matrixStack, this.left, this.top, this.leftMax, this.backgroundMax, 0x50000000);
 
     // Draw title
-    fill(matrixStack, this.left, this.top, this.leftMax, this.top + fontRenderer.lineHeight + 2, 0x10000000);
+    fill(matrixStack, this.left, this.top, this.leftMax, this.top + fontRenderer.lineHeight + 2, 0x50000000);
     topPos += 2;
-
-    topPos = textUtils.drawTextWithShadow(matrixStack, widgetTitle.getString(), (this.left + 2), topPos, width, height,
-        0xFF00FF00);
+    topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, widgetTitle.getString(), (this.left + 2), topPos,
+        width - 2, 0xFF00FF00);
     topPos += 3;
 
     // List tracked advancement
+    int maxDescriptionHeight = maxLinesForDescription * (fontRenderer.lineHeight + 2);
     if (hasTrackedAdvancements) {
       for (AdvancementEntry advancement : trackedAdvancements) {
         if (advancement.icon != null) {
           GL11.glPushMatrix();
           GL11.glScalef(0.5F, 0.5F, 0.5F);
-          this.minecraft.getItemRenderer().renderGuiItem(advancement.icon, (this.left + 2) * 2, topPos * 2);
+          this.minecraft.getItemRenderer().renderGuiItem(advancement.icon, (this.left + 2) * 2,
+              (int) ((topPos - 0.5) * 2));
           GL11.glPopMatrix();
         }
-        if (advancement.criteriaNumber > 1) {
-          textUtils.drawTextWithShadow(matrixStack,
-              advancement.completedCriteriaNumber + "/" + advancement.criteriaNumber, this.left + width - 24, topPos,
-              24, height, 0xFFFFFF00);
+        if (advancement.maxCriteraRequired > 1) {
+          int criteriaCounterLength = textUtils.drawTextFromRightWithShadow(matrixStack,
+              advancement.completedCriteriaNumber + "/" + advancement.maxCriteraRequired, this.left + width - 2, topPos,
+              0xFFEEEE00);
           topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos,
-              width - 40, 0xFFFFFF00);
+              width - criteriaCounterLength - 16, 0xFFFFFF00);
         } else {
           topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos, width,
               0xFFFFFF00);
         }
-        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2, topPos, width,
-            height, 0xFFFFFFFF);
+        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2, topPos + 1, width,
+            maxDescriptionHeight, 0xFFFFFFFF);
         topPos += 5;
       }
     } else {
-      topPos = textUtils.drawTextWithShadow(matrixStack, "No tracked advancements.", this.left + 2, topPos, width,
-          height, 0xFFFFFFFF);
+      if (AdvancementsManager.hasAdvancements()) {
+        topPos = textUtils.drawTextWithShadow(matrixStack, noTrackedAdvancementsText, this.left + 2, topPos, width,
+          height, 0xFFEEEEEE);
+      } else {
+        topPos = textUtils.drawTextWithShadow(matrixStack, noAdvancementsText, this.left + 2, topPos, width,
+          height, 0xFFEEEEEE);
+      }
     }
-
     this.backgroundMax = topPos;
+    GL11.glPopMatrix();
   }
 
   public static void setActive(boolean active) {

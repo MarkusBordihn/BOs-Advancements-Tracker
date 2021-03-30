@@ -56,6 +56,7 @@ public class ClientConfig {
     public final ForgeConfigSpec.DoubleValue widgetWidth;
     public final ForgeConfigSpec.DoubleValue widgetTop;
     public final ForgeConfigSpec.DoubleValue widgetLeft;
+    public final ForgeConfigSpec.IntValue widgetMaxLinesForDescription;
 
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment("Advancements Tracker (Client configuration)");
@@ -66,11 +67,15 @@ public class ClientConfig {
 
       builder.push("gui");
 
+      builder.push("overview");
+      builder.pop();
+
       builder.push("widget");
       widgetHeight = builder.defineInRange("widgetHeight", 0.45, 0.0, 1.0);
       widgetWidth = builder.defineInRange("widgetWidth", 0.3, 0.0, 1.0);
-      widgetTop = builder.defineInRange("widgetTop", 0.3, 0.0, 1.0);
+      widgetTop = builder.defineInRange("widgetTop", 0.35, 0.0, 1.0);
       widgetLeft = builder.defineInRange("widgetLeft", 1.0, 0.0, 1.0);
+      widgetMaxLinesForDescription = builder.defineInRange("widgetMaxLinesForDescription", 4, 1, 8);
       builder.pop();
 
       builder.pop();

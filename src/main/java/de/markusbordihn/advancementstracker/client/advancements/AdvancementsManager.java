@@ -54,15 +54,16 @@ public class AdvancementsManager {
 
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
+  private static AdvancementEntry selectedAdvancement;
+  private static AdvancementEntry selectedRootAdvancement;
   private static Map<Advancement, AdvancementProgress> advancementProgressMap = new HashMap<>();
   private static Map<ResourceLocation, Set<AdvancementEntry>> advancementsMap = new HashMap<>();
   private static Set<AdvancementEntry> rootAdvancements = new HashSet<>();
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
   private static Timer rateControlTimer;
   private static boolean areAdvancementsMapped = false;
+  private static boolean hasAdvancements = false;
   private static int backgroundAdvancementCheck = 0;
-  private static AdvancementEntry selectedAdvancement;
-  private static AdvancementEntry selectedRootAdvancement;
   private static int maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
 
   protected AdvancementsManager() {
@@ -76,6 +77,10 @@ public class AdvancementsManager {
     advancementsMap = new HashMap<>();
     rootAdvancements = new HashSet<>();
     trackedAdvancements = new HashSet<>();
+    selectedAdvancement = null;
+    selectedRootAdvancement = null;
+    hasAdvancements = false;
+    updateTrackerWidget();
     rateControlMapAdvancements();
   }
 
@@ -167,6 +172,9 @@ public class AdvancementsManager {
         }
         childAdvancements.add(advancementEntry);
         log.info("Adding child advancement {}", advancementEntry);
+        if (!hasAdvancements) {
+          hasAdvancements = true;
+        }
       }
     }
 
@@ -211,8 +219,7 @@ public class AdvancementsManager {
     if (advancements == null) {
       return new HashSet<>();
     }
-    return advancements.stream().sorted(comparator)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
+    return advancements.stream().sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   public static Set<AdvancementEntry> getRootAdvancementsByTile() {
@@ -230,13 +237,13 @@ public class AdvancementsManager {
     return advancementsMap.get(rootAdvancement.id);
   }
 
-  public static Set<AdvancementEntry> getSortedAdvancements(AdvancementEntry rootAdvancement, Comparator<AdvancementEntry> comparator) {
+  public static Set<AdvancementEntry> getSortedAdvancements(AdvancementEntry rootAdvancement,
+      Comparator<AdvancementEntry> comparator) {
     Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
     if (advancements == null) {
       return new HashSet<>();
     }
-    return advancements.stream().sorted(comparator)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
+    return advancements.stream().sorted(comparator).collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   public static Set<AdvancementEntry> getAdvancementsByTile(AdvancementEntry rootAdvancement) {
@@ -323,7 +330,7 @@ public class AdvancementsManager {
   public static AdvancementEntry getSelectedAdvancement() {
     if (selectedAdvancement == null && getSelectedRootAdvancement() != null) {
       Set<AdvancementEntry> possibleAdvancements = getAdvancements(getSelectedRootAdvancement());
-      if (possibleAdvancements != null) {
+      if (possibleAdvancements != null && possibleAdvancements.iterator().hasNext()) {
         selectedAdvancement = possibleAdvancements.iterator().next();
       }
     }
@@ -335,8 +342,13 @@ public class AdvancementsManager {
   }
 
   public static AdvancementEntry getSelectedRootAdvancement() {
-    if (selectedRootAdvancement == null && rootAdvancements != null) {
-      selectedRootAdvancement = rootAdvancements.iterator().next();
+    if (selectedRootAdvancement == null && rootAdvancements != null && rootAdvancements.iterator().hasNext()) {
+      AdvancementEntry possibleRootAdvancement = rootAdvancements.iterator().next();
+      if (possibleRootAdvancement != selectedRootAdvancement) {
+        log.debug("Select root advancement: {}", selectedAdvancement);
+        selectedRootAdvancement = possibleRootAdvancement;
+        selectedAdvancement = null;
+      }
     }
     return selectedRootAdvancement;
   }
@@ -346,6 +358,10 @@ public class AdvancementsManager {
     if (selectedAdvancement != null && selectedRootAdvancement.id != selectedAdvancement.rootId) {
       selectedAdvancement = null;
     }
+  }
+
+  public static boolean hasAdvancements() {
+    return hasAdvancements;
   }
 
 }

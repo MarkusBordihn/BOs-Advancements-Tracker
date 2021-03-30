@@ -25,22 +25,33 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 
+import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementsManager;
 import de.markusbordihn.advancementstracker.client.gui.ScreenBuilder;
 import de.markusbordihn.advancementstracker.client.gui.Textures;
 import de.markusbordihn.advancementstracker.client.gui.component.ScrollPanelContent;
 import de.markusbordihn.advancementstracker.client.gui.component.ScrollPanelManager;
+import de.markusbordihn.advancementstracker.client.gui.utils.TextUtils;
 
 public class OverviewScreen extends ScreenBuilder {
 
   AdvancementCategoryPanel advancementCategoryPanel;
   AdvancementContentPanel advancementContentPanel;
   AdvancementInfoPanel advancementInfoPanel;
+  int panelPadding = 5;
+  int panelPaddingBottom = 25;
+  int panelTop = 25;
+  int panelWidth = (this.width - (this.panelPadding * 4)) / 3;
+  int panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
+  private String noAdvancementsText = new TranslationTextComponent(
+      Constants.MOD_PREFIX + "advancementScreen.noAdvancements").getString();
+  private String titleText = new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
 
   public OverviewScreen() {
     super("advancementScreen.title");
@@ -63,7 +74,8 @@ public class OverviewScreen extends ScreenBuilder {
         this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, this.x + 2, this.y + 10);
       }
       int yNext = drawTextWithShadow(matrixStack, this.advancement.title, this.x + 20, this.y + 4, 0xFFFFFF);
-      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2, this.advancement.descriptionColor);
+      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2,
+          this.advancement.descriptionColor);
     }
 
     public AdvancementEntry getAdvancement() {
@@ -84,7 +96,7 @@ public class OverviewScreen extends ScreenBuilder {
     protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
         int mouseY) {
       if (this.advancement.icon != null) {
-        this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, x + 2, y + 2);
+        this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, x + 2, y + 4);
       }
       this.textureManager.bind(Textures.ICONS);
       if (Boolean.TRUE.equals(this.advancement.isDone)) {
@@ -98,7 +110,8 @@ public class OverviewScreen extends ScreenBuilder {
       }
 
       int yNext = drawTrimmedTextWithShadow(matrixStack, this.advancement.title, x + 20, y + 6, width - 42, 0xFFFFFF);
-      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2, this.advancement.descriptionColor);
+      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2,
+          this.advancement.descriptionColor);
       hLine(matrixStack, x + 40, xMax - 40, yMax, 0x20CCCCCC);
     }
 
@@ -127,30 +140,51 @@ public class OverviewScreen extends ScreenBuilder {
     String output = "";
 
     AdvancementInfo(AdvancementEntry advancement, int width) {
-      super(advancement.id.toString(), width, 200);
+      super(advancement.id.toString(), width, panelHeight - 4);
       this.advancement = advancement;
       if (this.advancement.description != null) {
         this.output += String.format("%s\n", this.advancement.description);
       }
+      if (this.advancement.rewards != null && (this.advancement.rewardsExperience > 0
+          || this.advancement.rewardsLoot != null || this.advancement.rewardsRecipes != null)) {
+        this.output += String.format("\nRewards\n");
+        if (this.advancement.rewardsExperience > 0) {
+          this.output += String.format("* %s xp\n", this.advancement.rewardsExperience);
+        }
+        if (this.advancement.rewardsLoot != null && this.advancement.rewardsLoot.length > 0) {
+          for (ResourceLocation rewardLoot : this.advancement.rewardsLoot) {
+            this.output += String.format("* %s\n", rewardLoot.toString());
+          }
+        }
+        if (this.advancement.rewardsRecipes != null && this.advancement.rewardsRecipes.length > 0) {
+          for (ResourceLocation rewardRecipe : this.advancement.rewardsRecipes) {
+            this.output += String.format("* %s\n", rewardRecipe.toString());
+          }
+        }
+      }
       if (this.advancement.completedCriteria != null && this.advancement.completedCriteria.iterator().hasNext()) {
         this.output += String.format("\nCompleted Criteria\n");
         for (String criteria : this.advancement.completedCriteria) {
-          this.output += String.format("%s\n", criteria);
+          this.output += String.format("* %s\n", criteria);
         }
       }
       if (this.advancement.remainingCriteria != null && this.advancement.remainingCriteria.iterator().hasNext()) {
         this.output += String.format("\nRemaining Criteria\n");
         for (String criteria : this.advancement.remainingCriteria) {
-          this.output += String.format("%s\n", criteria);
+          this.output += String.format("* %s\n", criteria);
         }
+      }
+      int possibleTextHeight = TextUtils.calculateTextHeight(this.output, width);
+      if (possibleTextHeight + 15 > height) {
+        height = possibleTextHeight + 15;
       }
     }
 
     @Override
     protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
         int mouseY) {
-      int yNext = drawText(matrixStack, this.advancement.title, x + 5, y + 5, 0xFFFFFF);
-      drawText(matrixStack, this.output, x + 5, yNext + 2, 0xFFFFFF);
+      int yNext = drawTextWithShadow(matrixStack, this.advancement.title, x + 5, y + 5, 0xFFFFFF);
+      drawTextRaw(matrixStack, this.output, x + 5, yNext + 2, 0xEEEEEE);
     }
 
   }
@@ -259,29 +293,30 @@ public class OverviewScreen extends ScreenBuilder {
 
   @Override
   public void init() {
-    // Defining Panel Layout
-    int panelPadding = 5;
-    int panelPaddingBottom = 25;
-    int panelTop = 25;
-    int panelWidth = (this.width - (panelPadding * 4)) / 3;
-    int panelHeight = this.height - panelTop - panelPaddingBottom;
+    if (AdvancementsManager.hasAdvancements()) {
+      // Update sizes
+      panelWidth = (this.width - (this.panelPadding * 4)) / 3;
+      panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
 
-    // Define different scroll panels.
-    this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, panelWidth, panelHeight, panelTop,
-        panelPadding);
-    this.advancementContentPanel = new AdvancementContentPanel(this.minecraft, panelWidth, panelHeight, panelTop,
-        panelPadding + (panelPadding + panelWidth) * 1, AdvancementsManager.getSelectedRootAdvancement());
-    this.advancementInfoPanel = new AdvancementInfoPanel(this.minecraft, panelWidth, panelHeight, panelTop,
-        panelPadding + (panelPadding + panelWidth) * 2, AdvancementsManager.getSelectedAdvancement());
+      // Define different scroll panels.
+      this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth, this.panelHeight,
+          this.panelTop, this.panelPadding);
+      this.advancementContentPanel = new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
+          this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
+          AdvancementsManager.getSelectedRootAdvancement());
+      this.advancementInfoPanel = new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight,
+          this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
+          AdvancementsManager.getSelectedAdvancement());
 
-    // Adding links between views
-    this.advancementCategoryPanel.setAdvancementContentPanel(this.advancementContentPanel);
-    this.advancementContentPanel.setAdvancementInfoPanel(this.advancementInfoPanel);
+      // Adding links between views
+      this.advancementCategoryPanel.setAdvancementContentPanel(this.advancementContentPanel);
+      this.advancementContentPanel.setAdvancementInfoPanel(this.advancementInfoPanel);
 
-    // Adding views
-    children.add(this.advancementCategoryPanel);
-    children.add(this.advancementContentPanel);
-    children.add(this.advancementInfoPanel);
+      // Adding views
+      children.add(this.advancementCategoryPanel);
+      children.add(this.advancementContentPanel);
+      children.add(this.advancementInfoPanel);
+    }
 
     // Add Close Button
     this.addButton(new Button((this.width - 200) / 2, this.height - 22, 200, 20,
@@ -295,10 +330,14 @@ public class OverviewScreen extends ScreenBuilder {
   @Override
   public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
     this.renderBackground(matrixStack);
-    drawCenteredString(matrixStack, this.font, this.title.getString(), this.width / 2, 10, 0xFFFFFF);
-    this.advancementCategoryPanel.render(matrixStack, mouseX, mouseY, partialTicks);
-    this.advancementContentPanel.render(matrixStack, mouseX, mouseY, partialTicks);
-    this.advancementInfoPanel.render(matrixStack, mouseX, mouseY, partialTicks);
+    drawCenteredString(matrixStack, this.font, this.titleText, this.width / 2, 10, 0xFFFFFF);
+    if (AdvancementsManager.hasAdvancements()) {
+      this.advancementCategoryPanel.render(matrixStack, mouseX, mouseY, partialTicks);
+      this.advancementContentPanel.render(matrixStack, mouseX, mouseY, partialTicks);
+      this.advancementInfoPanel.render(matrixStack, mouseX, mouseY, partialTicks);
+    } else {
+      drawCenteredString(matrixStack, this.font, noAdvancementsText, this.width / 2, this.height / 2, 0xFF0000);
+    }
     super.render(matrixStack, mouseX, mouseY, partialTicks);
   }
 

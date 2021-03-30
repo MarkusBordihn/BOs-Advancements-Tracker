@@ -21,10 +21,17 @@ package de.markusbordihn.advancementstracker.client.advancements;
 
 import java.util.Comparator;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
 
 public class AdvancementEntry implements Comparator<AdvancementEntry> {
@@ -43,12 +50,18 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public int completedCriteriaNumber;
   public int remainingCriteriaNumber;
   public int criteriaNumber;
+  public int maxCriteraRequired;
+  public int requirementsNumber;
+  public AdvancementRewards rewards;
   public ResourceLocation background;
   public ResourceLocation id;
   public String description;
   public String title;
   public boolean isDone;
   public int descriptionColor = 0xFFCCCCCC;
+  public int rewardsExperience;
+  public ResourceLocation[] rewardsLoot;
+  public ResourceLocation[] rewardsRecipes;
 
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
     this.advancement = advancement;
@@ -57,11 +70,45 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     this.id = advancement.getId();
     this.rootAdvancement = advancement.getParent();
     this.requirements = advancement.getRequirements();
+    this.maxCriteraRequired = advancement.getMaxCriteraRequired();
+    this.rewards = advancement.getRewards();
     if (this.rootAdvancement != null) {
       while (this.rootAdvancement.getParent() != null) {
         this.rootAdvancement = this.rootAdvancement.getParent();
       }
       this.rootId = this.rootAdvancement.getId();
+    }
+    if (this.rewards != null) {
+      // There is not direct access to the rewards information, for this reason we
+      // are using the JsonObject to get access to the relevant information.
+      JsonElement rewardsJson = null;
+      try {
+        rewardsJson = this.rewards.serializeToJson();
+        if (rewardsJson != null) {
+          JsonObject rewardsObject = rewardsJson.getAsJsonObject();
+          if (rewardsObject != null) {
+            rewardsExperience = JSONUtils.getAsInt(rewardsObject, "experience", 0);
+
+            // Getting Loot entries
+            JsonArray lootArray = JSONUtils.getAsJsonArray(rewardsObject, "loot", new JsonArray());
+            this.rewardsLoot = new ResourceLocation[lootArray.size()];
+            for (int j = 0; j < this.rewardsLoot.length; ++j) {
+              this.rewardsLoot[j] = new ResourceLocation(
+                  JSONUtils.convertToString(lootArray.get(j), "loot[" + j + "]"));
+            }
+
+            // Getting recipes entries
+            JsonArray recipesArray = JSONUtils.getAsJsonArray(rewardsObject, "recipes", new JsonArray());
+            this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
+            for (int k = 0; k < this.rewardsRecipes.length; ++k) {
+              this.rewardsRecipes[k] = new ResourceLocation(
+                  JSONUtils.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
+            }
+          }
+        }
+      } catch (JsonParseException | IllegalStateException e) {
+        // Ignore possible Json Parse Exception and illegal state exceptions
+      }
     }
     if (this.displayInfo != null) {
       this.background = this.displayInfo.getBackground();
