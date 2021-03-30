@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -63,6 +64,7 @@ public class AdvancementsManager {
   private static Timer rateControlTimer;
   private static boolean areAdvancementsMapped = false;
   private static boolean hasAdvancements = false;
+  private static boolean loginProtection = true;
   private static int backgroundAdvancementCheck = 0;
   private static int maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
 
@@ -72,7 +74,6 @@ public class AdvancementsManager {
   @SubscribeEvent
   public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
     maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
-    log.info("Try to pre-map advancements ...");
     advancementProgressMap = new HashMap<>();
     advancementsMap = new HashMap<>();
     rootAdvancements = new HashSet<>();
@@ -80,21 +81,46 @@ public class AdvancementsManager {
     selectedAdvancement = null;
     selectedRootAdvancement = null;
     hasAdvancements = false;
+    loginProtection = true;
+    log.info("Try to pre-map advancements and start login protection ...");
     updateTrackerWidget();
     rateControlMapAdvancements();
+
+    // Make sure that we are not overloading the client with screenshot requests during login
+    TimerTask task = new TimerTask() {
+      public void run() {
+        loginProtection = false;
+        cancel();
+      }
+    };
+    Timer timer = new Timer("Login Protection Timer");
+    timer.schedule(task, 2000L);
   }
 
   @SubscribeEvent
   public static void handleAdvancementEvent(AdvancementEvent event) {
     Advancement advancement = event.getAdvancement();
     String advancementId = advancement.getId().toString();
-    if (!advancementId.startsWith("minecraft:recipes") && !advancementId.startsWith("smallships:recipes")) {
-      ScreenManager.saveScreenshot(
-          new File(String.format("screenshots/%s", advancementId.split("/")[0].replace(":", "_"))),
-          advancementId.split("/")[1], 700L);
-      untrackAdvancement(advancement);
-      rateControlMapAdvancements();
+    if (advancementId.startsWith("minecraft:recipes") || advancementId.startsWith("smallships:recipes")
+        || advancement.getDisplay() == null) {
+      return;
     }
+    // Make sure to disable screenshot tasks for the first 5 seconds after the login.
+    if (!loginProtection && advancement.getParent() != null) {
+      String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
+      String screenshotName = String.format("advancement-unknown-%s", new Random().nextInt(99));
+      if (advancementId.contains("/") && advancementId.split("/").length > 1) {
+        screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
+      } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {
+        screenshotFolder = advancementId.split(":")[0];
+        screenshotName = advancementId.split(":", 2)[1];
+      } else {
+        log.warn("Unable to find unique name ({}) for advancement: {}", advancementId, advancement);
+      }
+      ScreenManager.saveScreenshot(new File(String.format("screenshots/%s", screenshotFolder)), screenshotName, 700L);
+    }
+    untrackAdvancement(advancement);
+    rateControlMapAdvancements();
   }
 
   public static void rateControlMapAdvancements() {
@@ -107,7 +133,7 @@ public class AdvancementsManager {
         cancel();
       }
     };
-    rateControlTimer = new Timer("Timer");
+    rateControlTimer = new Timer("mapAdvancements Timer");
     rateControlTimer.schedule(task, 500L);
   }
 

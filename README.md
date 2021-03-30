@@ -13,9 +13,13 @@ It will also add additional features to make archiving the advancements more int
 
 Could be open with **STRG + L** and displays all current advancements and allow the tracking of single advancements.
 
+![Advancement Overview][overview_example]
+
 ### Advancements Widget
 
 Could be show/hide with **ALT + L** and displays the currently tracked advancements and their progress.
+
+![Advancement Widget][widget_example]
 
 ### Automatic Screenshots
 
@@ -45,4 +49,6 @@ This mod works great together with Better Advancements mod, but let me know if y
 - [Better Advancements][better_advancements] to improve the UI and UX for the advancements system in minecraft
 
 [logo]: logo.png
+[overview_example]: example/overview_example.png
+[widget_example]: example/widget_example.png
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements

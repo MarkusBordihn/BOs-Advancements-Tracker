@@ -148,20 +148,20 @@ public class TrackerWidget extends WidgetBuilder {
           topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos,
               width - criteriaCounterLength - 16, 0xFFFFFF00);
         } else {
-          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos, width,
+          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos, width - 12,
               0xFFFFFF00);
         }
-        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2, topPos + 1, width,
+        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2, topPos + 1, width - 2,
             maxDescriptionHeight, 0xFFFFFFFF);
         topPos += 5;
       }
     } else {
       if (AdvancementsManager.hasAdvancements()) {
         topPos = textUtils.drawTextWithShadow(matrixStack, noTrackedAdvancementsText, this.left + 2, topPos, width,
-          height, 0xFFEEEEEE);
+          height, 0xEEEEEEEE);
       } else {
         topPos = textUtils.drawTextWithShadow(matrixStack, noAdvancementsText, this.left + 2, topPos, width,
-          height, 0xFFEEEEEE);
+          height, 0xEEEEEEEE);
       }
     }
     this.backgroundMax = topPos;
