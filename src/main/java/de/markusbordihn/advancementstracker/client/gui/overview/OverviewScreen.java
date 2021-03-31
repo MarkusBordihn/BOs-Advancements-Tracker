@@ -293,30 +293,29 @@ public class OverviewScreen extends ScreenBuilder {
 
   @Override
   public void init() {
-    if (AdvancementsManager.hasAdvancements()) {
-      // Update sizes
-      panelWidth = (this.width - (this.panelPadding * 4)) / 3;
-      panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
 
-      // Define different scroll panels.
-      this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth, this.panelHeight,
-          this.panelTop, this.panelPadding);
-      this.advancementContentPanel = new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
-          this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
-          AdvancementsManager.getSelectedRootAdvancement());
-      this.advancementInfoPanel = new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight,
-          this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
-          AdvancementsManager.getSelectedAdvancement());
+    // Update sizes
+    panelWidth = (this.width - (this.panelPadding * 4)) / 3;
+    panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
 
-      // Adding links between views
-      this.advancementCategoryPanel.setAdvancementContentPanel(this.advancementContentPanel);
-      this.advancementContentPanel.setAdvancementInfoPanel(this.advancementInfoPanel);
+    // Define different scroll panels.
+    this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth, this.panelHeight,
+        this.panelTop, this.panelPadding);
+    this.advancementContentPanel = new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
+        this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
+        AdvancementsManager.getSelectedRootAdvancement());
+    this.advancementInfoPanel = new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight,
+        this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
+        AdvancementsManager.getSelectedAdvancement());
 
-      // Adding views
-      children.add(this.advancementCategoryPanel);
-      children.add(this.advancementContentPanel);
-      children.add(this.advancementInfoPanel);
-    }
+    // Adding links between views
+    this.advancementCategoryPanel.setAdvancementContentPanel(this.advancementContentPanel);
+    this.advancementContentPanel.setAdvancementInfoPanel(this.advancementInfoPanel);
+
+    // Adding views
+    children.add(this.advancementCategoryPanel);
+    children.add(this.advancementContentPanel);
+    children.add(this.advancementInfoPanel);
 
     // Add Close Button
     this.addButton(new Button((this.width - 200) / 2, this.height - 22, 200, 20,

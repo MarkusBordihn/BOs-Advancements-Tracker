@@ -30,7 +30,7 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientAdvancementManager.IListener;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -48,7 +48,7 @@ public class AdvancementProgressManager implements IListener {
   }
 
   @SubscribeEvent
-  public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+  public static void handleWorldEventLoad(WorldEvent.Load event) {
     log.info("Try to get advancements progress ...");
     rateControlAddListener();
   }
@@ -78,6 +78,7 @@ public class AdvancementProgressManager implements IListener {
       }
       return;
     }
+    log.debug("Added advancement progress listener...");
     minecraft.player.connection.getAdvancements().setListener(new AdvancementProgressManager());
     if (!hasAdvancementProgressListener) {
       hasAdvancementProgressListener = true;
@@ -85,12 +86,13 @@ public class AdvancementProgressManager implements IListener {
   }
 
   public void onUpdateAdvancementProgress(Advancement advancement, AdvancementProgress advancementProgress) {
-    AdvancementsManager.setAdvancementProgress(advancement, advancementProgress);
+    log.debug("Update advancement Progress for {} with {}", advancement, advancementProgress);
+    AdvancementsManager.updateAdvancementProgress(advancement, advancementProgress);
   }
 
   @Override
   public void onAddAdvancementRoot(Advancement advancement) {
-    // Not used.
+    AdvancementsManager.rateControlMapAdvancements();
   }
 
   @Override
@@ -100,7 +102,7 @@ public class AdvancementProgressManager implements IListener {
 
   @Override
   public void onAddAdvancementTask(Advancement advancement) {
-    // Not used.
+    AdvancementsManager.rateControlMapAdvancements();
   }
 
   @Override

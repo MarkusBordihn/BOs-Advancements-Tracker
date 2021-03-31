@@ -31,6 +31,11 @@ As soon you finished an advancements it will automatically take a screenshot.
 
 Its a pure client mode, but should not harm if it is installed on the server.
 
+### Does it work with data packs ?
+
+If the data pack is not using a custom advancement system it should work out of the box.
+I recommending the [Expanded Advancement and Recipe Pack][platys_advancement_and_recipe_pack] data pack which adds a plenty of advancements and recipes.
+
 ### Do you plan to support 12.x, 13.x, 14.x, 15.x or a Fabric/Rift version ?
 
 Unfortunately not because of my time constrains and missing knowledge about the api / engine mechanics in these versions.
@@ -52,3 +57,4 @@ This mod works great together with Better Advancements mod, but let me know if y
 [overview_example]: example/overview_example.png
 [widget_example]: example/widget_example.png
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
+[platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack

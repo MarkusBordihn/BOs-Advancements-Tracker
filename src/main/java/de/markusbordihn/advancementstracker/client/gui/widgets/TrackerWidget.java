@@ -31,7 +31,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -76,7 +76,7 @@ public class TrackerWidget extends WidgetBuilder {
   }
 
   @SubscribeEvent
-  public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+  public static void handleWorldEventLoad(WorldEvent.Load event) {
     configHeight = ClientConfig.CLIENT.widgetHeight.get();
     configLeft = ClientConfig.CLIENT.widgetLeft.get();
     configTop = ClientConfig.CLIENT.widgetTop.get();

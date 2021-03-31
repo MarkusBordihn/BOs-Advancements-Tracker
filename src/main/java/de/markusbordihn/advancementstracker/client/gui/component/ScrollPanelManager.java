@@ -84,7 +84,6 @@ public class ScrollPanelManager extends ScrollPanel {
     if (this.contentMap.size() <= 0) {
       return;
     }
-    log.debug("Clearing scroll content for {} entries...", this.contentMap.size());
     for (ScrollPanelContent scrollPanelContent : this.contentMap.values()) {
       scrollPanelContent.isActive = false;
     }

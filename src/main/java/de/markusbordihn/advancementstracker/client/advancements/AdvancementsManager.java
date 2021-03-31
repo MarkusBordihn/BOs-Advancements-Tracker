@@ -40,8 +40,7 @@ import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.entity.player.AdvancementEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -72,7 +71,7 @@ public class AdvancementsManager {
   }
 
   @SubscribeEvent
-  public static void handlePlayerLoggedInEvent(PlayerEvent.PlayerLoggedInEvent event) {
+  public static void handleWorldEventLoad(WorldEvent.Load event) {
     maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
     advancementProgressMap = new HashMap<>();
     advancementsMap = new HashMap<>();
@@ -86,7 +85,8 @@ public class AdvancementsManager {
     updateTrackerWidget();
     rateControlMapAdvancements();
 
-    // Make sure that we are not overloading the client with screenshot requests during login
+    // Make sure that we are not overloading the client with screenshot requests
+    // during login
     TimerTask task = new TimerTask() {
       public void run() {
         loginProtection = false;
@@ -95,32 +95,6 @@ public class AdvancementsManager {
     };
     Timer timer = new Timer("Login Protection Timer");
     timer.schedule(task, 2000L);
-  }
-
-  @SubscribeEvent
-  public static void handleAdvancementEvent(AdvancementEvent event) {
-    Advancement advancement = event.getAdvancement();
-    String advancementId = advancement.getId().toString();
-    if (advancementId.startsWith("minecraft:recipes") || advancementId.startsWith("smallships:recipes")
-        || advancement.getDisplay() == null) {
-      return;
-    }
-    // Make sure to disable screenshot tasks for the first 5 seconds after the login.
-    if (!loginProtection && advancement.getParent() != null) {
-      String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
-      String screenshotName = String.format("advancement-unknown-%s", new Random().nextInt(99));
-      if (advancementId.contains("/") && advancementId.split("/").length > 1) {
-        screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
-      } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {
-        screenshotFolder = advancementId.split(":")[0];
-        screenshotName = advancementId.split(":", 2)[1];
-      } else {
-        log.warn("Unable to find unique name ({}) for advancement: {}", advancementId, advancement);
-      }
-      ScreenManager.saveScreenshot(new File(String.format("screenshots/%s", screenshotFolder)), screenshotName, 700L);
-    }
-    untrackAdvancement(advancement);
-    rateControlMapAdvancements();
   }
 
   public static void rateControlMapAdvancements() {
@@ -280,8 +254,27 @@ public class AdvancementsManager {
     return getSortedAdvancements(rootAdvancement, AdvancementEntry.sortByStatus());
   }
 
-  public static void setAdvancementProgress(Advancement advancement, AdvancementProgress advancementProgress) {
+  public static void updateAdvancementProgress(Advancement advancement, AdvancementProgress advancementProgress) {
+    String advancementId = advancement.getId().toString();
     advancementProgressMap.put(advancement, advancementProgress);
+    if (advancementProgress.isDone() && !advancementId.startsWith("minecraft:recipes")
+        && !advancementId.startsWith("smallships:recipes") && advancement.getParent() != null
+        && advancement.getDisplay() != null) {
+      if (!loginProtection) {
+        String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
+        String screenshotName = String.format("advancement-unknown-%s", new Random().nextInt(99));
+        if (advancementId.contains("/") && advancementId.split("/").length > 1) {
+          screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
+        } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {
+          screenshotFolder = advancementId.split(":")[0];
+          screenshotName = advancementId.split(":", 2)[1];
+        } else {
+          log.warn("Unable to find unique name ({}) for advancement: {}", advancementId, advancement);
+        }
+        ScreenManager.saveScreenshot(new File(String.format("screenshots/%s", screenshotFolder)), screenshotName, 700L);
+      }
+      untrackAdvancement(advancement);
+    }
     rateControlMapAdvancements();
   }
 
