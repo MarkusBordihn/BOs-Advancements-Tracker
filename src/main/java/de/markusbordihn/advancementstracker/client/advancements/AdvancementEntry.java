@@ -20,6 +20,9 @@
 package de.markusbordihn.advancementstracker.client.advancements;
 
 import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -29,7 +32,9 @@ import com.google.gson.JsonParseException;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementRewards;
+import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
+import net.minecraft.advancements.FrameType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.JSONUtils;
 import net.minecraft.util.ResourceLocation;
@@ -44,24 +49,29 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   ResourceLocation rootId;
   String progressText;
   String[][] requirements;
+  int rootLevel = 0;
+  Map<String, CriterionProgress> criteriaMap = new HashMap<>();
+  public AdvancementRewards rewards;
+  public Date firstProgressDate;
+  public Date lastProgressDate;
+  public FrameType frameType;
   public ItemStack icon;
   public Iterable<String> completedCriteria;
   public Iterable<String> remainingCriteria;
-  public int completedCriteriaNumber;
-  public int remainingCriteriaNumber;
-  public int criteriaNumber;
-  public int maxCriteraRequired;
-  public int requirementsNumber;
-  public AdvancementRewards rewards;
   public ResourceLocation background;
   public ResourceLocation id;
+  public ResourceLocation[] rewardsLoot;
+  public ResourceLocation[] rewardsRecipes;
   public String description;
   public String title;
   public boolean isDone;
+  public int completedCriteriaNumber;
+  public int criteriaNumber;
   public int descriptionColor = 0xFFCCCCCC;
+  public int maxCriteraRequired;
+  public int remainingCriteriaNumber;
+  public int requirementsNumber;
   public int rewardsExperience;
-  public ResourceLocation[] rewardsLoot;
-  public ResourceLocation[] rewardsRecipes;
 
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
     this.advancement = advancement;
@@ -75,6 +85,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     if (this.rootAdvancement != null) {
       while (this.rootAdvancement.getParent() != null) {
         this.rootAdvancement = this.rootAdvancement.getParent();
+        rootLevel++;
       }
       this.rootId = this.rootAdvancement.getId();
     }
@@ -118,19 +129,33 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       }
       this.icon = this.displayInfo.getIcon();
       this.title = this.displayInfo.getTitle().getString();
+      this.frameType = this.displayInfo.getFrame();
     } else {
       this.background = null;
       this.title = advancement.getId().toString();
     }
     if (advancementProgress != null) {
-      this.completedCriteria = advancementProgress.getCompletedCriteria();
-      this.completedCriteriaNumber = (int) this.completedCriteria.spliterator().getExactSizeIfKnown();
       this.isDone = advancementProgress.isDone();
+      this.firstProgressDate = advancementProgress.getFirstProgressDate();
       this.progress = advancementProgress.getPercent();
       this.progressText = advancementProgress.getProgressText();
+
+      this.completedCriteria = advancementProgress.getCompletedCriteria();
+      this.completedCriteriaNumber = (int) this.completedCriteria.spliterator().getExactSizeIfKnown();
+      if (this.completedCriteria != null) {
+        for (String criteriaId : this.completedCriteria) {
+          criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
+        }
+      }
+
       this.remainingCriteria = advancementProgress.getRemainingCriteria();
       this.remainingCriteriaNumber = (int) this.remainingCriteria.spliterator().getExactSizeIfKnown();
-      this.criteriaNumber = completedCriteriaNumber + remainingCriteriaNumber;
+      if (this.remainingCriteria != null) {
+        for (String criteriaId : this.remainingCriteria) {
+          criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
+        }
+      }
+      this.lastProgressDate = this.getLastProgressDate();
     }
   }
 
@@ -140,9 +165,20 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   public String toString() {
     if (this.rootAdvancement == null) {
-      return String.format("[Root Advancement] %s: %s %s", this.rootId, this.title, this.progress);
+      return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title, this.progress);
     }
-    return String.format("[Advancement] %s: %s %s", this.rootId, this.title, this.progress);
+    return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType, this.rootId, this.id,
+        this.title, this.progress);
+  }
+
+  private Date getLastProgressDate() {
+    Date date = null;
+    for (CriterionProgress criterionProgress : this.criteriaMap.values()) {
+      if (criterionProgress.isDone() && (date == null || criterionProgress.getObtained().after(date))) {
+        date = criterionProgress.getObtained();
+      }
+    }
+    return date;
   }
 
   @Override

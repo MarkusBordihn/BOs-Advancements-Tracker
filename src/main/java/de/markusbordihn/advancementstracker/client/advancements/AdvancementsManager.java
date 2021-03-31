@@ -22,6 +22,7 @@ package de.markusbordihn.advancementstracker.client.advancements;
 import java.io.File;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -37,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -56,6 +58,7 @@ public class AdvancementsManager {
 
   private static AdvancementEntry selectedAdvancement;
   private static AdvancementEntry selectedRootAdvancement;
+  private static Date startDate = new Date();
   private static Map<Advancement, AdvancementProgress> advancementProgressMap = new HashMap<>();
   private static Map<ResourceLocation, Set<AdvancementEntry>> advancementsMap = new HashMap<>();
   private static Set<AdvancementEntry> rootAdvancements = new HashSet<>();
@@ -63,7 +66,6 @@ public class AdvancementsManager {
   private static Timer rateControlTimer;
   private static boolean areAdvancementsMapped = false;
   private static boolean hasAdvancements = false;
-  private static boolean loginProtection = true;
   private static int backgroundAdvancementCheck = 0;
   private static int maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
 
@@ -73,6 +75,7 @@ public class AdvancementsManager {
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
     maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
+    startDate = new Date();
     advancementProgressMap = new HashMap<>();
     advancementsMap = new HashMap<>();
     rootAdvancements = new HashSet<>();
@@ -80,21 +83,9 @@ public class AdvancementsManager {
     selectedAdvancement = null;
     selectedRootAdvancement = null;
     hasAdvancements = false;
-    loginProtection = true;
-    log.info("Try to pre-map advancements and start login protection ...");
+    log.info("Try to pre-map advancements and consider new advancements after {} ...", startDate);
     updateTrackerWidget();
     rateControlMapAdvancements();
-
-    // Make sure that we are not overloading the client with screenshot requests
-    // during login
-    TimerTask task = new TimerTask() {
-      public void run() {
-        loginProtection = false;
-        cancel();
-      }
-    };
-    Timer timer = new Timer("Login Protection Timer");
-    timer.schedule(task, 2000L);
   }
 
   public static void rateControlMapAdvancements() {
@@ -260,7 +251,21 @@ public class AdvancementsManager {
     if (advancementProgress.isDone() && !advancementId.startsWith("minecraft:recipes")
         && !advancementId.startsWith("smallships:recipes") && advancement.getParent() != null
         && advancement.getDisplay() != null) {
-      if (!loginProtection) {
+
+      // Find last progression date to make sure we skip outdate advancements.
+      Iterable<String> completedCriteria = advancementProgress.getCompletedCriteria();
+      Date lastProgressionDate = startDate;
+      if (completedCriteria != null) {
+        for (String criteriaId : completedCriteria) {
+          CriterionProgress criteriaProgress = advancementProgress.getCriterion(criteriaId);
+          if (criteriaProgress.getObtained().after(lastProgressionDate)) {
+            lastProgressionDate = criteriaProgress.getObtained();
+          }
+        }
+      }
+
+      if (lastProgressionDate.after(startDate)) {
+        log.info("Found new advancements which was done on {}", lastProgressionDate);
         String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
         String screenshotName = String.format("advancement-unknown-%s", new Random().nextInt(99));
         if (advancementId.contains("/") && advancementId.split("/").length > 1) {

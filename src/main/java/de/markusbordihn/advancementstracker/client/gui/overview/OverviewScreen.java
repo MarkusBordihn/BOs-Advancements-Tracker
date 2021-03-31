@@ -20,6 +20,7 @@
 package de.markusbordihn.advancementstracker.client.gui.overview;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -144,6 +145,13 @@ public class OverviewScreen extends ScreenBuilder {
       this.advancement = advancement;
       if (this.advancement.description != null) {
         this.output += String.format("%s\n", this.advancement.description);
+      }
+      if (this.advancement.isDone && this.advancement.lastProgressDate != null && this.advancement.firstProgressDate != null) {
+        long diffInMillies = Math.abs(this.advancement.lastProgressDate.getTime() - this.advancement.firstProgressDate.getTime());
+        long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+        if (diff > 0) {
+          this.output += String.format("\nIt took about %s days to complete this advancements.\n", diff);
+        }
       }
       if (this.advancement.rewards != null && (this.advancement.rewardsExperience > 0
           || this.advancement.rewardsLoot != null || this.advancement.rewardsRecipes != null)) {
