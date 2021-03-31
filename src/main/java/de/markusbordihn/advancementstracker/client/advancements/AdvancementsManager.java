@@ -66,15 +66,28 @@ public class AdvancementsManager {
   private static Timer rateControlTimer;
   private static boolean areAdvancementsMapped = false;
   private static boolean hasAdvancements = false;
+  private static boolean init = false;
   private static int backgroundAdvancementCheck = 0;
   private static int maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
+  private static boolean screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
+  private static long screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
 
   protected AdvancementsManager() {
   }
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    if (init) {
+      return;
+    }
     maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
+    screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
+    screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
+    if (screenshotEnabled) {
+      log.info("Enable screenshot support with {} ms delay", screenshotDelay);
+    } else {
+      log.info("Disable screenshot support.");
+    }
     startDate = new Date();
     advancementProgressMap = new HashMap<>();
     advancementsMap = new HashMap<>();
@@ -86,6 +99,7 @@ public class AdvancementsManager {
     log.info("Try to pre-map advancements and consider new advancements after {} ...", startDate);
     updateTrackerWidget();
     rateControlMapAdvancements();
+    init = true;
   }
 
   public static void rateControlMapAdvancements() {
@@ -251,32 +265,35 @@ public class AdvancementsManager {
     if (advancementProgress.isDone() && !advancementId.startsWith("minecraft:recipes")
         && !advancementId.startsWith("smallships:recipes") && advancement.getParent() != null
         && advancement.getDisplay() != null) {
-
-      // Find last progression date to make sure we skip outdate advancements.
-      Iterable<String> completedCriteria = advancementProgress.getCompletedCriteria();
-      Date lastProgressionDate = startDate;
-      if (completedCriteria != null) {
-        for (String criteriaId : completedCriteria) {
-          CriterionProgress criteriaProgress = advancementProgress.getCriterion(criteriaId);
-          if (criteriaProgress.getObtained().after(lastProgressionDate)) {
-            lastProgressionDate = criteriaProgress.getObtained();
+      // Find last progression date to make sure we skip outdate advancements for
+      // screenshots.
+      if (screenshotEnabled) {
+        Iterable<String> completedCriteria = advancementProgress.getCompletedCriteria();
+        Date lastProgressionDate = startDate;
+        if (completedCriteria != null) {
+          for (String criteriaId : completedCriteria) {
+            CriterionProgress criteriaProgress = advancementProgress.getCriterion(criteriaId);
+            if (criteriaProgress.getObtained().after(lastProgressionDate)) {
+              lastProgressionDate = criteriaProgress.getObtained();
+            }
           }
         }
-      }
 
-      if (lastProgressionDate.after(startDate)) {
-        log.info("Found new advancements which was done on {}", lastProgressionDate);
-        String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
-        String screenshotName = String.format("advancement-unknown-%s", new Random().nextInt(99));
-        if (advancementId.contains("/") && advancementId.split("/").length > 1) {
-          screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
-        } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {
-          screenshotFolder = advancementId.split(":")[0];
-          screenshotName = advancementId.split(":", 2)[1];
-        } else {
-          log.warn("Unable to find unique name ({}) for advancement: {}", advancementId, advancement);
+        if (lastProgressionDate.after(startDate)) {
+          log.info("Found new advancements which was done on {}", lastProgressionDate);
+          String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
+          String screenshotName = String.format("advancement-unknown-%s", new Random().nextInt(99));
+          if (advancementId.contains("/") && advancementId.split("/").length > 1) {
+            screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
+          } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {
+            screenshotFolder = advancementId.split(":")[0];
+            screenshotName = advancementId.split(":", 2)[1];
+          } else {
+            log.warn("Unable to find unique name ({}) for advancement: {}", advancementId, advancement);
+          }
+          ScreenManager.saveScreenshot(new File(String.format("screenshots/%s", screenshotFolder)), screenshotName,
+              screenshotDelay);
         }
-        ScreenManager.saveScreenshot(new File(String.format("screenshots/%s", screenshotFolder)), screenshotName, 700L);
       }
       untrackAdvancement(advancement);
     }

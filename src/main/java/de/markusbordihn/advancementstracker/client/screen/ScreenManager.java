@@ -48,6 +48,7 @@ import de.markusbordihn.advancementstracker.client.gui.config.ConfigScreen;
 public class ScreenManager {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
   private static Timer timer = new Timer("Timer");
 
   protected ScreenManager() {

@@ -40,17 +40,23 @@ import de.markusbordihn.advancementstracker.Constants;
 public class AdvancementProgressManager implements IListener {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-  private static int backgroundAddListenerCheck = 0;
+
   private static Timer rateControlTimer;
   private static boolean hasAdvancementProgressListener = false;
+  private static boolean init = false;
+  private static int backgroundAddListenerCheck = 0;
 
   protected AdvancementProgressManager() {
   }
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
-    log.info("Try to get advancements progress ...");
+    if (init) {
+      return;
+    }
+    log.info("Try to get advancements progress over event listener...");
     rateControlAddListener();
+    init = true;
   }
 
   public static void rateControlAddListener() {

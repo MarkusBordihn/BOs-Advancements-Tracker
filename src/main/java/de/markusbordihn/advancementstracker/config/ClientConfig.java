@@ -52,6 +52,9 @@ public class ClientConfig {
   public static class Config {
     public final ForgeConfigSpec.IntValue maxNumberOfTrackedAdvancements;
 
+    public final ForgeConfigSpec.BooleanValue screenshotEnabled;
+    public final ForgeConfigSpec.IntValue screenshotDelay;
+
     public final ForgeConfigSpec.DoubleValue widgetHeight;
     public final ForgeConfigSpec.DoubleValue widgetWidth;
     public final ForgeConfigSpec.DoubleValue widgetTop;
@@ -63,6 +66,11 @@ public class ClientConfig {
 
       builder.push("general");
       maxNumberOfTrackedAdvancements = builder.defineInRange("maxNumberOfTrackedAdvancements", 3, 1, 5);
+      builder.pop();
+
+      builder.push("screenshots");
+      screenshotEnabled = builder.define("screenshotEnabled", true);
+      screenshotDelay = builder.defineInRange("screenshotDelay", 700, 0, 10000);
       builder.pop();
 
       builder.push("gui");

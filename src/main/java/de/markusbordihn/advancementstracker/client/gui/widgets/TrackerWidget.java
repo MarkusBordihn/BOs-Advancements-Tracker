@@ -61,6 +61,7 @@ public class TrackerWidget extends WidgetBuilder {
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
   private static TranslationTextComponent widgetTitle;
   private static boolean active = true;
+  private static boolean init = false;
   private static double configHeight = ClientConfig.CLIENT.widgetHeight.get();
   private static double configLeft = ClientConfig.CLIENT.widgetLeft.get();
   private static double configTop = ClientConfig.CLIENT.widgetTop.get();
@@ -77,11 +78,15 @@ public class TrackerWidget extends WidgetBuilder {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    if (init) {
+      return;
+    }
     configHeight = ClientConfig.CLIENT.widgetHeight.get();
     configLeft = ClientConfig.CLIENT.widgetLeft.get();
     configTop = ClientConfig.CLIENT.widgetTop.get();
     configWidth = ClientConfig.CLIENT.widgetWidth.get();
     maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
+    init = true;
   }
 
   @SubscribeEvent
