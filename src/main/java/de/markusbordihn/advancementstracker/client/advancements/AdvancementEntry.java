@@ -163,6 +163,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return AdvancementsManager.isTrackedAdvancement(advancement);
   }
 
+  public ResourceLocation getId() {
+    return this.id;
+  }
+
   public String toString() {
     if (this.rootAdvancement == null) {
       return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title, this.progress);

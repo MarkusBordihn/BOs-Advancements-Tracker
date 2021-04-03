@@ -20,7 +20,11 @@
 package de.markusbordihn.advancementstracker.client.gui.overview;
 
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+
+import com.mojang.blaze3d.matrix.MatrixStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -28,8 +32,10 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.TranslationTextComponent;
-
-import com.mojang.blaze3d.matrix.MatrixStack;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
@@ -39,7 +45,9 @@ import de.markusbordihn.advancementstracker.client.gui.Textures;
 import de.markusbordihn.advancementstracker.client.gui.component.ScrollPanelContent;
 import de.markusbordihn.advancementstracker.client.gui.component.ScrollPanelManager;
 import de.markusbordihn.advancementstracker.client.gui.utils.TextUtils;
+import de.markusbordihn.advancementstracker.config.ClientConfig;
 
+@EventBusSubscriber(Dist.CLIENT)
 public class OverviewScreen extends ScreenBuilder {
 
   AdvancementCategoryPanel advancementCategoryPanel;
@@ -53,9 +61,31 @@ public class OverviewScreen extends ScreenBuilder {
   private String noAdvancementsText = new TranslationTextComponent(
       Constants.MOD_PREFIX + "advancementScreen.noAdvancements").getString();
   private String titleText = new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
+  private static boolean init = false;
+  private static boolean enabled = ClientConfig.CLIENT.overviewEnabled.get();
 
   public OverviewScreen() {
     super("advancementScreen.title");
+  }
+
+  @SubscribeEvent
+  public static void handleWorldEventLoad(WorldEvent.Load event) {
+    if (init) {
+      return;
+    }
+    enabled = ClientConfig.CLIENT.overviewEnabled.get();
+    if (!enabled) {
+      log.warn("Overview Screen is disabled!");
+    }
+    TimerTask task = new TimerTask() {
+      public void run() {
+        init = false;
+        cancel();
+      }
+    };
+    Timer timer = new Timer("Timer");
+    timer.schedule(task, 1000L);
+    init = true;
   }
 
   class AdvancementCategoryContent extends ScrollPanelContent {
@@ -146,8 +176,10 @@ public class OverviewScreen extends ScreenBuilder {
       if (this.advancement.description != null) {
         this.output += String.format("%s\n", this.advancement.description);
       }
-      if (this.advancement.isDone && this.advancement.lastProgressDate != null && this.advancement.firstProgressDate != null) {
-        long diffInMillies = Math.abs(this.advancement.lastProgressDate.getTime() - this.advancement.firstProgressDate.getTime());
+      if (this.advancement.isDone && this.advancement.lastProgressDate != null
+          && this.advancement.firstProgressDate != null) {
+        long diffInMillies = Math
+            .abs(this.advancement.lastProgressDate.getTime() - this.advancement.firstProgressDate.getTime());
         long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
         if (diff > 0) {
           this.output += String.format("\nIt took about %s days to complete this advancements.\n", diff);
@@ -301,6 +333,9 @@ public class OverviewScreen extends ScreenBuilder {
 
   @Override
   public void init() {
+    if (!enabled) {
+      return;
+    }
 
     // Update sizes
     panelWidth = (this.width - (this.panelPadding * 4)) / 3;
@@ -336,9 +371,13 @@ public class OverviewScreen extends ScreenBuilder {
 
   @Override
   public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+    if (!enabled) {
+      return;
+    }
     this.renderBackground(matrixStack);
     drawCenteredString(matrixStack, this.font, this.titleText, this.width / 2, 10, 0xFFFFFF);
-    if (AdvancementsManager.hasAdvancements()) {
+    if (AdvancementsManager.hasAdvancements() && this.advancementCategoryPanel != null
+        && this.advancementContentPanel != null && this.advancementInfoPanel != null) {
       this.advancementCategoryPanel.render(matrixStack, mouseX, mouseY, partialTicks);
       this.advancementContentPanel.render(matrixStack, mouseX, mouseY, partialTicks);
       this.advancementInfoPanel.render(matrixStack, mouseX, mouseY, partialTicks);

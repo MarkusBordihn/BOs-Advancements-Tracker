@@ -21,6 +21,8 @@ package de.markusbordihn.advancementstracker.client.gui.widgets;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 
@@ -67,6 +69,7 @@ public class TrackerWidget extends WidgetBuilder {
   private static double configTop = ClientConfig.CLIENT.widgetTop.get();
   private static double configWidth = ClientConfig.CLIENT.widgetWidth.get();
   private static int maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
+  private static boolean enabled = ClientConfig.CLIENT.widgetEnabled.get();
 
   protected static TrackerWidget trackerWidget;
 
@@ -81,17 +84,29 @@ public class TrackerWidget extends WidgetBuilder {
     if (init) {
       return;
     }
+    enabled = ClientConfig.CLIENT.widgetEnabled.get();
     configHeight = ClientConfig.CLIENT.widgetHeight.get();
     configLeft = ClientConfig.CLIENT.widgetLeft.get();
     configTop = ClientConfig.CLIENT.widgetTop.get();
     configWidth = ClientConfig.CLIENT.widgetWidth.get();
     maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
+    if (!enabled) {
+      log.warn("Tracker Widget is disabled!");
+    }
+    TimerTask task = new TimerTask() {
+      public void run() {
+        init = false;
+        cancel();
+      }
+    };
+    Timer timer = new Timer("Timer");
+    timer.schedule(task, 1000L);
     init = true;
   }
 
   @SubscribeEvent
   public static void handleRenderGameOverlayEventPre(RenderGameOverlayEvent.Pre event) {
-    if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) {
+    if (event.getType() != RenderGameOverlayEvent.ElementType.ALL || !enabled) {
       return;
     }
     if (trackerWidget == null) {
@@ -103,7 +118,7 @@ public class TrackerWidget extends WidgetBuilder {
   }
 
   public void renderTracker(MatrixStack matrixStack) {
-    if (!active) {
+    if (!active || !enabled) {
       return;
     }
     GL11.glPushMatrix();
@@ -116,7 +131,7 @@ public class TrackerWidget extends WidgetBuilder {
       this.scaledHeight = guiScaledHeight;
       this.height = (int) (this.scaledHeight * configHeight);
       this.width = (int) (this.scaledWidth * configWidth);
-      this.top = (int) ((this.scaledHeight - this.height) * configHeight);
+      this.top = (int) ((this.scaledHeight - this.height) * configTop);
       this.topMax = this.top + this.height;
       this.left = (int) ((this.scaledWidth - this.width) * configLeft);
       this.leftMax = this.left + this.width;

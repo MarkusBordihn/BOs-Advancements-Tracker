@@ -19,6 +19,10 @@
 
 package de.markusbordihn.advancementstracker.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +46,7 @@ public class ClientConfig {
   static final ForgeConfigSpec clientSpec;
   public static final Config CLIENT;
   static {
+    com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
     final Pair<Config, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Config::new);
     clientSpec = specPair.getRight();
     CLIENT = specPair.getLeft();
@@ -55,17 +60,26 @@ public class ClientConfig {
     public final ForgeConfigSpec.BooleanValue screenshotEnabled;
     public final ForgeConfigSpec.IntValue screenshotDelay;
 
+    public final ForgeConfigSpec.BooleanValue overviewEnabled;
+
+    public final ForgeConfigSpec.BooleanValue widgetEnabled;
     public final ForgeConfigSpec.DoubleValue widgetHeight;
     public final ForgeConfigSpec.DoubleValue widgetWidth;
     public final ForgeConfigSpec.DoubleValue widgetTop;
     public final ForgeConfigSpec.DoubleValue widgetLeft;
     public final ForgeConfigSpec.IntValue widgetMaxLinesForDescription;
 
+    public final ForgeConfigSpec.ConfigValue<List<String>> trackedAdvancements;
+    public final ForgeConfigSpec.ConfigValue<List<String>> trackedAdvancementsRemote;
+    public final ForgeConfigSpec.ConfigValue<List<String>> trackedAdvancementsLocal;
+
     Config(ForgeConfigSpec.Builder builder) {
       builder.comment("Advancements Tracker (Client configuration)");
 
       builder.push("general");
       maxNumberOfTrackedAdvancements = builder.defineInRange("maxNumberOfTrackedAdvancements", 3, 1, 5);
+      trackedAdvancements = builder.comment("List of default tracked advancements, mostly used by mod packs.")
+          .define("trackedAdvancements", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
 
       builder.push("screenshots");
@@ -76,16 +90,23 @@ public class ClientConfig {
       builder.push("gui");
 
       builder.push("overview");
+      overviewEnabled = builder.define("overviewEnabled", true);
       builder.pop();
 
       builder.push("widget");
+      widgetEnabled = builder.define("widgetEnabled", true);
       widgetHeight = builder.defineInRange("widgetHeight", 0.45, 0.0, 1.0);
       widgetWidth = builder.defineInRange("widgetWidth", 0.3, 0.0, 1.0);
-      widgetTop = builder.defineInRange("widgetTop", 0.35, 0.0, 1.0);
+      widgetTop = builder.defineInRange("widgetTop", 0.5, 0.0, 1.0);
       widgetLeft = builder.defineInRange("widgetLeft", 1.0, 0.0, 1.0);
       widgetMaxLinesForDescription = builder.defineInRange("widgetMaxLinesForDescription", 4, 1, 8);
       builder.pop();
 
+      builder.pop();
+
+      builder.push("cache");
+      trackedAdvancementsRemote = builder.define("trackedAdvancementsRemote", new ArrayList<String>(Arrays.asList("")));
+      trackedAdvancementsLocal = builder.define("trackedAdvancementsLocal", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
     }
   }

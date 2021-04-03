@@ -56,6 +56,14 @@ public class AdvancementProgressManager implements IListener {
     }
     log.info("Try to get advancements progress over event listener...");
     rateControlAddListener();
+    TimerTask task = new TimerTask() {
+      public void run() {
+        init = false;
+        cancel();
+      }
+    };
+    Timer timer = new Timer("Timer");
+    timer.schedule(task, 1000L);
     init = true;
   }
 

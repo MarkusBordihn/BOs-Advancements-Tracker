@@ -20,12 +20,14 @@
 package de.markusbordihn.advancementstracker.client.advancements;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -40,6 +42,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
@@ -71,6 +74,10 @@ public class AdvancementsManager {
   private static int maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
   private static boolean screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
   private static long screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
+  private static List<String> trackedAdvancementsDefault = ClientConfig.CLIENT.trackedAdvancements.get();
+  private static List<String> trackedAdvancementsLocal = ClientConfig.CLIENT.trackedAdvancementsLocal.get();
+  private static List<String> trackedAdvancementsRemote = ClientConfig.CLIENT.trackedAdvancementsRemote.get();
+  private static String serverId;
 
   protected AdvancementsManager() {
   }
@@ -80,15 +87,44 @@ public class AdvancementsManager {
     if (init) {
       return;
     }
+    reset();
+    updateTrackerWidget();
+    rateControlMapAdvancements();
+    TimerTask task = new TimerTask() {
+      public void run() {
+        init = false;
+        cancel();
+      }
+    };
+    Timer timer = new Timer("Timer");
+    timer.schedule(task, 1000L);
+    init = true;
+  }
+
+  public static void reset() {
+    startDate = new Date();
+    Minecraft minecraft = Minecraft.getInstance();
+    ServerData serverData = minecraft != null ? minecraft.getCurrentServer() : null;
+    if (serverData != null) {
+      serverId = String.format("%s:%s::", serverData.name.replaceAll("[^a-zA-Z0-9_]", "_"), serverData.protocol);
+      log.debug("Resetting Advancement Manager and consider new advancements after {} with remote server: {} ...",
+          startDate, serverId);
+    } else {
+      serverId = null;
+      log.debug("Resetting Advancement Manager and consider new advancements after {} with local server ...",
+          startDate);
+    }
     maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
-    screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
     screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
+    screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
+    trackedAdvancementsDefault = ClientConfig.CLIENT.trackedAdvancements.get();
+    trackedAdvancementsLocal = ClientConfig.CLIENT.trackedAdvancementsLocal.get();
+    trackedAdvancementsRemote = ClientConfig.CLIENT.trackedAdvancementsRemote.get();
     if (screenshotEnabled) {
       log.info("Enable screenshot support with {} ms delay", screenshotDelay);
     } else {
       log.info("Disable screenshot support.");
     }
-    startDate = new Date();
     advancementProgressMap = new HashMap<>();
     advancementsMap = new HashMap<>();
     rootAdvancements = new HashSet<>();
@@ -96,10 +132,6 @@ public class AdvancementsManager {
     selectedAdvancement = null;
     selectedRootAdvancement = null;
     hasAdvancements = false;
-    log.info("Try to pre-map advancements and consider new advancements after {} ...", startDate);
-    updateTrackerWidget();
-    rateControlMapAdvancements();
-    init = true;
   }
 
   public static void rateControlMapAdvancements() {
@@ -176,7 +208,7 @@ public class AdvancementsManager {
           advancementsMap.put(advancementEntry.rootId, childAdvancements);
         }
         childAdvancements.add(advancementEntry);
-        log.info("Adding child advancement {}", advancementEntry);
+        log.info("[Child Advancement] {}", advancementEntry);
         if (!hasAdvancements) {
           hasAdvancements = true;
         }
@@ -187,6 +219,8 @@ public class AdvancementsManager {
     if (!AdvancementProgressManager.hasAdvancementProgressListener()) {
       AdvancementProgressManager.addListener();
     }
+
+    loadTrackedAdvancements();
 
     if (!areAdvancementsMapped) {
       areAdvancementsMapped = true;
@@ -229,6 +263,17 @@ public class AdvancementsManager {
 
   public static Set<AdvancementEntry> getRootAdvancementsByTile() {
     return getSortedRootAdvancements(AdvancementEntry.sortByTitle());
+  }
+
+  public static AdvancementEntry getAdvancement(String id) {
+    for (Set<AdvancementEntry> advancementEntries : advancementsMap.values()) {
+      for (AdvancementEntry advancementEntry : advancementEntries) {
+        if (id.equals(advancementEntry.id.toString())) {
+          return advancementEntry;
+        }
+      }
+    }
+    return null;
   }
 
   public static Set<AdvancementEntry> getAdvancements(AdvancementEntry rootAdvancement) {
@@ -307,44 +352,147 @@ public class AdvancementsManager {
     return advancementProgressMap.get(advancement);
   }
 
-  public static int trackAdvancement(AdvancementEntry advancement) {
+  public static void trackAdvancement(AdvancementEntry advancement) {
+    trackAdvancement(advancement, true);
+  }
+
+  public static void trackAdvancement(AdvancementEntry advancement, boolean autosave) {
+    if (advancement.isDone) {
+      log.warn("Advancement {} is already done, no need to track it.", advancement);
+      return;
+    }
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
       if (trackedAdvancementEntry.id == advancement.id) {
         log.warn("Advancement {} is already tracked.", advancement);
-        return trackedAdvancements.size();
+        return;
       }
     }
     if (trackedAdvancements.size() >= maxNumberOfTrackedAdvancements) {
       log.error("Number of tracked advancements {} exceeds the limit of {}", trackedAdvancements.size(), advancement);
-      return trackedAdvancements.size();
     }
     trackedAdvancements.add(advancement);
+    if (autosave) {
+      saveTrackedAdvancements();
+    }
     updateTrackerWidget();
-    return trackedAdvancements.size();
   }
 
-  public static int untrackAdvancement(Advancement advancement) {
-    for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      if (trackedAdvancementEntry.id == advancement.getId()) {
-        return untrackAdvancement(trackedAdvancementEntry);
+  private static void loadTrackedAdvancementsDefault() {
+    if (trackedAdvancementsDefault.isEmpty()) {
+      return;
+    }
+    for (String trackedAdvancementDefault : trackedAdvancementsDefault) {
+      AdvancementEntry trackedAdvancementEntry = getAdvancement(trackedAdvancementDefault);
+      if (trackedAdvancementEntry != null) {
+        log.debug("Adding default tracked advancement {}", trackedAdvancementEntry);
+        trackAdvancement(trackedAdvancementEntry, false);
       }
     }
-    return trackedAdvancements.size();
   }
 
-  public static int untrackAdvancement(AdvancementEntry advancement) {
+  private static void loadTrackedAdvancements() {
+    // Loading default tracked advancements from config for better mod support.
+    loadTrackedAdvancementsDefault();
+
+    // Loading cached tracked advancements if list is empty or if tracking limit is
+    // not exceeded.
+    if (trackedAdvancements.isEmpty() || trackedAdvancements.size() < maxNumberOfTrackedAdvancements) {
+      loadTrackedAdvancementsRemote();
+      loadTrackedAdvancementsLocal();
+    }
+  }
+
+  private static void loadTrackedAdvancementsRemote() {
+    if (serverId == null || trackedAdvancementsRemote.isEmpty()) {
+      return;
+    }
+    for (String cachedAdvancementEntry : trackedAdvancementsRemote) {
+      if (!cachedAdvancementEntry.isEmpty() && !"".equals(cachedAdvancementEntry) && cachedAdvancementEntry.startsWith(serverId)) {
+        AdvancementEntry trackedAdvancementEntry = getAdvancement(cachedAdvancementEntry.split("::", 2)[1]);
+        if (trackedAdvancementEntry != null) {
+          log.debug("Adding remote tracked advancement {}", trackedAdvancementEntry);
+          trackAdvancement(trackedAdvancementEntry, false);
+        }
+      }
+    }
+  }
+
+  private static void loadTrackedAdvancementsLocal() {
+    if (serverId != null || trackedAdvancementsLocal.isEmpty()) {
+      return;
+    }
+    for (String cachedAdvancementEntry : trackedAdvancementsLocal) {
+      if (!cachedAdvancementEntry.isEmpty() && !"".equals(cachedAdvancementEntry)) {
+        AdvancementEntry trackedAdvancementEntry = getAdvancement(cachedAdvancementEntry);
+        if (trackedAdvancementEntry != null) {
+          log.debug("Adding local tracked advancement {}", trackedAdvancementEntry);
+          trackAdvancement(trackedAdvancementEntry, false);
+        }
+      }
+    }
+  }
+
+  private static void saveTrackedAdvancements() {
+    saveTrackedAdvancementsRemote();
+    saveTrackedAdvancementsLocal();
+  }
+
+  private static void saveTrackedAdvancementsRemote() {
+    if (serverId == null) {
+      return;
+    }
+    List<String> trackedAdvancementsToSave = new ArrayList<>();
+    // Adding existing entries, but ignore entries for current server.
+    for (String trackedAdvancementRemote : trackedAdvancementsRemote) {
+      if (!trackedAdvancementRemote.isEmpty() && !"".equals(trackedAdvancementRemote) && !trackedAdvancementRemote.startsWith(serverId)) {
+        trackedAdvancementsToSave.add(trackedAdvancementRemote);
+      }
+    }
+    // Adding entries for current server.
+    for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
+      trackedAdvancementsToSave.add(serverId + trackedAdvancementEntry.id.toString());
+    }
+    ClientConfig.CLIENT.trackedAdvancementsRemote
+        .set(trackedAdvancementsToSave.stream().distinct().collect(Collectors.toList()));
+    trackedAdvancementsRemote = ClientConfig.CLIENT.trackedAdvancementsRemote.get();
+    ClientConfig.CLIENT.trackedAdvancements.save();
+  }
+
+  private static void saveTrackedAdvancementsLocal() {
+    if (serverId != null) {
+      return;
+    }
+    List<String> trackedAdvancementsToSave = new ArrayList<>();
+    for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
+      trackedAdvancementsToSave.add(trackedAdvancementEntry.id.toString());
+    }
+    ClientConfig.CLIENT.trackedAdvancementsLocal
+        .set(trackedAdvancementsToSave.stream().distinct().collect(Collectors.toList()));
+    trackedAdvancementsLocal = ClientConfig.CLIENT.trackedAdvancementsLocal.get();
+    ClientConfig.CLIENT.trackedAdvancements.save();
+  }
+
+  public static void untrackAdvancement(Advancement advancement) {
+    untrackAdvancement(advancement.getId());
+  }
+
+  public static void untrackAdvancement(AdvancementEntry advancement) {
+    untrackAdvancement(advancement.getId());
+  }
+
+  public static void untrackAdvancement(ResourceLocation advancementId) {
     AdvancementEntry existingAdvancementEntry = null;
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      if (trackedAdvancementEntry.id == advancement.id) {
+      if (trackedAdvancementEntry.id == advancementId) {
         existingAdvancementEntry = trackedAdvancementEntry;
         break;
       }
     }
     if (existingAdvancementEntry != null) {
       trackedAdvancements.remove(existingAdvancementEntry);
+      saveTrackedAdvancements();
       updateTrackerWidget();
     }
-    return trackedAdvancements.size();
   }
 
   public static int numOfTrackedAdvancements() {
@@ -362,10 +510,6 @@ public class AdvancementsManager {
       }
     }
     return false;
-  }
-
-  private static void updateTrackerWidget() {
-    TrackerWidget.setTrackedAdvancements(trackedAdvancements);
   }
 
   public static AdvancementEntry getSelectedAdvancement() {
@@ -403,6 +547,10 @@ public class AdvancementsManager {
 
   public static boolean hasAdvancements() {
     return hasAdvancements;
+  }
+
+  private static void updateTrackerWidget() {
+    TrackerWidget.setTrackedAdvancements(trackedAdvancements);
   }
 
 }
