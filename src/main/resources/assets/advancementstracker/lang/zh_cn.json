@@ -1,0 +1,11 @@
+{
+  "advancementstracker.configScreen.title": "%1$s Settings",
+  "advancementstracker.keys.category": "Advancements Tracker",
+  "advancementstracker.keys.showOverview": "Show Overview",
+  "advancementstracker.keys.showGui": "Show Gui",
+  "advancementstracker.advancementScreen.title": "Advancements Tracker Overview",
+  "advancementstracker.advancementScreen.noAdvancements": "Found no advancements. Maybe you should get some wood and build a workbench.",
+  "advancementstracker.advancementWidget.title": "Advancements Tracker",
+  "advancementstracker.advancementWidget.noAdvancements": "Found no advancements, yet. Fresh start?",
+  "advancementstracker.advancementWidget.noTrackedAdvancements": "No tracked advancements. Please add them over the Advancements Overview."
+}
