@@ -1,11 +1,11 @@
 {
-  "advancementstracker.configScreen.title": "%1$s Settings",
-  "advancementstracker.keys.category": "Advancements Tracker",
-  "advancementstracker.keys.showOverview": "Show Overview",
-  "advancementstracker.keys.showGui": "Show Gui",
-  "advancementstracker.advancementScreen.title": "Advancements Tracker Overview",
-  "advancementstracker.advancementScreen.noAdvancements": "Found no advancements. Maybe you should get some wood and build a workbench.",
-  "advancementstracker.advancementWidget.title": "Advancements Tracker",
-  "advancementstracker.advancementWidget.noAdvancements": "Found no advancements, yet. Fresh start?",
-  "advancementstracker.advancementWidget.noTrackedAdvancements": "No tracked advancements. Please add them over the Advancements Overview."
+  "advancementstracker.configScreen.title": "%1$s 设置",
+  "advancementstracker.keys.category": "进度追踪器",
+  "advancementstracker.keys.showOverview": "打开概览",
+  "advancementstracker.keys.showGui": "打开 Gui",
+  "advancementstracker.advancementScreen.title": "进度追踪器概览",
+  "advancementstracker.advancementScreen.noAdvancements": "未找到进度，可能你先要找点原木做一个工作台。",
+  "advancementstracker.advancementWidget.title": "进度追踪器",
+  "advancementstracker.advancementWidget.noAdvancements": "未找到进度，重新开始？",
+  "advancementstracker.advancementWidget.noTrackedAdvancements": "无追踪中的进度，请在进度概览中添加。"
 }
