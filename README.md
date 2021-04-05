@@ -71,8 +71,10 @@ This mod works great together with Better Advancements mod, but let me know if y
 
 - [Better Advancements][better_advancements] to improve the UI and UX for the advancements system in minecraft
 
+
+[better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
+[platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
+
 [logo]: logo.png
 [overview_example]: example/overview_example.png
 [widget_example]: example/widget_example.png
-[better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
-[platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
