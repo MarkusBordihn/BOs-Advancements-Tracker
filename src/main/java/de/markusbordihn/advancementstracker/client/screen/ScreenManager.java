@@ -51,8 +51,7 @@ public class ScreenManager {
 
   private static Timer timer = new Timer("Timer");
 
-  protected ScreenManager() {
-  }
+  protected ScreenManager() {}
 
   @SubscribeEvent
   public static void handleFMLClientSetupEvent(FMLClientSetupEvent event) {
@@ -74,9 +73,14 @@ public class ScreenManager {
     Consumer<ITextComponent> messageConsumer = unused -> new StringTextComponent("");
     TimerTask task = new TimerTask() {
       public void run() {
-        log.info("Saving screenshot {} under {}", screenshotName, folder);
-        ScreenShotHelper.grab(folder, screenshotName, framebuffer.width, framebuffer.height, framebuffer,
-            messageConsumer);
+        log.info("Saving screenshot {} under {} ...", screenshotName, folder);
+        try {
+          ScreenShotHelper.grab(folder, screenshotName, framebuffer.width, framebuffer.height,
+              framebuffer, messageConsumer);
+        } catch (Exception e) {
+          log.error("Unable to save screenshot {} under {} because of: {}", screenshotName, folder,
+              e);
+        }
         cancel();
       }
     };

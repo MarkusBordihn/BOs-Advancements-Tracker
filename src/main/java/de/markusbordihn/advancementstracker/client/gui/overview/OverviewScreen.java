@@ -20,8 +20,6 @@
 package de.markusbordihn.advancementstracker.client.gui.overview;
 
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
@@ -40,6 +38,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementsManager;
+import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvancementsManager;
 import de.markusbordihn.advancementstracker.client.gui.ScreenBuilder;
 import de.markusbordihn.advancementstracker.client.gui.Textures;
 import de.markusbordihn.advancementstracker.client.gui.component.ScrollPanelContent;
@@ -61,7 +60,6 @@ public class OverviewScreen extends ScreenBuilder {
   private String noAdvancementsText = new TranslationTextComponent(
       Constants.MOD_PREFIX + "advancementScreen.noAdvancements").getString();
   private String titleText = new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
-  private static boolean init = false;
   private static boolean enabled = ClientConfig.CLIENT.overviewEnabled.get();
 
   public OverviewScreen() {
@@ -70,22 +68,15 @@ public class OverviewScreen extends ScreenBuilder {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
-    if (init) {
+    if (!event.getWorld().isClientSide()) {
       return;
     }
     enabled = ClientConfig.CLIENT.overviewEnabled.get();
-    if (!enabled) {
+    if (enabled) {
+      log.info("Enable Overview Screen ...");
+    } else {
       log.warn("Overview Screen is disabled!");
     }
-    TimerTask task = new TimerTask() {
-      public void run() {
-        init = false;
-        cancel();
-      }
-    };
-    Timer timer = new Timer("Timer");
-    timer.schedule(task, 1000L);
-    init = true;
   }
 
   class AdvancementCategoryContent extends ScrollPanelContent {
@@ -134,7 +125,7 @@ public class OverviewScreen extends ScreenBuilder {
         blit(matrixStack, xMax - 20, y + 2, 0, 0, 18, 18);
       } else if (Boolean.TRUE.equals(this.advancement.isTracked())) {
         blit(matrixStack, xMax - 18, y + 2, 40, 2, 14, 14);
-      } else if (AdvancementsManager.hasReachedTrackedAdvancementLimit()) {
+      } else if (TrackedAdvancementsManager.hasReachedTrackedAdvancementLimit()) {
         blit(matrixStack, xMax - 18, y + 2, 60, 2, 14, 14);
       } else {
         blit(matrixStack, xMax - 18, y + 2, 20, 2, 14, 14);
@@ -153,9 +144,9 @@ public class OverviewScreen extends ScreenBuilder {
       }
       if ((xMax - 18 < mouseX && mouseX < xMax) && (baseY + 2 < mouseY && mouseY < baseY + 16)) {
         if (Boolean.TRUE.equals(this.advancement.isTracked())) {
-          AdvancementsManager.untrackAdvancement(advancement);
-        } else if (!AdvancementsManager.hasReachedTrackedAdvancementLimit()) {
-          AdvancementsManager.trackAdvancement(advancement);
+          TrackedAdvancementsManager.untrackAdvancement(advancement);
+        } else if (!TrackedAdvancementsManager.hasReachedTrackedAdvancementLimit()) {
+          TrackedAdvancementsManager.trackAdvancement(advancement);
         }
       }
     }
@@ -178,9 +169,9 @@ public class OverviewScreen extends ScreenBuilder {
       }
       if (this.advancement.isDone && this.advancement.lastProgressDate != null
           && this.advancement.firstProgressDate != null) {
-        long diffInMillies = Math
+        long diffInMilliseconds = Math
             .abs(this.advancement.lastProgressDate.getTime() - this.advancement.firstProgressDate.getTime());
-        long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
+        long diff = TimeUnit.DAYS.convert(diffInMilliseconds, TimeUnit.MILLISECONDS);
         if (diff > 0) {
           this.output += String.format("\nIt took about %s days to complete this advancements.\n", diff);
         }

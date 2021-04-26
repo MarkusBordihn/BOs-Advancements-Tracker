@@ -63,6 +63,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public ResourceLocation[] rewardsLoot;
   public ResourceLocation[] rewardsRecipes;
   public String description;
+  public String idString;
   public String title;
   public boolean isDone;
   public int completedCriteriaNumber;
@@ -75,9 +76,9 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
     this.advancement = advancement;
-    this.advancementProgress = advancementProgress;
     this.displayInfo = advancement.getDisplay();
     this.id = advancement.getId();
+    this.idString = advancement.getId().toString();
     this.rootAdvancement = advancement.getParent();
     this.requirements = advancement.getRequirements();
     this.maxCriteraRequired = advancement.getMaxCriteraRequired();
@@ -109,7 +110,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
             }
 
             // Getting recipes entries
-            JsonArray recipesArray = JSONUtils.getAsJsonArray(rewardsObject, "recipes", new JsonArray());
+            JsonArray recipesArray =
+                JSONUtils.getAsJsonArray(rewardsObject, "recipes", new JsonArray());
             this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
             for (int k = 0; k < this.rewardsRecipes.length; ++k) {
               this.rewardsRecipes[k] = new ResourceLocation(
@@ -118,7 +120,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
           }
         }
       } catch (JsonParseException | IllegalStateException e) {
-        // Ignore possible Json Parse Exception and illegal state exceptions
+        // Ignore possible JSON Parse Exception and illegal state exceptions
       }
     }
     if (this.displayInfo != null) {
@@ -135,32 +137,12 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       this.title = advancement.getId().toString();
     }
     if (advancementProgress != null) {
-      this.isDone = advancementProgress.isDone();
-      this.firstProgressDate = advancementProgress.getFirstProgressDate();
-      this.progress = advancementProgress.getPercent();
-      this.progressText = advancementProgress.getProgressText();
-
-      this.completedCriteria = advancementProgress.getCompletedCriteria();
-      this.completedCriteriaNumber = (int) this.completedCriteria.spliterator().getExactSizeIfKnown();
-      if (this.completedCriteria != null) {
-        for (String criteriaId : this.completedCriteria) {
-          criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
-        }
-      }
-
-      this.remainingCriteria = advancementProgress.getRemainingCriteria();
-      this.remainingCriteriaNumber = (int) this.remainingCriteria.spliterator().getExactSizeIfKnown();
-      if (this.remainingCriteria != null) {
-        for (String criteriaId : this.remainingCriteria) {
-          criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
-        }
-      }
-      this.lastProgressDate = this.getLastProgressDate();
+      this.addAdvancementProgress(advancementProgress);
     }
   }
 
   public boolean isTracked() {
-    return AdvancementsManager.isTrackedAdvancement(advancement);
+    return TrackedAdvancementsManager.isTrackedAdvancement(advancement);
   }
 
   public ResourceLocation getId() {
@@ -169,16 +151,45 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   public String toString() {
     if (this.rootAdvancement == null) {
-      return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title, this.progress);
+      return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title,
+          this.progress);
     }
-    return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType, this.rootId, this.id,
-        this.title, this.progress);
+    return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType,
+        this.rootId, this.id, this.title, this.progress);
+  }
+
+  public void addAdvancementProgress(AdvancementProgress advancementProgress) {
+    if (advancementProgress == null) {
+      return;
+    }
+    this.advancementProgress = advancementProgress;
+    this.isDone = advancementProgress.isDone();
+    this.firstProgressDate = advancementProgress.getFirstProgressDate();
+    this.progress = advancementProgress.getPercent();
+    this.progressText = advancementProgress.getProgressText();
+
+    // Handle completed Criteria
+    this.completedCriteria = advancementProgress.getCompletedCriteria();
+    this.completedCriteriaNumber = (int) this.completedCriteria.spliterator().getExactSizeIfKnown();
+    for (String criteriaId : this.completedCriteria) {
+      criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
+    }
+
+    // Handle remaining Criteria
+    this.remainingCriteria = advancementProgress.getRemainingCriteria();
+    this.remainingCriteriaNumber = (int) this.remainingCriteria.spliterator().getExactSizeIfKnown();
+    for (String criteriaId : this.remainingCriteria) {
+      criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
+    }
+
+    this.lastProgressDate = this.getLastProgressDate();
   }
 
   private Date getLastProgressDate() {
     Date date = null;
     for (CriterionProgress criterionProgress : this.criteriaMap.values()) {
-      if (criterionProgress.isDone() && (date == null || criterionProgress.getObtained().after(date))) {
+      if (criterionProgress.isDone()
+          && (date == null || criterionProgress.getObtained().after(date))) {
         date = criterionProgress.getObtained();
       }
     }
@@ -205,7 +216,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   @Override
-  public int compare(AdvancementEntry firstAdvancementEntry, AdvancementEntry secondAdvancementEntry) {
+  public int compare(AdvancementEntry firstAdvancementEntry,
+      AdvancementEntry secondAdvancementEntry) {
     return firstAdvancementEntry.id.compareTo(secondAdvancementEntry.id);
   }
 

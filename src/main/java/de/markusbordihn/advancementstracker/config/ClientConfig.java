@@ -69,6 +69,8 @@ public class ClientConfig {
     public final ForgeConfigSpec.DoubleValue widgetLeft;
     public final ForgeConfigSpec.IntValue widgetMaxLinesForDescription;
 
+    public final ForgeConfigSpec.ConfigValue<String> logLevel;
+
     public final ForgeConfigSpec.ConfigValue<List<String>> trackedAdvancements;
     public final ForgeConfigSpec.ConfigValue<List<String>> trackedAdvancementsRemote;
     public final ForgeConfigSpec.ConfigValue<List<String>> trackedAdvancementsLocal;
@@ -102,6 +104,11 @@ public class ClientConfig {
       widgetMaxLinesForDescription = builder.defineInRange("widgetMaxLinesForDescription", 4, 1, 8);
       builder.pop();
 
+      builder.pop();
+
+      builder.push("Debug");
+      logLevel = builder.comment("Changed the default log level to get more output.")
+          .define("logLevel", "info");
       builder.pop();
 
       builder.push("cache");

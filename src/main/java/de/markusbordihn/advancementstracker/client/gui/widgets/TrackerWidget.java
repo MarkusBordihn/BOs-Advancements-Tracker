@@ -21,8 +21,6 @@ package de.markusbordihn.advancementstracker.client.gui.widgets;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 
@@ -58,17 +56,21 @@ public class TrackerWidget extends WidgetBuilder {
   private int top;
   private int topMax;
   private int width;
-  private String noAdvancementsText =  new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements").getString();
-  private String noTrackedAdvancementsText =  new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements").getString();
+  private String noAdvancementsText =
+      new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
+          .getString();
+  private String noTrackedAdvancementsText =
+      new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
+          .getString();
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
   private static TranslationTextComponent widgetTitle;
   private static boolean active = true;
-  private static boolean init = false;
   private static double configHeight = ClientConfig.CLIENT.widgetHeight.get();
   private static double configLeft = ClientConfig.CLIENT.widgetLeft.get();
   private static double configTop = ClientConfig.CLIENT.widgetTop.get();
   private static double configWidth = ClientConfig.CLIENT.widgetWidth.get();
-  private static int maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
+  private static int maxLinesForDescription =
+      ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
   private static boolean enabled = ClientConfig.CLIENT.widgetEnabled.get();
 
   protected static TrackerWidget trackerWidget;
@@ -81,7 +83,7 @@ public class TrackerWidget extends WidgetBuilder {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
-    if (init) {
+    if (!event.getWorld().isClientSide()) {
       return;
     }
     enabled = ClientConfig.CLIENT.widgetEnabled.get();
@@ -90,18 +92,12 @@ public class TrackerWidget extends WidgetBuilder {
     configTop = ClientConfig.CLIENT.widgetTop.get();
     configWidth = ClientConfig.CLIENT.widgetWidth.get();
     maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
-    if (!enabled) {
+    if (enabled) {
+      log.info("Enable Tracker Widget with {}x{} at top:{} and left:{}", configHeight,
+          configWidth, configTop, configLeft);
+    } else {
       log.warn("Tracker Widget is disabled!");
     }
-    TimerTask task = new TimerTask() {
-      public void run() {
-        init = false;
-        cancel();
-      }
-    };
-    Timer timer = new Timer("Timer");
-    timer.schedule(task, 1000L);
-    init = true;
   }
 
   @SubscribeEvent
@@ -144,10 +140,11 @@ public class TrackerWidget extends WidgetBuilder {
     fill(matrixStack, this.left, this.top, this.leftMax, this.backgroundMax, 0x50000000);
 
     // Draw title
-    fill(matrixStack, this.left, this.top, this.leftMax, this.top + fontRenderer.lineHeight + 2, 0x50000000);
+    fill(matrixStack, this.left, this.top, this.leftMax, this.top + fontRenderer.lineHeight + 2,
+        0x50000000);
     topPos += 2;
-    topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, widgetTitle.getString(), (this.left + 2), topPos,
-        width - 2, 0xFF00FF00);
+    topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, widgetTitle.getString(),
+        (this.left + 2), topPos, width - 2, 0xFF00FF00);
     topPos += 3;
 
     // List tracked advancement
@@ -163,25 +160,25 @@ public class TrackerWidget extends WidgetBuilder {
         }
         if (advancement.maxCriteraRequired > 1) {
           int criteriaCounterLength = textUtils.drawTextFromRightWithShadow(matrixStack,
-              advancement.completedCriteriaNumber + "/" + advancement.maxCriteraRequired, this.left + width - 2, topPos,
-              0xFFEEEE00);
-          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos,
-              width - criteriaCounterLength - 16, 0xFFFFFF00);
+              advancement.completedCriteriaNumber + "/" + advancement.maxCriteraRequired,
+              this.left + width - 2, topPos, 0xFFEEEE00);
+          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title,
+              this.left + 12, topPos, width - criteriaCounterLength - 16, 0xFFFFFF00);
         } else {
-          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title, this.left + 12, topPos, width - 12,
-              0xFFFFFF00);
+          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title,
+              this.left + 12, topPos, width - 12, 0xFFFFFF00);
         }
-        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2, topPos + 1, width - 2,
-            maxDescriptionHeight, 0xFFFFFFFF);
+        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2,
+            topPos + 1, width - 2, maxDescriptionHeight, 0xFFFFFFFF);
         topPos += 5;
       }
     } else {
       if (AdvancementsManager.hasAdvancements()) {
-        topPos = textUtils.drawTextWithShadow(matrixStack, noTrackedAdvancementsText, this.left + 2, topPos, width,
-          height, 0xEEEEEEEE);
+        topPos = textUtils.drawTextWithShadow(matrixStack, noTrackedAdvancementsText, this.left + 2,
+            topPos, width, height, 0xEEEEEEEE);
       } else {
-        topPos = textUtils.drawTextWithShadow(matrixStack, noAdvancementsText, this.left + 2, topPos, width,
-          height, 0xEEEEEEEE);
+        topPos = textUtils.drawTextWithShadow(matrixStack, noAdvancementsText, this.left + 2,
+            topPos, width, height, 0xEEEEEEEE);
       }
     }
     this.backgroundMax = topPos;
