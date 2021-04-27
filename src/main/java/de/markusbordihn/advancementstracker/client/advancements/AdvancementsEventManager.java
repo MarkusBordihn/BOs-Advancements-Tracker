@@ -51,13 +51,17 @@ public class AdvancementsEventManager {
 
       // Make sure that we are covering changes which are not catch by the advancements events.
       Minecraft minecraft = Minecraft.getInstance();
-      int possibleNumberOfAdvancements = minecraft.player.connection.getAdvancements()
-          .getAdvancements().getAllAdvancements().size();
-      if (possibleNumberOfAdvancements > numberOfAdvancements) {
-        log.debug("Force sync of advancements because it seems we are missing some {} > {}",
-            possibleNumberOfAdvancements, numberOfAdvancements);
-        ClientAdvancementManager.reset();
-        numberOfAdvancements = possibleNumberOfAdvancements;
+      if (minecraft != null && minecraft.player != null && minecraft.player.connection != null
+          && minecraft.player.connection.getAdvancements() != null && !minecraft.player.connection
+              .getAdvancements().getAdvancements().getAllAdvancements().isEmpty()) {
+        int possibleNumberOfAdvancements = minecraft.player.connection.getAdvancements()
+            .getAdvancements().getAllAdvancements().size();
+        if (possibleNumberOfAdvancements > numberOfAdvancements) {
+          log.debug("Force sync of advancements because it seems we are missing some {} vs. {}",
+              possibleNumberOfAdvancements, numberOfAdvancements);
+          ClientAdvancementManager.reset();
+          numberOfAdvancements = possibleNumberOfAdvancements;
+        }
       }
     }
   }
