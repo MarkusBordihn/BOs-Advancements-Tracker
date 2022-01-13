@@ -68,9 +68,9 @@ public class TextUtils {
       for (IReorderingProcessor textLine : textList) {
         if (fullHeight || ySplitPosition + this.fontRenderer.lineHeight < y + height) {
           if (shadow) {
-            this.fontRenderer.drawShadow(matrixStack, textLine, (float) x, ySplitPosition, color);
+            this.fontRenderer.drawShadow(matrixStack, textLine, x, ySplitPosition, color);
           } else {
-            this.fontRenderer.draw(matrixStack, textLine, (float) x, ySplitPosition, color);
+            this.fontRenderer.draw(matrixStack, textLine, x, ySplitPosition, color);
           }
           ySplitPosition = ySplitPosition + this.fontRenderer.lineHeight + 2;
         } else {
@@ -82,9 +82,9 @@ public class TextUtils {
       return Math.round(ySplitPosition);
     } else {
       if (shadow) {
-        this.fontRenderer.drawShadow(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.drawShadow(matrixStack, text, x, y, color);
       } else {
-        this.fontRenderer.draw(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.draw(matrixStack, text, x, y, color);
       }
     }
     return y + this.fontRenderer.lineHeight;
@@ -101,9 +101,9 @@ public class TextUtils {
   public int drawTextFromRight(MatrixStack matrixStack, String text, int x, int y, int color, boolean shadow) {
     int textWidth = this.fontRenderer.width(text);
     if (shadow) {
-      this.fontRenderer.drawShadow(matrixStack, text, (float) x - textWidth, (float) y, color);
+      this.fontRenderer.drawShadow(matrixStack, text, (float) x - textWidth, y, color);
     } else {
-      this.fontRenderer.draw(matrixStack, text, (float) x - textWidth, (float) y, color);
+      this.fontRenderer.draw(matrixStack, text, (float) x - textWidth, y, color);
     }
     return textWidth;
   }
@@ -121,15 +121,15 @@ public class TextUtils {
       ITextComponent textComponent = new StringTextComponent(text);
       ITextProperties trimTextComponent = this.fontRenderer.substrByWidth(textComponent, width - 3);
       if (shadow) {
-        this.fontRenderer.drawShadow(matrixStack, trimTextComponent.getString() + "...", (float) x, (float) y, color);
+        this.fontRenderer.drawShadow(matrixStack, trimTextComponent.getString() + "...", x, y, color);
       } else {
-        this.fontRenderer.draw(matrixStack, trimTextComponent.getString() + "...", (float) x, (float) y, color);
+        this.fontRenderer.draw(matrixStack, trimTextComponent.getString() + "...", x, y, color);
       }
     } else {
       if (shadow) {
-        this.fontRenderer.drawShadow(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.drawShadow(matrixStack, text, x, y, color);
       } else {
-        this.fontRenderer.draw(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.draw(matrixStack, text, x, y, color);
       }
     }
     return y + this.fontRenderer.lineHeight;

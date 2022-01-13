@@ -43,7 +43,6 @@ public final class ConfigScreen extends ScreenBuilder {
 
   @Override
   public void onClose() {
-    // ModSettings.save();
     this.minecraft.setScreen(this.parentScreen);
   }
 

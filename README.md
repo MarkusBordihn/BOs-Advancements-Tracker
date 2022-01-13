@@ -24,7 +24,7 @@ Could be show/hide with **ALT + L** and displays the currently tracked advanceme
 ### 📷Automatic Screenshots
 
 As soon you finished an advancements it will automatically take a screenshot.
-This feature could be disabled over the settings file.
+**This feature needs to be enabled over the settings file!**
 
 ### 💾Storing tracked advancements
 

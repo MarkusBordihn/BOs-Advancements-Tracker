@@ -57,9 +57,11 @@ public class OverviewScreen extends ScreenBuilder {
   int panelTop = 25;
   int panelWidth = (this.width - (this.panelPadding * 4)) / 3;
   int panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
-  private String noAdvancementsText = new TranslationTextComponent(
-      Constants.MOD_PREFIX + "advancementScreen.noAdvancements").getString();
-  private String titleText = new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
+  private String noAdvancementsText =
+      new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.noAdvancements")
+          .getString();
+  private String titleText =
+      new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
   private static boolean enabled = ClientConfig.CLIENT.overviewEnabled.get();
 
   public OverviewScreen() {
@@ -90,12 +92,14 @@ public class OverviewScreen extends ScreenBuilder {
     }
 
     @Override
-    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tessellator,
-        int mouseX, int mouseY) {
+    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY,
+        Tessellator tessellator, int mouseX, int mouseY) {
       if (this.advancement.icon != null) {
-        this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, this.x + 2, this.y + 10);
+        this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, this.x + 2,
+            this.y + 10);
       }
-      int yNext = drawTextWithShadow(matrixStack, this.advancement.title, this.x + 20, this.y + 4, 0xFFFFFF);
+      int yNext = drawTextWithShadow(matrixStack, this.advancement.title, this.x + 20, this.y + 4,
+          0xFFFFFF);
       drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2,
           this.advancement.descriptionColor);
     }
@@ -115,8 +119,8 @@ public class OverviewScreen extends ScreenBuilder {
     }
 
     @Override
-    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
-        int mouseY) {
+    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY,
+        Tessellator tess, int mouseX, int mouseY) {
       if (this.advancement.icon != null) {
         this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, x + 2, y + 4);
       }
@@ -131,7 +135,8 @@ public class OverviewScreen extends ScreenBuilder {
         blit(matrixStack, xMax - 18, y + 2, 20, 2, 14, 14);
       }
 
-      int yNext = drawTrimmedTextWithShadow(matrixStack, this.advancement.title, x + 20, y + 6, width - 42, 0xFFFFFF);
+      int yNext = drawTrimmedTextWithShadow(matrixStack, this.advancement.title, x + 20, y + 6,
+          width - 42, 0xFFFFFF);
       drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2,
           this.advancement.descriptionColor);
       hLine(matrixStack, x + 40, xMax - 40, yMax, 0x20CCCCCC);
@@ -159,63 +164,77 @@ public class OverviewScreen extends ScreenBuilder {
   class AdvancementInfo extends ScrollPanelContent {
 
     AdvancementEntry advancement;
-    String output = "";
+    StringBuilder output = new StringBuilder();
+    String outputString = "";
 
     AdvancementInfo(AdvancementEntry advancement, int width) {
       super(advancement.id.toString(), width, panelHeight - 4);
       this.advancement = advancement;
       if (this.advancement.description != null) {
-        this.output += String.format("%s\n", this.advancement.description);
+        this.output.append(String.format("%s\n", this.advancement.description));
       }
+
+      // Calculated process if any.
       if (this.advancement.isDone && this.advancement.lastProgressDate != null
           && this.advancement.firstProgressDate != null) {
-        long diffInMilliseconds = Math
-            .abs(this.advancement.lastProgressDate.getTime() - this.advancement.firstProgressDate.getTime());
+        long diffInMilliseconds = Math.abs(this.advancement.lastProgressDate.getTime()
+            - this.advancement.firstProgressDate.getTime());
         long diff = TimeUnit.DAYS.convert(diffInMilliseconds, TimeUnit.MILLISECONDS);
         if (diff > 0) {
-          this.output += String.format("\nIt took about %s days to complete this advancements.\n", diff);
+          this.output.append(
+              String.format("\nIt took about %s days to complete this advancements.\n", diff));
         }
       }
-      if (this.advancement.rewards != null && (this.advancement.rewardsExperience > 0
-          || this.advancement.rewardsLoot != null || this.advancement.rewardsRecipes != null)) {
-        this.output += String.format("\nRewards\n");
-        if (this.advancement.rewardsExperience > 0) {
-          this.output += String.format("* %s xp\n", this.advancement.rewardsExperience);
+
+      // Display Rewards if any.
+      if (this.advancement.hasRewardsData()) {
+        this.output.append(String.format("\nRewards\n"));
+        if (this.advancement.getRewardsExperience() != null) {
+          this.output.append(String.format("* %s xp\n", this.advancement.getRewardsExperience()));
         }
-        if (this.advancement.rewardsLoot != null && this.advancement.rewardsLoot.length > 0) {
-          for (ResourceLocation rewardLoot : this.advancement.rewardsLoot) {
-            this.output += String.format("* %s\n", rewardLoot.toString());
+        if (this.advancement.getRewardsLoot() != null) {
+          for (ResourceLocation rewardLoot : this.advancement.getRewardsLoot()) {
+            this.output.append(String.format("* %s\n", rewardLoot.toString()));
           }
         }
-        if (this.advancement.rewardsRecipes != null && this.advancement.rewardsRecipes.length > 0) {
-          for (ResourceLocation rewardRecipe : this.advancement.rewardsRecipes) {
-            this.output += String.format("* %s\n", rewardRecipe.toString());
+        if (this.advancement.getRewardsRecipes() != null) {
+          for (ResourceLocation rewardRecipe : this.advancement.getRewardsRecipes()) {
+            this.output.append(String.format("* %s\n", rewardRecipe.toString()));
           }
         }
       }
-      if (this.advancement.completedCriteria != null && this.advancement.completedCriteria.iterator().hasNext()) {
-        this.output += String.format("\nCompleted Criteria\n");
+
+      // Display completed Criteria
+      if (this.advancement.completedCriteria != null
+          && this.advancement.completedCriteria.iterator().hasNext()) {
+        this.output.append(String.format("\nCompleted Criteria\n"));
         for (String criteria : this.advancement.completedCriteria) {
-          this.output += String.format("* %s\n", criteria);
+          this.output.append(String.format("* %s\n", criteria));
         }
       }
-      if (this.advancement.remainingCriteria != null && this.advancement.remainingCriteria.iterator().hasNext()) {
-        this.output += String.format("\nRemaining Criteria\n");
+
+      // Display remaining criteria
+      if (this.advancement.remainingCriteria != null
+          && this.advancement.remainingCriteria.iterator().hasNext()) {
+        this.output.append(String.format("\nRemaining Criteria\n"));
         for (String criteria : this.advancement.remainingCriteria) {
-          this.output += String.format("* %s\n", criteria);
+          this.output.append(String.format("* %s\n", criteria));
         }
       }
-      int possibleTextHeight = TextUtils.calculateTextHeight(this.output, width);
+
+      // Compose output
+      this.outputString = this.output.toString();
+      int possibleTextHeight = TextUtils.calculateTextHeight(this.outputString, width);
       if (possibleTextHeight + 15 > height) {
         height = possibleTextHeight + 15;
       }
     }
 
     @Override
-    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
-        int mouseY) {
+    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY,
+        Tessellator tess, int mouseX, int mouseY) {
       int yNext = drawTextWithShadow(matrixStack, this.advancement.title, x + 5, y + 5, 0xFFFFFF);
-      drawTextRaw(matrixStack, this.output, x + 5, yNext + 2, 0xEEEEEE);
+      drawTextRaw(matrixStack, this.outputString, x + 5, yNext + 2, 0xEEEEEE);
     }
 
   }
@@ -241,11 +260,13 @@ public class OverviewScreen extends ScreenBuilder {
 
     @Override
     public void handleClick(ScrollPanelContent scrollPanelContent, int button) {
-      AdvancementCategoryContent advancementCategoryContent = (AdvancementCategoryContent) scrollPanelContent;
+      AdvancementCategoryContent advancementCategoryContent =
+          (AdvancementCategoryContent) scrollPanelContent;
       AdvancementEntry clickedRootAdvancement = advancementCategoryContent.getAdvancement();
       AdvancementsManager.setSelectedRootAdvancement(clickedRootAdvancement);
       if (this.advancementContentPanel != null) {
-        this.advancementContentPanel.updateContent(AdvancementsManager.getSelectedRootAdvancement());
+        this.advancementContentPanel
+            .updateContent(AdvancementsManager.getSelectedRootAdvancement());
       }
     }
 
@@ -271,7 +292,8 @@ public class OverviewScreen extends ScreenBuilder {
       }
       this.background = rootAdvancement.background;
       this.clearContent();
-      Set<AdvancementEntry> advancements = AdvancementsManager.getAdvancementsByStatus(rootAdvancement);
+      Set<AdvancementEntry> advancements =
+          AdvancementsManager.getAdvancementsByStatus(rootAdvancement);
       if (advancements == null) {
         log.error("Unable to get content for root advancement {}", rootAdvancement);
         return;
@@ -304,7 +326,8 @@ public class OverviewScreen extends ScreenBuilder {
 
   class AdvancementInfoPanel extends ScrollPanelManager {
 
-    AdvancementInfoPanel(Minecraft minecraft, int width, int height, int top, int left, AdvancementEntry advancement) {
+    AdvancementInfoPanel(Minecraft minecraft, int width, int height, int top, int left,
+        AdvancementEntry advancement) {
       super(minecraft, width, height, top, left);
       updateContent(advancement);
     }
@@ -316,7 +339,8 @@ public class OverviewScreen extends ScreenBuilder {
       }
       this.clearContent();
       String contentName = advancement.id.toString();
-      this.addContent(contentName, new AdvancementInfo(AdvancementsManager.getSelectedAdvancement(), this.width), true);
+      this.addContent(contentName,
+          new AdvancementInfo(AdvancementsManager.getSelectedAdvancement(), this.width), true);
       this.preRender();
     }
 
@@ -333,14 +357,16 @@ public class OverviewScreen extends ScreenBuilder {
     panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
 
     // Define different scroll panels.
-    this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth, this.panelHeight,
-        this.panelTop, this.panelPadding);
-    this.advancementContentPanel = new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
-        this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
-        AdvancementsManager.getSelectedRootAdvancement());
-    this.advancementInfoPanel = new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight,
-        this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
-        AdvancementsManager.getSelectedAdvancement());
+    this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth,
+        this.panelHeight, this.panelTop, this.panelPadding);
+    this.advancementContentPanel =
+        new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
+            this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
+            AdvancementsManager.getSelectedRootAdvancement());
+    this.advancementInfoPanel =
+        new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight, this.panelTop,
+            this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
+            AdvancementsManager.getSelectedAdvancement());
 
     // Adding links between views
     this.advancementCategoryPanel.setAdvancementContentPanel(this.advancementContentPanel);
@@ -373,7 +399,8 @@ public class OverviewScreen extends ScreenBuilder {
       this.advancementContentPanel.render(matrixStack, mouseX, mouseY, partialTicks);
       this.advancementInfoPanel.render(matrixStack, mouseX, mouseY, partialTicks);
     } else {
-      drawCenteredString(matrixStack, this.font, noAdvancementsText, this.width / 2, this.height / 2, 0xFF0000);
+      drawCenteredString(matrixStack, this.font, noAdvancementsText, this.width / 2,
+          this.height / 2, 0xFF0000);
     }
     super.render(matrixStack, mouseX, mouseY, partialTicks);
   }

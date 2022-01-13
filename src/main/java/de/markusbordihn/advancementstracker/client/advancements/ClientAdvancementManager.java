@@ -26,6 +26,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientAdvancementManager.IListener;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -43,6 +44,8 @@ public class ClientAdvancementManager implements IListener {
   private static final short ADD_LISTENER_TICK = 2;
   private static boolean hasListener = false;
   private static ClientAdvancementManager clientAdvancementManager;
+  private static long listenerStart = System.currentTimeMillis();
+  private static long listenerEnd = System.currentTimeMillis();
 
   protected ClientAdvancementManager() {}
 
@@ -57,11 +60,11 @@ public class ClientAdvancementManager implements IListener {
   @SubscribeEvent
   public static void handleClientTickEvent(TickEvent.ClientTickEvent event) {
     if (event.phase == TickEvent.Phase.END) {
-      ticks++;
       return;
     }
 
-    if (ticks == ADD_LISTENER_TICK && !hasListener) {
+    // Try to attach the event listener every second tick after start.
+    if (ticks++ == ADD_LISTENER_TICK && !hasListener) {
       addListener();
       ticks = 0;
     }
@@ -72,6 +75,8 @@ public class ClientAdvancementManager implements IListener {
     clientAdvancementManager = new ClientAdvancementManager();
     hasListener = false;
     ticks = 0;
+    listenerStart = System.currentTimeMillis();
+    listenerEnd = System.currentTimeMillis();
   }
 
   public static void addListener() {
@@ -83,7 +88,10 @@ public class ClientAdvancementManager implements IListener {
     }
     log.debug("Adding client advancement manager listener...");
     minecraft.player.connection.getAdvancements().setListener(clientAdvancementManager);
+    listenerEnd = System.currentTimeMillis();
     hasListener = true;
+    log.info("{} It took {} msec to be able to add the Advancements Tracker listener.",
+        Constants.LOG_STATUS_PREFIX, listenerEnd - listenerStart);
   }
 
   public static boolean isValidAdvancement(Advancement advancement) {

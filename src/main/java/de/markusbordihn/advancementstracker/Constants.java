@@ -25,6 +25,7 @@ public final class Constants {
   }
 
   public static final String LOG_NAME = "AdvancementsTracker";
+  public static final String LOG_STATUS_PREFIX = "⌚ [Advancements Tracker]";
   public static final String MOD_COMMAND = "advancements_tracker";
   public static final String MOD_ID = "advancements_tracker";
   public static final String MOD_TEXTURE = "advancementstracker";

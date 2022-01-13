@@ -37,6 +37,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.util.ResourceLocation;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -62,6 +63,7 @@ public class AdvancementsManager {
   private static boolean hasAdvancements = false;
   private static boolean screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
   private static long screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
+  private static Random random = new Random();
 
   protected AdvancementsManager() {}
 
@@ -255,7 +257,7 @@ public class AdvancementsManager {
                 lastProgressionDate);
             String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
             String screenshotName =
-                String.format("advancement-unknown-%s", new Random().nextInt(99));
+                String.format("advancement-unknown-%s", random.nextInt(99));
             if (advancementId.contains("/") && advancementId.split("/").length > 1) {
               screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
             } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {

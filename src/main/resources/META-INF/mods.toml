@@ -28,11 +28,9 @@ license="MIT"
     logoFile="logo.png"
     credits=""
     authors="Markus Bordihn"
-    description='''
-The Advancements Tracker mod gives you an overview over your advancements like a quest overview.
-'''
+    description='''The Advancements Tracker mod gives you an overview over your advancements like a quest overview.'''
 
-[[dependencies.examplemod]] #optional
+[[dependencies.advancements_tracker]] #optional
     # the modid of the dependency
     modId="forge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
@@ -44,7 +42,7 @@ The Advancements Tracker mod gives you an overview over your advancements like a
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
     side="BOTH"
 
-[[dependencies.examplemod]]
+[[dependencies.advancements_tracker]]
     modId="minecraft"
     mandatory=true
     # This version range declares a minimum of the current minecraft version up to but not including the next major version

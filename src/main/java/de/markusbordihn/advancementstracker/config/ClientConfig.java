@@ -85,7 +85,7 @@ public class ClientConfig {
       builder.pop();
 
       builder.push("screenshots");
-      screenshotEnabled = builder.define("screenshotEnabled", true);
+      screenshotEnabled = builder.define("screenshotEnabled", false);
       screenshotDelay = builder.defineInRange("screenshotDelay", 700, 0, 10000);
       builder.pop();
 

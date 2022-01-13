@@ -63,12 +63,12 @@ public abstract class ScrollPanelContent extends AbstractGui {
     this.height = height;
   }
 
-  protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tessellator,
-      int mouseX, int mouseY) {
-  }
+  protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY,
+      Tessellator tessellator, int mouseX, int mouseY) {}
 
   protected void drawBackground(MatrixStack matrixStack, Tessellator tessellator) {
-    this.backgroundUtils.drawBackground(tessellator, this.background, this.x, this.y, this.width, this.height);
+    this.backgroundUtils.drawBackground(tessellator, this.background, this.x, this.y, this.width,
+        this.height);
   }
 
   protected void handleClick(double mouseX, double mouseY, int button) {
@@ -80,14 +80,17 @@ public abstract class ScrollPanelContent extends AbstractGui {
   }
 
   public int drawText(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return textUtils.drawText(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y), color);
+    return textUtils.drawText(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y),
+        color);
   }
 
   public int drawTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return textUtils.drawTextWithShadow(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y), color);
+    return textUtils.drawTextWithShadow(matrixStack, text, x, y, width - (x - this.x),
+        height - (y - this.y), color);
   }
 
-  public int drawTrimmedTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int width, int color) {
+  public int drawTrimmedTextWithShadow(MatrixStack matrixStack, String text, int x, int y,
+      int width, int color) {
     return this.textUtils.drawTrimmedTextWithShadow(matrixStack, text, x, y, width, color);
   }
 
