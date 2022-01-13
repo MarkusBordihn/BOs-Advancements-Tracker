@@ -22,14 +22,14 @@ package de.markusbordihn.advancementstracker.client.gui.overview;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -57,9 +57,11 @@ public class OverviewScreen extends ScreenBuilder {
   int panelTop = 25;
   int panelWidth = (this.width - (this.panelPadding * 4)) / 3;
   int panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
-  private String noAdvancementsText = new TranslationTextComponent(
-      Constants.MOD_PREFIX + "advancementScreen.noAdvancements").getString();
-  private String titleText = new TranslationTextComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
+  private String noAdvancementsText =
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementScreen.noAdvancements")
+          .getString();
+  private String titleText =
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementScreen.title").getString();
   private static boolean enabled = ClientConfig.CLIENT.overviewEnabled.get();
 
   public OverviewScreen() {
@@ -90,13 +92,15 @@ public class OverviewScreen extends ScreenBuilder {
     }
 
     @Override
-    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tessellator,
-        int mouseX, int mouseY) {
+    protected void drawContent(PoseStack matrix, int entryRight, int relativeY,
+        Tesselator tesselator, int mouseX, int mouseY) {
       if (this.advancement.icon != null) {
-        this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, this.x + 2, this.y + 10);
+        this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, this.x + 2,
+            this.y + 10);
       }
-      int yNext = drawTextWithShadow(matrixStack, this.advancement.title, this.x + 20, this.y + 4, 0xFFFFFF);
-      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2,
+      int yNext = drawTextWithShadow(matrix, this.advancement.title, this.x + 20, this.y + 4,
+          0xFFFFFF);
+      drawTextWithShadow(matrix, this.advancement.description, x + 20, yNext + 2,
           this.advancement.descriptionColor);
     }
 
@@ -115,26 +119,27 @@ public class OverviewScreen extends ScreenBuilder {
     }
 
     @Override
-    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
-        int mouseY) {
+    protected void drawContent(PoseStack matrix, int entryRight, int relativeY,
+        Tesselator tess, int mouseX, int mouseY) {
       if (this.advancement.icon != null) {
         this.minecraft.getItemRenderer().renderGuiItem(this.advancement.icon, x + 2, y + 4);
       }
-      this.textureManager.bind(Textures.ICONS);
+      this.textureManager.bindForSetup(Textures.ICONS);
       if (Boolean.TRUE.equals(this.advancement.isDone)) {
-        blit(matrixStack, xMax - 20, y + 2, 0, 0, 18, 18);
+        blit(matrix, xMax - 20, y + 2, 0, 0, 18, 18);
       } else if (Boolean.TRUE.equals(this.advancement.isTracked())) {
-        blit(matrixStack, xMax - 18, y + 2, 40, 2, 14, 14);
+        blit(matrix, xMax - 18, y + 2, 40, 2, 14, 14);
       } else if (TrackedAdvancementsManager.hasReachedTrackedAdvancementLimit()) {
-        blit(matrixStack, xMax - 18, y + 2, 60, 2, 14, 14);
+        blit(matrix, xMax - 18, y + 2, 60, 2, 14, 14);
       } else {
-        blit(matrixStack, xMax - 18, y + 2, 20, 2, 14, 14);
+        blit(matrix, xMax - 18, y + 2, 20, 2, 14, 14);
       }
 
-      int yNext = drawTrimmedTextWithShadow(matrixStack, this.advancement.title, x + 20, y + 6, width - 42, 0xFFFFFF);
-      drawTextWithShadow(matrixStack, this.advancement.description, x + 20, yNext + 2,
+      int yNext = drawTrimmedTextWithShadow(matrix, this.advancement.title, x + 20, y + 6,
+          width - 42, 0xFFFFFF);
+      drawTextWithShadow(matrix, this.advancement.description, x + 20, yNext + 2,
           this.advancement.descriptionColor);
-      hLine(matrixStack, x + 40, xMax - 40, yMax, 0x20CCCCCC);
+      hLine(matrix, x + 40, xMax - 40, yMax, 0x20CCCCCC);
     }
 
     @Override
@@ -169,11 +174,12 @@ public class OverviewScreen extends ScreenBuilder {
       }
       if (this.advancement.isDone && this.advancement.lastProgressDate != null
           && this.advancement.firstProgressDate != null) {
-        long diffInMilliseconds = Math
-            .abs(this.advancement.lastProgressDate.getTime() - this.advancement.firstProgressDate.getTime());
+        long diffInMilliseconds = Math.abs(this.advancement.lastProgressDate.getTime()
+            - this.advancement.firstProgressDate.getTime());
         long diff = TimeUnit.DAYS.convert(diffInMilliseconds, TimeUnit.MILLISECONDS);
         if (diff > 0) {
-          this.output += String.format("\nIt took about %s days to complete this advancements.\n", diff);
+          this.output +=
+              String.format("\nIt took about %s days to complete this advancements.\n", diff);
         }
       }
       if (this.advancement.rewards != null && (this.advancement.rewardsExperience > 0
@@ -193,13 +199,15 @@ public class OverviewScreen extends ScreenBuilder {
           }
         }
       }
-      if (this.advancement.completedCriteria != null && this.advancement.completedCriteria.iterator().hasNext()) {
+      if (this.advancement.completedCriteria != null
+          && this.advancement.completedCriteria.iterator().hasNext()) {
         this.output += String.format("\nCompleted Criteria\n");
         for (String criteria : this.advancement.completedCriteria) {
           this.output += String.format("* %s\n", criteria);
         }
       }
-      if (this.advancement.remainingCriteria != null && this.advancement.remainingCriteria.iterator().hasNext()) {
+      if (this.advancement.remainingCriteria != null
+          && this.advancement.remainingCriteria.iterator().hasNext()) {
         this.output += String.format("\nRemaining Criteria\n");
         for (String criteria : this.advancement.remainingCriteria) {
           this.output += String.format("* %s\n", criteria);
@@ -212,10 +220,10 @@ public class OverviewScreen extends ScreenBuilder {
     }
 
     @Override
-    protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tess, int mouseX,
-        int mouseY) {
-      int yNext = drawTextWithShadow(matrixStack, this.advancement.title, x + 5, y + 5, 0xFFFFFF);
-      drawTextRaw(matrixStack, this.output, x + 5, yNext + 2, 0xEEEEEE);
+    protected void drawContent(PoseStack matrix, int entryRight, int relativeY,
+        Tesselator tess, int mouseX, int mouseY) {
+      int yNext = drawTextWithShadow(matrix, this.advancement.title, x + 5, y + 5, 0xFFFFFF);
+      drawTextRaw(matrix, this.output, x + 5, yNext + 2, 0xEEEEEE);
     }
 
   }
@@ -241,11 +249,13 @@ public class OverviewScreen extends ScreenBuilder {
 
     @Override
     public void handleClick(ScrollPanelContent scrollPanelContent, int button) {
-      AdvancementCategoryContent advancementCategoryContent = (AdvancementCategoryContent) scrollPanelContent;
+      AdvancementCategoryContent advancementCategoryContent =
+          (AdvancementCategoryContent) scrollPanelContent;
       AdvancementEntry clickedRootAdvancement = advancementCategoryContent.getAdvancement();
       AdvancementsManager.setSelectedRootAdvancement(clickedRootAdvancement);
       if (this.advancementContentPanel != null) {
-        this.advancementContentPanel.updateContent(AdvancementsManager.getSelectedRootAdvancement());
+        this.advancementContentPanel
+            .updateContent(AdvancementsManager.getSelectedRootAdvancement());
       }
     }
 
@@ -271,7 +281,8 @@ public class OverviewScreen extends ScreenBuilder {
       }
       this.background = rootAdvancement.background;
       this.clearContent();
-      Set<AdvancementEntry> advancements = AdvancementsManager.getAdvancementsByStatus(rootAdvancement);
+      Set<AdvancementEntry> advancements =
+          AdvancementsManager.getAdvancementsByStatus(rootAdvancement);
       if (advancements == null) {
         log.error("Unable to get content for root advancement {}", rootAdvancement);
         return;
@@ -304,7 +315,8 @@ public class OverviewScreen extends ScreenBuilder {
 
   class AdvancementInfoPanel extends ScrollPanelManager {
 
-    AdvancementInfoPanel(Minecraft minecraft, int width, int height, int top, int left, AdvancementEntry advancement) {
+    AdvancementInfoPanel(Minecraft minecraft, int width, int height, int top, int left,
+        AdvancementEntry advancement) {
       super(minecraft, width, height, top, left);
       updateContent(advancement);
     }
@@ -316,7 +328,8 @@ public class OverviewScreen extends ScreenBuilder {
       }
       this.clearContent();
       String contentName = advancement.id.toString();
-      this.addContent(contentName, new AdvancementInfo(AdvancementsManager.getSelectedAdvancement(), this.width), true);
+      this.addContent(contentName,
+          new AdvancementInfo(AdvancementsManager.getSelectedAdvancement(), this.width), true);
       this.preRender();
     }
 
@@ -333,27 +346,29 @@ public class OverviewScreen extends ScreenBuilder {
     panelHeight = this.height - this.panelTop - this.panelPaddingBottom;
 
     // Define different scroll panels.
-    this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth, this.panelHeight,
-        this.panelTop, this.panelPadding);
-    this.advancementContentPanel = new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
-        this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
-        AdvancementsManager.getSelectedRootAdvancement());
-    this.advancementInfoPanel = new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight,
-        this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
-        AdvancementsManager.getSelectedAdvancement());
+    this.advancementCategoryPanel = new AdvancementCategoryPanel(this.minecraft, this.panelWidth,
+        this.panelHeight, this.panelTop, this.panelPadding);
+    this.advancementContentPanel =
+        new AdvancementContentPanel(this.minecraft, this.panelWidth, this.panelHeight,
+            this.panelTop, this.panelPadding + (this.panelPadding + this.panelWidth) * 1,
+            AdvancementsManager.getSelectedRootAdvancement());
+    this.advancementInfoPanel =
+        new AdvancementInfoPanel(this.minecraft, this.panelWidth, this.panelHeight, this.panelTop,
+            this.panelPadding + (this.panelPadding + this.panelWidth) * 2,
+            AdvancementsManager.getSelectedAdvancement());
 
     // Adding links between views
     this.advancementCategoryPanel.setAdvancementContentPanel(this.advancementContentPanel);
     this.advancementContentPanel.setAdvancementInfoPanel(this.advancementInfoPanel);
 
     // Adding views
-    children.add(this.advancementCategoryPanel);
-    children.add(this.advancementContentPanel);
-    children.add(this.advancementInfoPanel);
+    addWidget(this.advancementCategoryPanel);
+    addWidget(this.advancementContentPanel);
+    addWidget(this.advancementInfoPanel);
 
     // Add Close Button
     this.addButton(new Button((this.width - 200) / 2, this.height - 22, 200, 20,
-        new TranslationTextComponent("gui.done"), button -> this.closeScreen()));
+        new TranslatableComponent("gui.done"), button -> this.closeScreen()));
   }
 
   public void closeScreen() {
@@ -361,21 +376,22 @@ public class OverviewScreen extends ScreenBuilder {
   }
 
   @Override
-  public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+  public void render(PoseStack matrix, int mouseX, int mouseY, float partialTicks) {
     if (!enabled) {
       return;
     }
-    this.renderBackground(matrixStack);
-    drawCenteredString(matrixStack, this.font, this.titleText, this.width / 2, 10, 0xFFFFFF);
+    this.renderBackground(matrix);
+    drawCenteredString(matrix, this.font, this.titleText, this.width / 2, 10, 0xFFFFFF);
     if (AdvancementsManager.hasAdvancements() && this.advancementCategoryPanel != null
         && this.advancementContentPanel != null && this.advancementInfoPanel != null) {
-      this.advancementCategoryPanel.render(matrixStack, mouseX, mouseY, partialTicks);
-      this.advancementContentPanel.render(matrixStack, mouseX, mouseY, partialTicks);
-      this.advancementInfoPanel.render(matrixStack, mouseX, mouseY, partialTicks);
+      this.advancementCategoryPanel.render(matrix, mouseX, mouseY, partialTicks);
+      this.advancementContentPanel.render(matrix, mouseX, mouseY, partialTicks);
+      this.advancementInfoPanel.render(matrix, mouseX, mouseY, partialTicks);
     } else {
-      drawCenteredString(matrixStack, this.font, noAdvancementsText, this.width / 2, this.height / 2, 0xFF0000);
+      drawCenteredString(matrix, this.font, noAdvancementsText, this.width / 2,
+          this.height / 2, 0xFF0000);
     }
-    super.render(matrixStack, mouseX, mouseY, partialTicks);
+    super.render(matrix, mouseX, mouseY, partialTicks);
   }
 
 }

@@ -22,59 +22,60 @@ package de.markusbordihn.advancementstracker.client.gui.utils;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.util.IReorderingProcessor;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.ITextProperties;
-import net.minecraft.util.text.LanguageMap;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
+import net.minecraft.client.gui.Font;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.util.FormattedCharSequence;
 
 public class TextUtils {
-  private FontRenderer fontRenderer;
+  private Font fontRenderer;
 
   public TextUtils(Minecraft minecraft) {
     this.fontRenderer = minecraft.font;
   }
 
-  public int drawText(MatrixStack matrixStack, String text, int x, int y, int width, int height, int color) {
-    return drawText(matrixStack, text, x, y, width, height, color, false, false);
-  }
-
-  public int drawText(MatrixStack matrixStack, String text, int x, int y, int width, int color) {
-    return drawText(matrixStack, text, x, y, width, 0, color, false, true);
-  }
-
-  public int drawTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int width, int height, int color) {
-    return drawText(matrixStack, text, x, y, width, height, color, true, false);
-  }
-
-  public int drawTextWithShadow(MatrixStack matrixStack, String text, double x, double y, double width, double height,
+  public int drawText(PoseStack matrix, String text, int x, int y, int width, int height,
       int color) {
-    return drawText(matrixStack, text, (int) x, (int) y, (int) width, (int) height, color, true, false);
+    return drawText(matrix, text, x, y, width, height, color, false, false);
   }
 
-  public int drawText(MatrixStack matrixStack, String text, int x, int y, int width, int height, int color,
+  public int drawText(PoseStack matrix, String text, int x, int y, int width, int color) {
+    return drawText(matrix, text, x, y, width, 0, color, false, true);
+  }
+
+  public int drawTextWithShadow(PoseStack matrix, String text, int x, int y, int width, int height,
+      int color) {
+    return drawText(matrix, text, x, y, width, height, color, true, false);
+  }
+
+  public int drawTextWithShadow(PoseStack matrix, String text, double x, double y, double width,
+      double height, int color) {
+    return drawText(matrix, text, (int) x, (int) y, (int) width, (int) height, color, true, false);
+  }
+
+  public int drawText(PoseStack matrix, String text, int x, int y, int width, int height, int color,
       boolean shadow, boolean fullHeight) {
     int maxTextLength = width - 2;
     if (this.fontRenderer.width(text) > maxTextLength) {
-      List<IReorderingProcessor> textList = new ArrayList<>();
-      textList.addAll(LanguageMap.getInstance()
-          .getVisualOrder(this.fontRenderer.getSplitter().splitLines(text, maxTextLength, Style.EMPTY)));
+      List<FormattedCharSequence> textList = new ArrayList<>();
+      textList.addAll(Language.getInstance().getVisualOrder(
+          this.fontRenderer.getSplitter().splitLines(text, maxTextLength, Style.EMPTY)));
       Float ySplitPosition = (float) y;
-      for (IReorderingProcessor textLine : textList) {
+      for (FormattedCharSequence textLine : textList) {
         if (fullHeight || ySplitPosition + this.fontRenderer.lineHeight < y + height) {
           if (shadow) {
-            this.fontRenderer.drawShadow(matrixStack, textLine, (float) x, ySplitPosition, color);
+            this.fontRenderer.drawShadow(matrix, textLine, (float) x, ySplitPosition, color);
           } else {
-            this.fontRenderer.draw(matrixStack, textLine, (float) x, ySplitPosition, color);
+            this.fontRenderer.draw(matrix, textLine, (float) x, ySplitPosition, color);
           }
           ySplitPosition = ySplitPosition + this.fontRenderer.lineHeight + 2;
         } else {
-          drawTextFromRight(matrixStack, "...", x + width - 2,
+          drawTextFromRight(matrix, "...", x + width - 2,
               Math.round(ySplitPosition - (this.fontRenderer.lineHeight + 2)), color, shadow);
           break;
         }
@@ -82,54 +83,59 @@ public class TextUtils {
       return Math.round(ySplitPosition);
     } else {
       if (shadow) {
-        this.fontRenderer.drawShadow(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.drawShadow(matrix, text, (float) x, (float) y, color);
       } else {
-        this.fontRenderer.draw(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.draw(matrix, text, (float) x, (float) y, color);
       }
     }
     return y + this.fontRenderer.lineHeight;
   }
 
-  public int drawTextFromRight(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return drawTextFromRight(matrixStack, text, x, y, color, false);
+  public int drawTextFromRight(PoseStack matrix, String text, int x, int y, int color) {
+    return drawTextFromRight(matrix, text, x, y, color, false);
   }
 
-  public int drawTextFromRightWithShadow(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return drawTextFromRight(matrixStack, text, x, y, color, true);
+  public int drawTextFromRightWithShadow(PoseStack matrix, String text, int x, int y, int color) {
+    return drawTextFromRight(matrix, text, x, y, color, true);
   }
 
-  public int drawTextFromRight(MatrixStack matrixStack, String text, int x, int y, int color, boolean shadow) {
+  public int drawTextFromRight(PoseStack matrix, String text, int x, int y, int color,
+      boolean shadow) {
     int textWidth = this.fontRenderer.width(text);
     if (shadow) {
-      this.fontRenderer.drawShadow(matrixStack, text, (float) x - textWidth, (float) y, color);
+      this.fontRenderer.drawShadow(matrix, text, (float) x - textWidth, (float) y, color);
     } else {
-      this.fontRenderer.draw(matrixStack, text, (float) x - textWidth, (float) y, color);
+      this.fontRenderer.draw(matrix, text, (float) x - textWidth, (float) y, color);
     }
     return textWidth;
   }
 
-  public int drawTrimmedText(MatrixStack matrixStack, String text, int x, int y, int width, int color) {
-    return drawTrimmedText(matrixStack, text, x, y, width, color, false);
+  public int drawTrimmedText(PoseStack matrix, String text, int x, int y, int width, int color) {
+    return drawTrimmedText(matrix, text, x, y, width, color, false);
   }
 
-  public int drawTrimmedTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int width, int color) {
-    return drawTrimmedText(matrixStack, text, x, y, width, color, true);
+  public int drawTrimmedTextWithShadow(PoseStack matrix, String text, int x, int y, int width,
+      int color) {
+    return drawTrimmedText(matrix, text, x, y, width, color, true);
   }
 
-  public int drawTrimmedText(MatrixStack matrixStack, String text, int x, int y, int width, int color, boolean shadow) {
+  public int drawTrimmedText(PoseStack matrix, String text, int x, int y, int width, int color,
+      boolean shadow) {
     if (this.fontRenderer.width(text) >= width) {
-      ITextComponent textComponent = new StringTextComponent(text);
-      ITextProperties trimTextComponent = this.fontRenderer.substrByWidth(textComponent, width - 3);
+      TextComponent textComponent = new TextComponent(text);
+      FormattedText trimTextComponent = this.fontRenderer.substrByWidth(textComponent, width - 3);
       if (shadow) {
-        this.fontRenderer.drawShadow(matrixStack, trimTextComponent.getString() + "...", (float) x, (float) y, color);
+        this.fontRenderer.drawShadow(matrix, trimTextComponent.getString() + "...", (float) x,
+            (float) y, color);
       } else {
-        this.fontRenderer.draw(matrixStack, trimTextComponent.getString() + "...", (float) x, (float) y, color);
+        this.fontRenderer.draw(matrix, trimTextComponent.getString() + "...", (float) x, (float) y,
+            color);
       }
     } else {
       if (shadow) {
-        this.fontRenderer.drawShadow(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.drawShadow(matrix, text, (float) x, (float) y, color);
       } else {
-        this.fontRenderer.draw(matrixStack, text, (float) x, (float) y, color);
+        this.fontRenderer.draw(matrix, text, (float) x, (float) y, color);
       }
     }
     return y + this.fontRenderer.lineHeight;
@@ -138,10 +144,10 @@ public class TextUtils {
   public static int calculateTextHeight(String text, int width) {
     int maxTextLength = width - 2;
     Minecraft minecraft = Minecraft.getInstance();
-    FontRenderer fontRenderer = minecraft.font;
+    Font fontRenderer = minecraft.font;
     if (fontRenderer.width(text) > maxTextLength) {
-      List<IReorderingProcessor> textList = new ArrayList<>();
-      textList.addAll(LanguageMap.getInstance()
+      List<FormattedCharSequence> textList = new ArrayList<>();
+      textList.addAll(Language.getInstance()
           .getVisualOrder(fontRenderer.getSplitter().splitLines(text, maxTextLength, Style.EMPTY)));
       return textList.size() * (fontRenderer.lineHeight + 2);
     }

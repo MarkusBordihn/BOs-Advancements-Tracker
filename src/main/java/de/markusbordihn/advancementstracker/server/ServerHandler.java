@@ -25,8 +25,7 @@ import org.apache.logging.log4j.Logger;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
-
+import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
 import de.markusbordihn.advancementstracker.Constants;
 
 @EventBusSubscriber(value = Dist.DEDICATED_SERVER)

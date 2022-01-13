@@ -22,33 +22,31 @@ package de.markusbordihn.advancementstracker.client.gui;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.markusbordihn.advancementstracker.Constants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.IngameGui;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
-public class WidgetBuilder extends IngameGui {
+import de.markusbordihn.advancementstracker.Constants;
+
+public class WidgetBuilder extends GuiComponent {
 
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-  public FontRenderer fontRenderer;
 
-  public WidgetBuilder() {
-    super(Minecraft.getInstance());
-    fontRenderer = minecraft.font;
-  }
+  public final Minecraft minecraft;
+  public Font fontRenderer;
 
   public WidgetBuilder(Minecraft minecraft) {
-    super(minecraft);
+    this.minecraft = minecraft;
     fontRenderer = minecraft.font;
   }
 
-  public static TranslationTextComponent getText(String translationKey) {
-    return new TranslationTextComponent(Constants.MOD_PREFIX + translationKey);
+  public static TranslatableComponent getText(String translationKey) {
+    return new TranslatableComponent(Constants.MOD_PREFIX + translationKey);
   }
 
-  public static TranslationTextComponent getText(String translationKey, Object object) {
-    return new TranslationTextComponent(Constants.MOD_PREFIX + translationKey, object);
+  public static TranslatableComponent getText(String translationKey, Object object) {
+    return new TranslatableComponent(Constants.MOD_PREFIX + translationKey, object);
   }
 
 }

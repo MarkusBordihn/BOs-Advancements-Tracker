@@ -22,11 +22,19 @@ package de.markusbordihn.advancementstracker.client.gui;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import de.markusbordihn.advancementstracker.Constants;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.TranslatableComponent;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import de.markusbordihn.advancementstracker.Constants;
+
+@OnlyIn(Dist.CLIENT)
 public abstract class ScreenBuilder extends Screen {
+
+  public Button addButton;
 
   protected ScreenBuilder(String title) {
     super(getText(title));
@@ -38,12 +46,12 @@ public abstract class ScreenBuilder extends Screen {
 
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  public static TranslationTextComponent getText(String translationKey) {
-    return new TranslationTextComponent(Constants.MOD_PREFIX + translationKey);
+  public static TranslatableComponent getText(String translationKey) {
+    return new TranslatableComponent(Constants.MOD_PREFIX + translationKey);
   }
 
-  public static TranslationTextComponent getText(String translationKey, Object object) {
-    return new TranslationTextComponent(Constants.MOD_PREFIX + translationKey, object);
+  public static TranslatableComponent getText(String translationKey, Object object) {
+    return new TranslatableComponent(Constants.MOD_PREFIX + translationKey, object);
   }
 
 }

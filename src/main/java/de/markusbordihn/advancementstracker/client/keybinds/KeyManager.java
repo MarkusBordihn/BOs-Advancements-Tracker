@@ -20,6 +20,7 @@
 package de.markusbordihn.advancementstracker.client.keybinds;
 
 import net.minecraft.client.Minecraft;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;

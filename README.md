@@ -12,6 +12,7 @@ It will also add additional features to make archiving the advancements more int
 ### 📜Advancements Overview
 
 Could be open with **STRG + L** and displays all current advancements and allow the tracking of single advancements.
+Depending on your keyboard the STRG key could be named as CTRL, CTL or Control.
 
 ![Advancement Overview][overview_example]
 
@@ -71,10 +72,8 @@ This mod works great together with Better Advancements mod, but let me know if y
 
 - [Better Advancements][better_advancements] to improve the UI and UX for the advancements system in minecraft
 
-
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
 [platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
-
 [logo]: logo.png
 [overview_example]: example/overview_example.png
 [widget_example]: example/widget_example.png

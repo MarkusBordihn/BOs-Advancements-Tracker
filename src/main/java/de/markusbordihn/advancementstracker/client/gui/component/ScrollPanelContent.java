@@ -19,14 +19,13 @@
 
 package de.markusbordihn.advancementstracker.client.gui.component;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 import de.markusbordihn.advancementstracker.client.gui.utils.BackgroundUtils;
 import de.markusbordihn.advancementstracker.client.gui.utils.TextUtils;
@@ -34,7 +33,7 @@ import de.markusbordihn.advancementstracker.client.gui.utils.TextUtils;
 public abstract class ScrollPanelContent extends AbstractGui {
 
   private static final int BAR_WIDTH = 6;
-  protected FontRenderer fontRenderer;
+  protected Font fontRenderer;
   protected Minecraft minecraft;
   protected ResourceLocation background;
   protected String name;
@@ -63,32 +62,32 @@ public abstract class ScrollPanelContent extends AbstractGui {
     this.height = height;
   }
 
-  protected void drawContent(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tessellator,
+  protected void drawContent(PoseStack matrix, int entryRight, int relativeY, Tesselator tesselator,
       int mouseX, int mouseY) {
   }
 
-  protected void drawBackground(MatrixStack matrixStack, Tessellator tessellator) {
-    this.backgroundUtils.drawBackground(tessellator, this.background, this.x, this.y, this.width, this.height);
+  protected void drawBackground(PoseStack matrix, Tesselator tesselator) {
+    this.backgroundUtils.drawBackground(tesselator, this.background, this.x, this.y, this.width, this.height);
   }
 
   protected void handleClick(double mouseX, double mouseY, int button) {
 
   }
 
-  public int drawTextRaw(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return textUtils.drawText(matrixStack, text, x, y, width - (x - this.x), color);
+  public int drawTextRaw(PoseStack matrix, String text, int x, int y, int color) {
+    return textUtils.drawText(matrix, text, x, y, width - (x - this.x), color);
   }
 
-  public int drawText(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return textUtils.drawText(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y), color);
+  public int drawText(PoseStack matrix, String text, int x, int y, int color) {
+    return textUtils.drawText(matrix, text, x, y, width - (x - this.x), height - (y - this.y), color);
   }
 
-  public int drawTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int color) {
-    return textUtils.drawTextWithShadow(matrixStack, text, x, y, width - (x - this.x), height - (y - this.y), color);
+  public int drawTextWithShadow(PoseStack matrix, String text, int x, int y, int color) {
+    return textUtils.drawTextWithShadow(matrix, text, x, y, width - (x - this.x), height - (y - this.y), color);
   }
 
-  public int drawTrimmedTextWithShadow(MatrixStack matrixStack, String text, int x, int y, int width, int color) {
-    return this.textUtils.drawTrimmedTextWithShadow(matrixStack, text, x, y, width, color);
+  public int drawTrimmedTextWithShadow(PoseStack matrix, String text, int x, int y, int width, int color) {
+    return this.textUtils.drawTrimmedTextWithShadow(matrix, text, x, y, width, color);
   }
 
   public void setMinecraftInstance(Minecraft minecraft) {

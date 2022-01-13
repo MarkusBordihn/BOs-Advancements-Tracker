@@ -21,14 +21,12 @@ package de.markusbordihn.advancementstracker.client.gui.widgets;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import com.mojang.blaze3d.matrix.MatrixStack;
-
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.vertex.PoseStack;
 import org.lwjgl.opengl.GL11;
 
-import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -45,7 +43,7 @@ import de.markusbordihn.advancementstracker.config.ClientConfig;
 @EventBusSubscriber(Dist.CLIENT)
 public class TrackerWidget extends WidgetBuilder {
 
-  private MainWindow mainWindow;
+  private Window mainWindow;
   private TextUtils textUtils;
   private int backgroundMax;
   private int height;
@@ -57,13 +55,13 @@ public class TrackerWidget extends WidgetBuilder {
   private int topMax;
   private int width;
   private String noAdvancementsText =
-      new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
           .getString();
   private String noTrackedAdvancementsText =
-      new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
           .getString();
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
-  private static TranslationTextComponent widgetTitle;
+  private static TranslatableComponent widgetTitle;
   private static boolean active = true;
   private static double configHeight = ClientConfig.CLIENT.widgetHeight.get();
   private static double configLeft = ClientConfig.CLIENT.widgetLeft.get();
@@ -107,13 +105,13 @@ public class TrackerWidget extends WidgetBuilder {
     }
     if (trackerWidget == null) {
       trackerWidget = new TrackerWidget();
-      widgetTitle = new TranslationTextComponent(Constants.MOD_PREFIX + "advancementWidget.title");
+      widgetTitle = new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.title");
     }
-    MatrixStack matrixStack = event.getMatrixStack();
-    trackerWidget.renderTracker(matrixStack);
+    PoseStack matrix = event.getMatrixStack();
+    trackerWidget.renderTracker(matrix);
   }
 
-  public void renderTracker(MatrixStack matrixStack) {
+  public void renderTracker(PoseStack matrix) {
     if (!active || !enabled) {
       return;
     }
@@ -137,13 +135,13 @@ public class TrackerWidget extends WidgetBuilder {
     boolean hasTrackedAdvancements = !trackedAdvancements.isEmpty();
 
     // Draw background
-    fill(matrixStack, this.left, this.top, this.leftMax, this.backgroundMax, 0x50000000);
+    fill(matrix, this.left, this.top, this.leftMax, this.backgroundMax, 0x50000000);
 
     // Draw title
-    fill(matrixStack, this.left, this.top, this.leftMax, this.top + fontRenderer.lineHeight + 2,
+    fill(matrix, this.left, this.top, this.leftMax, this.top + fontRenderer.lineHeight + 2,
         0x50000000);
     topPos += 2;
-    topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, widgetTitle.getString(),
+    topPos = textUtils.drawTrimmedTextWithShadow(matrix, widgetTitle.getString(),
         (this.left + 2), topPos, width - 2, 0xFF00FF00);
     topPos += 3;
 
@@ -159,25 +157,25 @@ public class TrackerWidget extends WidgetBuilder {
           GL11.glPopMatrix();
         }
         if (advancement.maxCriteraRequired > 1) {
-          int criteriaCounterLength = textUtils.drawTextFromRightWithShadow(matrixStack,
+          int criteriaCounterLength = textUtils.drawTextFromRightWithShadow(matrix,
               advancement.completedCriteriaNumber + "/" + advancement.maxCriteraRequired,
               this.left + width - 2, topPos, 0xFFEEEE00);
-          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title,
+          topPos = textUtils.drawTrimmedTextWithShadow(matrix, advancement.title,
               this.left + 12, topPos, width - criteriaCounterLength - 16, 0xFFFFFF00);
         } else {
-          topPos = textUtils.drawTrimmedTextWithShadow(matrixStack, advancement.title,
+          topPos = textUtils.drawTrimmedTextWithShadow(matrix, advancement.title,
               this.left + 12, topPos, width - 12, 0xFFFFFF00);
         }
-        topPos = textUtils.drawTextWithShadow(matrixStack, advancement.description, this.left + 2,
+        topPos = textUtils.drawTextWithShadow(matrix, advancement.description, this.left + 2,
             topPos + 1, width - 2, maxDescriptionHeight, 0xFFFFFFFF);
         topPos += 5;
       }
     } else {
       if (AdvancementsManager.hasAdvancements()) {
-        topPos = textUtils.drawTextWithShadow(matrixStack, noTrackedAdvancementsText, this.left + 2,
+        topPos = textUtils.drawTextWithShadow(matrix, noTrackedAdvancementsText, this.left + 2,
             topPos, width, height, 0xEEEEEEEE);
       } else {
-        topPos = textUtils.drawTextWithShadow(matrixStack, noAdvancementsText, this.left + 2,
+        topPos = textUtils.drawTextWithShadow(matrix, noAdvancementsText, this.left + 2,
             topPos, width, height, 0xEEEEEEEE);
       }
     }

@@ -25,7 +25,8 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientAdvancementManager.IListener;
+import net.minecraft.client.multiplayer.ClientAdvancements;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -35,7 +36,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import de.markusbordihn.advancementstracker.Constants;
 
 @EventBusSubscriber(Dist.CLIENT)
-public class ClientAdvancementManager implements IListener {
+public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 

@@ -22,26 +22,32 @@ package de.markusbordihn.advancementstracker.client.gui.component;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL11;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.narration.NarratedElementType;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.resources.ResourceLocation;
+
 import net.minecraftforge.client.gui.ScrollPanel;
 
 import de.markusbordihn.advancementstracker.Constants;
 
 public class ScrollPanelManager extends ScrollPanel {
 
-  FontRenderer fontRenderer;
+  Font fontRenderer;
   Logger log = LogManager.getLogger(Constants.LOG_NAME);
   Map<String, ScrollPanelContent> contentMap = new HashMap<>();
   private int baseContentX;
@@ -55,6 +61,7 @@ public class ScrollPanelManager extends ScrollPanel {
   protected int contentY = 0;
   static final float TEXTURE_SCALE = 32.0F;
   static final int BORDER_COLOR = 0xFFAAAAAA;
+  private boolean visible = true;
 
   protected ScrollPanelManager(Minecraft minecraft, int width, int height, int top, int left) {
     super(minecraft, width, height, top, left);
@@ -151,12 +158,12 @@ public class ScrollPanelManager extends ScrollPanel {
   }
 
   @Override
-  protected void drawPanel(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tessellator, int mouseX,
+  protected void drawPanel(PoseStack matrix, int entryRight, int relativeY, Tesselator tesselator, int mouseX,
       int mouseY) {
     if (this.background != null && this.background != TextureManager.INTENTIONAL_MISSING_TEXTURE) {
-      this.textureManager.bind(this.background);
-      BufferBuilder buffer = tessellator.getBuilder();
-      buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR_TEX);
+      this.textureManager.bindForSetup(this.background);
+      BufferBuilder buffer = tesselator.getBuilder();
+      buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
       buffer.vertex(this.left, this.bottom, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
           .uv(this.left / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
       buffer.vertex(this.right, this.bottom, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
@@ -165,7 +172,7 @@ public class ScrollPanelManager extends ScrollPanel {
           .uv(this.right / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
       buffer.vertex(this.left, this.top, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
           .uv(this.left / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
-      tessellator.end();
+      tesselator.end();
     }
     int baseY = (int) this.scrollDistance * -1;
     for (ScrollPanelContent scrollPanelContent : this.contentMap.values()) {
@@ -173,18 +180,18 @@ public class ScrollPanelManager extends ScrollPanel {
         scrollPanelContent.scrollDistance = this.scrollDistance;
         scrollPanelContent.setRelativeY(baseY);
       }
-      scrollPanelContent.drawBackground(matrixStack, tessellator);
+      scrollPanelContent.drawBackground(matrix, tesselator);
       if (scrollPanelContent.isActive) {
-        fill(matrixStack, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.xMax, scrollPanelContent.yMax,
+        fill(matrix, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.xMax, scrollPanelContent.yMax,
             0x40000000);
-        this.hLine(matrixStack, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.y, BORDER_COLOR);
-        this.hLine(matrixStack, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.yMax - 1,
+        this.hLine(matrix, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.y, BORDER_COLOR);
+        this.hLine(matrix, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.yMax - 1,
             BORDER_COLOR);
-        this.vLine(matrixStack, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.yMax - 1, BORDER_COLOR);
-        this.vLine(matrixStack, scrollPanelContent.xMax - 1, scrollPanelContent.y, scrollPanelContent.yMax - 1,
+        this.vLine(matrix, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.yMax - 1, BORDER_COLOR);
+        this.vLine(matrix, scrollPanelContent.xMax - 1, scrollPanelContent.y, scrollPanelContent.yMax - 1,
             BORDER_COLOR);
       }
-      scrollPanelContent.drawContent(matrixStack, entryRight, relativeY, tessellator, mouseX, mouseY);
+      scrollPanelContent.drawContent(matrix, entryRight, relativeY, tesselator, mouseX, mouseY);
     }
   }
 
@@ -194,6 +201,18 @@ public class ScrollPanelManager extends ScrollPanel {
       return false;
     }
     return super.mouseScrolled(mouseX, mouseY, scroll);
+  }
+
+  @Override
+  public NarratableEntry.NarrationPriority narrationPriority() {
+    return this.visible ? NarratableEntry.NarrationPriority.HOVERED
+        : NarratableEntry.NarrationPriority.NONE;
+  }
+
+  @Override
+  public void updateNarration(NarrationElementOutput p_169009_) {
+    p_169009_.add(NarratedElementType.TITLE,
+        new TranslatableComponent("narration.test"));
   }
 
 }

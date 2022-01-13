@@ -21,12 +21,14 @@ package de.markusbordihn.advancementstracker.client.gui.utils;
 
 import org.lwjgl.opengl.GL11;
 
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 
 public class BackgroundUtils {
 
@@ -38,27 +40,28 @@ public class BackgroundUtils {
     this.textureManager = minecraft.getTextureManager();
   }
 
-  public void drawBackground(Tessellator tessellator, ResourceLocation background, int x, int y, int width,
-      int height) {
-    drawBackground(tessellator, background, x, y, width, height, BACKGROUND_ALPHA);
+  public void drawBackground(Tesselator tesselator, ResourceLocation background, int x, int y,
+      int width, int height) {
+    drawBackground(tesselator, background, x, y, width, height, BACKGROUND_ALPHA);
   }
 
-  public void drawBackground(Tessellator tessellator, ResourceLocation background, int x, int y, int width, int height,
-      int alpha) {
+  public void drawBackground(Tesselator tesselator, ResourceLocation background, int x, int y,
+      int width, int height, int alpha) {
     if (background != null && background != TextureManager.INTENTIONAL_MISSING_TEXTURE) {
       int xMax = x + width;
       int yMax = y + height;
-      textureManager.bind(background);
-      BufferBuilder buffer = tessellator.getBuilder();
-      buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR_TEX);
-      buffer.vertex(x, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(x / TEXTURE_SCALE, yMax / TEXTURE_SCALE)
-          .endVertex();
-      buffer.vertex(xMax, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(xMax / TEXTURE_SCALE, yMax / TEXTURE_SCALE)
-          .endVertex();
-      buffer.vertex(xMax, y, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(xMax / TEXTURE_SCALE, y / TEXTURE_SCALE)
-          .endVertex();
-      buffer.vertex(x, y, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(x / TEXTURE_SCALE, y / TEXTURE_SCALE).endVertex();
-      tessellator.end();
+      textureManager.bindForSetup(background);
+      BufferBuilder buffer = tesselator.getBuilder();
+      buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR_TEX);
+      buffer.vertex(x, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(x / TEXTURE_SCALE, yMax / TEXTURE_SCALE).endVertex();
+      buffer.vertex(xMax, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(xMax / TEXTURE_SCALE, yMax / TEXTURE_SCALE).endVertex();
+      buffer.vertex(xMax, y, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(xMax / TEXTURE_SCALE, y / TEXTURE_SCALE).endVertex();
+      buffer.vertex(x, y, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(x / TEXTURE_SCALE, y / TEXTURE_SCALE).endVertex();
+      tesselator.end();
     }
   }
 

@@ -26,7 +26,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.config.ClientConfig;
@@ -39,7 +39,7 @@ public class DebugManager {
   protected DebugManager() {}
 
   @SubscribeEvent
-  public static void handleModConfigLoadEvent(ModConfig.Loading event) {
+  public static void handleModConfigLoadEvent(FMLCommonSetupEvent event) {
     adjustLogLevel(ClientConfig.CLIENT.logLevel.get());
   }
 

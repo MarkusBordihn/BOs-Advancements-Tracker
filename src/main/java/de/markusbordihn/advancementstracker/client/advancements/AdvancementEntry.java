@@ -35,9 +35,9 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.ItemStack;
 
 public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
@@ -99,23 +99,23 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
         if (rewardsJson != null) {
           JsonObject rewardsObject = rewardsJson.getAsJsonObject();
           if (rewardsObject != null) {
-            rewardsExperience = JSONUtils.getAsInt(rewardsObject, "experience", 0);
+            rewardsExperience = GsonHelper.getAsInt(rewardsObject, "experience", 0);
 
             // Getting Loot entries
-            JsonArray lootArray = JSONUtils.getAsJsonArray(rewardsObject, "loot", new JsonArray());
+            JsonArray lootArray = GsonHelper.getAsJsonArray(rewardsObject, "loot", new JsonArray());
             this.rewardsLoot = new ResourceLocation[lootArray.size()];
             for (int j = 0; j < this.rewardsLoot.length; ++j) {
               this.rewardsLoot[j] = new ResourceLocation(
-                  JSONUtils.convertToString(lootArray.get(j), "loot[" + j + "]"));
+                  GsonHelper.convertToString(lootArray.get(j), "loot[" + j + "]"));
             }
 
             // Getting recipes entries
             JsonArray recipesArray =
-                JSONUtils.getAsJsonArray(rewardsObject, "recipes", new JsonArray());
+                GsonHelper.getAsJsonArray(rewardsObject, "recipes", new JsonArray());
             this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
             for (int k = 0; k < this.rewardsRecipes.length; ++k) {
               this.rewardsRecipes[k] = new ResourceLocation(
-                  JSONUtils.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
+                  GsonHelper.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
             }
           }
         }
