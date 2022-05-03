@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Markus Bordihn
+ * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,33 +17,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.advancementstracker.client.gui;
+package de.markusbordihn.advancementstracker.utils.gui;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+public class PositionPoint {
 
-import de.markusbordihn.advancementstracker.Constants;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.util.text.TranslationTextComponent;
+  private int x;
+  private int y;
 
-public abstract class ScreenBuilder extends Screen {
-
-  protected ScreenBuilder(String title) {
-    super(getText(title));
+  public PositionPoint(int x, int y) {
+    this.x = x;
+    this.y = y;
   }
 
-  protected ScreenBuilder(String title, Object object) {
-    super(getText(title, object));
+  public int getX() {
+    return x;
   }
 
-  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
-
-  public static TranslationTextComponent getText(String translationKey) {
-    return new TranslationTextComponent(Constants.MOD_PREFIX + translationKey);
+  public void setX(int x) {
+    this.x = x;
   }
 
-  public static TranslationTextComponent getText(String translationKey, Object object) {
-    return new TranslationTextComponent(Constants.MOD_PREFIX + translationKey, object);
+  public int getY() {
+    return y;
+  }
+
+  public void setY(int y) {
+    this.y = y;
+  }
+
+  public String toString() {
+    return "PositionPoint{x:" + this.x + ", y:" + this.y + "}";
   }
 
 }

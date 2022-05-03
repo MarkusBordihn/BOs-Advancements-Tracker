@@ -23,9 +23,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
 
@@ -34,11 +34,10 @@ public class ServerHandler {
 
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  protected ServerHandler() {
-  }
+  protected ServerHandler() {}
 
   @SubscribeEvent
-  public static void handleServerStartingEvent(FMLServerStartingEvent event) {
+  public static void handleServerStartingEvent(ServerStartingEvent event) {
     log.info("This mod doesn't need to be run on the server. ^_-");
   }
 }

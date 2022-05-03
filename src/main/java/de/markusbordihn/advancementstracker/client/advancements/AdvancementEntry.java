@@ -35,9 +35,9 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.GsonHelper;
+import net.minecraft.world.item.ItemStack;
 
 public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
@@ -51,7 +51,6 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   String[][] requirements;
   int rootLevel = 0;
   Map<String, CriterionProgress> criteriaMap = new HashMap<>();
-  public AdvancementRewards rewards;
   public Date firstProgressDate;
   public Date lastProgressDate;
   public FrameType frameType;
@@ -60,8 +59,6 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public Iterable<String> remainingCriteria;
   public ResourceLocation background;
   public ResourceLocation id;
-  public ResourceLocation[] rewardsLoot;
-  public ResourceLocation[] rewardsRecipes;
   public String description;
   public String idString;
   public String title;
@@ -72,7 +69,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public int maxCriteraRequired;
   public int remainingCriteriaNumber;
   public int requirementsNumber;
-  public int rewardsExperience;
+
+  // Rewards
+  private AdvancementRewards rewards = null;
+  private ResourceLocation[] rewardsLoot = null;
+  private ResourceLocation[] rewardsRecipes = null;
+  private boolean hasRewards = false;
+  private boolean hasRewardsData = false;
+  private Integer rewardsExperience = null;
 
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
     this.advancement = advancement;
@@ -83,45 +87,13 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     this.requirements = advancement.getRequirements();
     this.maxCriteraRequired = advancement.getMaxCriteraRequired();
     this.rewards = advancement.getRewards();
+    this.hasRewards = this.rewards != null;
     if (this.rootAdvancement != null) {
       while (this.rootAdvancement.getParent() != null) {
         this.rootAdvancement = this.rootAdvancement.getParent();
         rootLevel++;
       }
       this.rootId = this.rootAdvancement.getId();
-    }
-    if (this.rewards != null) {
-      // There is not direct access to the rewards information, for this reason we
-      // are using the JsonObject to get access to the relevant information.
-      JsonElement rewardsJson = null;
-      try {
-        rewardsJson = this.rewards.serializeToJson();
-        if (rewardsJson != null) {
-          JsonObject rewardsObject = rewardsJson.getAsJsonObject();
-          if (rewardsObject != null) {
-            rewardsExperience = JSONUtils.getAsInt(rewardsObject, "experience", 0);
-
-            // Getting Loot entries
-            JsonArray lootArray = JSONUtils.getAsJsonArray(rewardsObject, "loot", new JsonArray());
-            this.rewardsLoot = new ResourceLocation[lootArray.size()];
-            for (int j = 0; j < this.rewardsLoot.length; ++j) {
-              this.rewardsLoot[j] = new ResourceLocation(
-                  JSONUtils.convertToString(lootArray.get(j), "loot[" + j + "]"));
-            }
-
-            // Getting recipes entries
-            JsonArray recipesArray =
-                JSONUtils.getAsJsonArray(rewardsObject, "recipes", new JsonArray());
-            this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
-            for (int k = 0; k < this.rewardsRecipes.length; ++k) {
-              this.rewardsRecipes[k] = new ResourceLocation(
-                  JSONUtils.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
-            }
-          }
-        }
-      } catch (JsonParseException | IllegalStateException e) {
-        // Ignore possible JSON Parse Exception and illegal state exceptions
-      }
     }
     if (this.displayInfo != null) {
       this.background = this.displayInfo.getBackground();
@@ -194,6 +166,80 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       }
     }
     return date;
+  }
+
+  public Integer getRewardsExperience() {
+    if (this.hasRewards && this.rewardsExperience == null) {
+      JsonObject rewardsData = getRewardsData();
+      if (rewardsData != null) {
+        // Getting rewards experience
+        this.rewardsExperience = GsonHelper.getAsInt(rewardsData, "experience", 0);
+        if (this.rewardsExperience > 0) {
+          this.hasRewardsData = true;
+        }
+      }
+    }
+    return this.rewardsExperience;
+  }
+
+  public ResourceLocation[] getRewardsLoot() {
+    if (this.hasRewards && this.rewardsLoot == null) {
+      JsonObject rewardsData = getRewardsData();
+      if (rewardsData != null) {
+        // Getting Loot entries
+        JsonArray lootArray = GsonHelper.getAsJsonArray(rewardsData, "loot", new JsonArray());
+        this.rewardsLoot = new ResourceLocation[lootArray.size()];
+        for (int j = 0; j < this.rewardsLoot.length; ++j) {
+          this.rewardsLoot[j] =
+              new ResourceLocation(GsonHelper.convertToString(lootArray.get(j), "loot[" + j + "]"));
+          this.hasRewardsData = true;
+        }
+      }
+    }
+    return this.rewardsLoot;
+  }
+
+  public ResourceLocation[] getRewardsRecipes() {
+    if (this.hasRewards && this.rewardsRecipes == null) {
+      JsonObject rewardsData = getRewardsData();
+      if (rewardsData != null) {
+        // Getting recipes entries
+        JsonArray recipesArray = GsonHelper.getAsJsonArray(rewardsData, "recipes", new JsonArray());
+        this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
+        for (int k = 0; k < this.rewardsRecipes.length; ++k) {
+          this.rewardsRecipes[k] = new ResourceLocation(
+              GsonHelper.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
+          this.hasRewardsData = true;
+        }
+      }
+    }
+    return this.rewardsRecipes;
+  }
+
+  private JsonObject getRewardsData() {
+    // There is no direct access to the rewards information, for this reason we
+    // are using the JsonObject to get access to the relevant information.
+    JsonElement rewardsJson = null;
+    try {
+      rewardsJson = this.rewards.serializeToJson();
+      if (rewardsJson != null) {
+        JsonObject rewardsObject = rewardsJson.getAsJsonObject();
+        if (rewardsObject != null) {
+          return rewardsObject;
+        }
+      }
+    } catch (JsonParseException | IllegalStateException e) {
+      // Ignore possible JSON Parse Exception and illegal state exceptions
+    }
+    return null;
+  }
+
+  public boolean hasRewards() {
+    return this.hasRewards;
+  }
+
+  public boolean hasRewardsData() {
+    return this.hasRewards && this.hasRewardsData;
   }
 
   @Override

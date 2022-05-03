@@ -36,14 +36,14 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
-import de.markusbordihn.advancementstracker.client.screen.ScreenManager;
 import de.markusbordihn.advancementstracker.config.ClientConfig;
 
 @EventBusSubscriber(Dist.CLIENT)
@@ -58,10 +58,7 @@ public class AdvancementsManager {
   private static Map<ResourceLocation, Set<AdvancementEntry>> advancementsMap = new HashMap<>();
   private static Set<AdvancementEntry> rootAdvancements = new HashSet<>();
   private static Set<String> advancementsIndex = new HashSet<>();
-  private static Set<String> screenshotIndex = new HashSet<>();
   private static boolean hasAdvancements = false;
-  private static boolean screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
-  private static long screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
 
   protected AdvancementsManager() {}
 
@@ -76,19 +73,11 @@ public class AdvancementsManager {
   public static void reset() {
     log.info("Reset Advancements Manager ...");
     startDate = new Date();
-    screenshotDelay = ClientConfig.CLIENT.screenshotDelay.get();
-    screenshotEnabled = ClientConfig.CLIENT.screenshotEnabled.get();
-    if (screenshotEnabled) {
-      log.info("Enable screenshot support with {} ms delay", screenshotDelay);
-    } else {
-      log.info("Disable screenshot support.");
-    }
     advancementProgressMap = new HashMap<>();
     advancementsIndex = new HashSet<>();
     advancementsMap = new HashMap<>();
     hasAdvancements = false;
     rootAdvancements = new HashSet<>();
-    screenshotIndex = new HashSet<>();
     selectedAdvancement = null;
     selectedRootAdvancement = null;
   }
@@ -233,45 +222,6 @@ public class AdvancementsManager {
     }
     advancementEntry.addAdvancementProgress(advancementProgress);
     if (advancementProgress.isDone()) {
-      // Find last progression date to make sure we skip outdate advancements for
-      // screenshots.
-      if (screenshotEnabled) {
-        if (screenshotIndex.contains(advancementId)) {
-          log.debug("Screenshot was already taken for {}, skipping ...", advancementId);
-        } else {
-          Iterable<String> completedCriteria = advancementProgress.getCompletedCriteria();
-          Date lastProgressionDate = startDate;
-          if (completedCriteria != null) {
-            for (String criteriaId : completedCriteria) {
-              CriterionProgress criteriaProgress = advancementProgress.getCriterion(criteriaId);
-              if (criteriaProgress.getObtained().after(lastProgressionDate)) {
-                lastProgressionDate = criteriaProgress.getObtained();
-              }
-            }
-          }
-
-          if (lastProgressionDate.after(startDate)) {
-            log.info("Found new advancement {} which was done on {}", advancementId,
-                lastProgressionDate);
-            String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
-            String screenshotName =
-                String.format("advancement-unknown-%s", new Random().nextInt(99));
-            if (advancementId.contains("/") && advancementId.split("/").length > 1) {
-              screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
-            } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {
-              screenshotFolder = advancementId.split(":")[0];
-              screenshotName = advancementId.split(":", 2)[1];
-            } else {
-              log.warn("Unable to find unique name ({}) for advancement: {}", advancementId,
-                  advancement);
-            }
-            ScreenManager.saveScreenshot(
-                new File(String.format("screenshots/%s", screenshotFolder)), screenshotName,
-                screenshotDelay);
-            screenshotIndex.add(advancementId);
-          }
-        }
-      }
       TrackedAdvancementsManager.untrackAdvancement(advancement);
     }
   }

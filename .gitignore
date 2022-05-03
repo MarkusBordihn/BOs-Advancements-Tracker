@@ -1,28 +1,43 @@
-# eclipse
+# Eclipse
 bin
-*.launch
-.settings
-.metadata
+eclipse
 .classpath
+.metadata
 .project
+.settings
+*.launch
 
-# idea
+# Idea
 out
+.idea
 *.ipr
 *.iws
 *.iml
-.idea
 
-# gradle
+# Gradle
 build
+run
 .gradle
 *local.properties
 
-# other
-*.clip
-eclipse
-run
-generated
+# NodeJs
+node_modules
+npm-debug.log
+.npmrc
 
 # Files from Forge MDK
 forge*changelog.txt
+
+# VSCode
+.vscode/launch.json
+
+# Template placeholder files
+put_your_*_here
+
+# Other
+.DS_Store
+generated
+*.clip
+*.stackdump
+*.log
+*.bak

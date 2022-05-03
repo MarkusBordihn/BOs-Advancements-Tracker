@@ -31,14 +31,13 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
-import de.markusbordihn.advancementstracker.client.gui.widgets.TrackerWidget;
 import de.markusbordihn.advancementstracker.config.ClientConfig;
 
 @EventBusSubscriber(Dist.CLIENT)
@@ -247,7 +246,7 @@ public class TrackedAdvancementsManager {
   }
 
   private static void updateTrackerWidget() {
-    TrackerWidget.setTrackedAdvancements(trackedAdvancements);
+    // TrackerWidget.setTrackedAdvancements(trackedAdvancements);
   }
 
 }

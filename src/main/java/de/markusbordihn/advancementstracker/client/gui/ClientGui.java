@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Markus Bordihn
+ * Copyright 2022 Markus Bordihn
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
  * associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,30 +17,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-package de.markusbordihn.advancementstracker.client.keybinds;
+package de.markusbordihn.advancementstracker.client.gui;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import net.minecraft.client.Minecraft;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
-import de.markusbordihn.advancementstracker.client.gui.overview.OverviewScreen;
-import de.markusbordihn.advancementstracker.client.gui.widgets.TrackerWidget;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 
-@EventBusSubscriber(value = Dist.CLIENT)
-public class KeyManager {
+import de.markusbordihn.advancementstracker.Constants;
 
-  protected KeyManager() {
+public class ClientGui {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  protected ClientGui() {}
+
+  public static void registerClientGui(final FMLLoadCompleteEvent event) {
+
+    log.info("{} Client Gui and Widget ...", Constants.LOG_REGISTER_PREFIX);
+
+    event.enqueueWork(() -> {
+      Minecraft minecraft = Minecraft.getInstance();
+      // MinecraftForge.EVENT_BUS.register(new PlayerCompanionHud(minecraft));
+      MinecraftForge.EVENT_BUS.register(new AdvancementsTrackerWidget(minecraft));
+    });
   }
-
-  @SubscribeEvent
-  public static void handleKeyInputEvent(InputEvent.KeyInputEvent event) {
-    if (KeyBindings.SHOW_OVERVIEW.isDown()) {
-      Minecraft.getInstance().setScreen(new OverviewScreen());
-    } else if (KeyBindings.SHOW_GUI.isDown()) {
-      TrackerWidget.toggleActive();
-    }
-  }
-
 }

@@ -11,7 +11,7 @@ It will also add additional features to make archiving the advancements more int
 
 ### 📜Advancements Overview
 
-Could be open with **STRG + L** and displays all current advancements and allow the tracking of single advancements.
+Could be open with **CTRL + L** and displays all current advancements and allow the tracking of single advancements.
 
 ![Advancement Overview][overview_example]
 
