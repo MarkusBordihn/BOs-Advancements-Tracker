@@ -27,6 +27,7 @@ import org.lwjgl.glfw.GLFW;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -40,6 +41,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.gui.AdvancementsTrackerWidget;
+import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
 @EventBusSubscriber
 public class ModKeyMapping {
@@ -64,6 +66,7 @@ public class ModKeyMapping {
       AdvancementsTrackerWidget.toggleVisibility();
     } else if (ModKeyMapping.KEY_SHOW_OVERVIEW.isDown()) {
       log.info("Show/hide Overview ...");
+      Minecraft.getInstance().setScreen(new AdvancementsTrackerScreen());
     }
   }
 
