@@ -28,6 +28,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
+import de.markusbordihn.advancementstracker.client.gui.widget.AdvancementsTrackerWidget;
 
 public class ClientGui {
 

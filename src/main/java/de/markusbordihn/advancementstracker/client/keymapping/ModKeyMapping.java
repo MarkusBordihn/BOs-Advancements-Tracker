@@ -40,8 +40,8 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
-import de.markusbordihn.advancementstracker.client.gui.AdvancementsTrackerWidget;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
+import de.markusbordihn.advancementstracker.client.gui.widget.AdvancementsTrackerWidget;
 
 @EventBusSubscriber
 public class ModKeyMapping {

@@ -95,6 +95,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       }
       this.rootId = this.rootAdvancement.getId();
     }
+
+    // Handle display information like background, colors and description.
     if (this.displayInfo != null) {
       this.background = this.displayInfo.getBackground();
       this.description = this.displayInfo.getDescription().getString();
@@ -108,6 +110,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       this.background = null;
       this.title = advancement.getId().toString();
     }
+
+    // Use background from root advancement if we don't have any itself.
+    if (this.background == null && this.rootAdvancement != null
+        && this.rootAdvancement.getDisplay() != null
+        && this.rootAdvancement.getDisplay().getBackground() != null) {
+      this.background = this.rootAdvancement.getDisplay().getBackground();
+    }
+
     if (advancementProgress != null) {
       this.addAdvancementProgress(advancementProgress);
     }
@@ -119,6 +129,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   public ResourceLocation getId() {
     return this.id;
+  }
+
+  public Advancement getAdvancement() {
+    return this.advancement;
   }
 
   public String toString() {

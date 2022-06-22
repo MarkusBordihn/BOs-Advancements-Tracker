@@ -25,17 +25,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -47,6 +42,7 @@ import net.minecraft.network.chat.TextComponent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
+import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvancementsManager;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
 public class AdvancementOverviewPanel
@@ -78,27 +74,35 @@ public class AdvancementOverviewPanel
 
   public void refreshList() {
     this.clearEntries();
-    if (this.parent.getSelectedRootAdvancement() != null) {
-      this.background = this.parent.getSelectedRootAdvancement().background;
-    }
+
+    // Build child advancements list.
     parent.buildChildAdvancementsList(this::addEntry,
         mod -> new ChildAdvancementEntry(mod, this.parent));
+
+    // Reset scroll bar
+    setScrollAmount(0);
   }
 
   public class ChildAdvancementEntry extends ObjectSelectionList.Entry<ChildAdvancementEntry> {
+
+    private static final ResourceLocation icons =
+        new ResourceLocation("minecraft:textures/gui/icons.png");
+    private static final ResourceLocation miscTexture =
+        new ResourceLocation(Constants.MOD_ID, "textures/gui/misc.png");
 
     private final AdvancementEntry advancementEntry;
     private final AdvancementsTrackerScreen parent;
     private final Font font;
     private final ItemStack icon;
     private final ResourceLocation background;
-    private final ResourceLocation icons = new ResourceLocation("minecraft:textures/gui/icons.png");
     private final TextComponent description;
     private final TextComponent title;
     private final boolean isDone;
     private final int completedCriteriaNumber;
     private final int descriptionColor;
     private final int remainingCriteriaNumber;
+    private int relativeLeftPosition;
+    private int relativeTopPosition;
 
     ChildAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
@@ -118,11 +122,11 @@ public class AdvancementOverviewPanel
       if (this.background == null) {
         return;
       }
-      RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
+      RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 0.25f);
       RenderSystem.setShaderTexture(0, this.background);
       poseStack.pushPose();
-      GuiComponent.blit(poseStack, getLeft() + 1, top - (2 + font.lineHeight), 0, 0, entryWidth - 2,
-          entryHeight + 2, 16, 16);
+      GuiComponent.blit(poseStack, getLeft() + 1, top - 1, 0, 0, entryWidth - 2, entryHeight + 1,
+          16, 16);
       poseStack.popPose();
     }
 
@@ -130,27 +134,21 @@ public class AdvancementOverviewPanel
       if (this.icon == null) {
         return;
       }
-      minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 1, top + 11);
+      minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 3, top + 2);
     }
 
     private void renderProgress(PoseStack poseStack, int top, int entryWidth, int entryHeight,
         int iconWidth) {
-      if (this.icons == null) {
-        return;
-      }
-
       int progressPositionLeft = getLeft() + iconWidth + 5;
       int progressPositionTop = top + 33;
       int progressWidth = 182;
-      double progressTextScale = 0.75;
 
       // Render empty bar.
       RenderSystem.setShaderColor(1, 1, 1, 1);
       RenderSystem.setShaderTexture(0, this.icons);
       poseStack.pushPose();
-      GuiComponent.blit(poseStack, progressPositionLeft,
-          progressPositionTop, 0, 64,
-          progressWidth, 5, 256, 256);
+      GuiComponent.blit(poseStack, progressPositionLeft, progressPositionTop, 0, 64, progressWidth,
+          5, 256, 256);
       poseStack.popPose();
 
       // Render Green bar with progress and numbers.
@@ -160,16 +158,22 @@ public class AdvancementOverviewPanel
         RenderSystem.setShaderColor(1, 1, 1, 1);
         RenderSystem.setShaderTexture(0, this.icons);
         poseStack.pushPose();
-        GuiComponent.blit(poseStack,
-            progressPositionLeft,
-            progressPositionTop, 0, 69,
+        GuiComponent.blit(poseStack, progressPositionLeft, progressPositionTop, 0, 69,
             isDone ? progressWidth : (progressWidth / progressTotal * progressDone), 5, 256, 256);
         poseStack.popPose();
 
         // Only render numbers if we have enough space.
-        if (entryWidth > progressWidth + 44) {
-        font.draw(poseStack, new TextComponent(progressDone + "/" + progressTotal),
-            progressPositionLeft + progressWidth + 5, progressPositionTop -1, ChatFormatting.GREEN.getColor());
+        if (entryWidth > progressWidth + 42) {
+          float scaling = 0.75f;
+          float positionScaling = 1.33f;
+          poseStack.pushPose();
+          poseStack.scale(scaling, scaling, scaling);
+          font.draw(poseStack, new TextComponent(progressDone + "/" + progressTotal),
+              (progressPositionLeft + progressWidth + 5) * positionScaling,
+              (progressPositionTop) * positionScaling,
+              this.remainingCriteriaNumber >= 1 ? ChatFormatting.YELLOW.getColor()
+                  : ChatFormatting.GREEN.getColor());
+          poseStack.popPose();
         }
       }
     }
@@ -177,26 +181,35 @@ public class AdvancementOverviewPanel
     private void renderSeparator(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
       int topPosition = top - 2;
       int leftPosition = getLeft();
-      int rightPosition = leftPosition + entryWidth - 1;
-      int bottomPosition = top + 1 + entryHeight;
+      int rightPosition = leftPosition + entryWidth - 2;
+      int bottomPosition = top + entryHeight;
 
-      Tesselator tesselator = Tesselator.getInstance();
-      BufferBuilder bufferBuilder = tesselator.getBuilder();
-
-      RenderSystem.disableTexture();
-      RenderSystem.setShader(GameRenderer::getPositionShader);
       RenderSystem.setShaderColor(1, 1, 1, 1);
-      bufferBuilder.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-      bufferBuilder.vertex(leftPosition, topPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(rightPosition, topPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(rightPosition, topPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(rightPosition, bottomPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(rightPosition, bottomPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(leftPosition, bottomPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(leftPosition, bottomPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      bufferBuilder.vertex(leftPosition, topPosition, 0).color(1f, 1f, 1f, 1f).endVertex();
-      tesselator.end();
-      RenderSystem.enableTexture();
+      RenderSystem.setShaderTexture(0, miscTexture);
+      poseStack.pushPose();
+      GuiComponent.blit(poseStack, leftPosition, topPosition, 0, 0, entryWidth - 1, 1,
+          entryWidth - 1, 256);
+      GuiComponent.blit(poseStack, rightPosition, topPosition + 1, 255, 0, 1, entryHeight + 2, 256,
+          entryHeight);
+      GuiComponent.blit(poseStack, leftPosition, bottomPosition, 0, 255, entryWidth - 1, 1,
+          entryWidth - 1, 256);
+      GuiComponent.blit(poseStack, leftPosition, topPosition + 1, 0, 0, 1, entryHeight + 2, 256,
+          entryHeight);
+      poseStack.popPose();
+    }
+
+    private void renderTrackingCheckbox(PoseStack poseStack, int top, int left) {
+      int iconPosition = 22;
+      if (this.isDone) {
+        iconPosition = 3;
+      } else if (TrackedAdvancementsManager.isTrackedAdvancement(this.advancementEntry)) {
+        iconPosition = 42;
+      }
+      RenderSystem.setShaderColor(1, 1, 1, 1);
+      RenderSystem.setShaderTexture(0, miscTexture);
+      poseStack.pushPose();
+      GuiComponent.blit(poseStack, left + 2, top + 23, iconPosition, 6, 15, 15, 256, 256);
+      poseStack.popPose();
     }
 
     public AdvancementEntry getAdvancementEntry() {
@@ -211,8 +224,13 @@ public class AdvancementOverviewPanel
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
         int entryHeight, int mouseX, int mouseY, boolean p_194999_5_, float partialTick) {
-      int iconWidth = 16;
+      int iconWidth = 18;
       int maxFontWidth = listWidth - iconWidth - 4;
+      this.relativeLeftPosition = left;
+      this.relativeTopPosition = top;
+
+      // Background
+      this.renderBackground(poseStack, top, entryWidth, entryHeight);
 
       // Icon
       this.renderIcon(top);
@@ -258,13 +276,22 @@ public class AdvancementOverviewPanel
 
       // Separator
       this.renderSeparator(poseStack, top, entryWidth, entryHeight);
+
+      // Checkbox for enabling tracking
+      this.renderTrackingCheckbox(poseStack, top, left);
     }
 
     @Override
-    public boolean mouseClicked(double p_mouseClicked_1_, double p_mouseClicked_3_,
-        int p_mouseClicked_5_) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+      if (button != 0) {
+        return false;
+      }
+      double relativeX = mouseX - this.relativeLeftPosition;
+      double relativeY = mouseY - this.relativeTopPosition;
+      if ((relativeX > 3 && relativeX < 15) && (relativeY > 25 && relativeX < 35)) {
+        TrackedAdvancementsManager.toggleTrackedAdvancement(this.getAdvancementEntry());
+      }
       parent.setSelectedChildAdvancement(this);
-      //AdvancementOverviewPanel.this.setSelected(this);
       return false;
     }
   }
@@ -281,14 +308,7 @@ public class AdvancementOverviewPanel
 
   @Override
   protected void renderBackground(PoseStack poseStack) {
-    if (this.background == null) {
-      return;
-    }
-    RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
-    RenderSystem.setShaderTexture(0, this.background);
-    poseStack.pushPose();
-    GuiComponent.blit(poseStack, getLeft(), getTop(), 0, 0, getWidth(), getHeight(), 16, 16);
-    poseStack.popPose();
+    // this.parent.renderBackground(poseStack);
   }
 
 }

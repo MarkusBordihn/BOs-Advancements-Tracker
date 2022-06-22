@@ -72,8 +72,19 @@ public class AdvancementCategoryPanel
 
   public void refreshList() {
     this.clearEntries();
+
+    // Build root advancements list.
     parent.buildRootAdvancementsList(this::addEntry,
         mod -> new RootAdvancementEntry(mod, this.parent));
+
+    // Pre-select first entry if we have nothing selected.
+    log.info("{}", getEntry(0));
+    if (this.getSelected() == null && getItemCount() > 0 && getEntry(0) != null) {
+      RootAdvancementEntry rootAdvancementEntry = getEntry(0);
+      log.info("Pre-select {}", rootAdvancementEntry);
+      parent.setSelectedRootAdvancement(rootAdvancementEntry);
+      this.setSelected(rootAdvancementEntry);
+    }
   }
 
   public class RootAdvancementEntry extends ObjectSelectionList.Entry<RootAdvancementEntry> {
@@ -131,6 +142,7 @@ public class AdvancementCategoryPanel
       int iconWidth = 14;
       int maxFontWidth = listWidth - iconWidth - 4;
 
+      // Background
       this.renderBackground(poseStack, top, entryWidth, entryHeight);
 
       Font font = this.parent.getFontRenderer();
@@ -176,10 +188,12 @@ public class AdvancementCategoryPanel
     }
 
     @Override
-    public boolean mouseClicked(double p_mouseClicked_1_, double p_mouseClicked_3_,
-        int p_mouseClicked_5_) {
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+      if (button != 0) {
+        return false;
+      }
       parent.setSelectedRootAdvancement(this);
-      AdvancementCategoryPanel.this.setSelected(this);
+      setSelected(this);
       return false;
     }
 
@@ -197,7 +211,7 @@ public class AdvancementCategoryPanel
 
   @Override
   protected void renderBackground(PoseStack poseStack) {
-    // this.parent.renderBackground(poseStack);
+    this.parent.renderBackground(poseStack);
   }
 
 }

@@ -46,6 +46,7 @@ import net.minecraftforge.fml.loading.StringUtils;
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementsManager;
+import de.markusbordihn.advancementstracker.client.gui.components.SmallButton;
 import de.markusbordihn.advancementstracker.client.gui.panel.AdvancementCategoryPanel;
 import de.markusbordihn.advancementstracker.client.gui.panel.AdvancementOverviewPanel;
 
@@ -55,13 +56,13 @@ public class AdvancementsTrackerScreen extends Screen {
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   // Layout
-  private static final int PADDING = 6;
+  private static final int PADDING = 10;
   private int buttonMargin = 1;
 
   private Screen parentScreen = null;
 
   // Sorting Support
-  private enum SortType implements Comparator<AdvancementEntry> {
+  private enum CategorySortType implements Comparator<AdvancementEntry> {
     NORMAL, A_TO_Z {
       @Override
       protected int compare(String name1, String name2) {
@@ -93,7 +94,7 @@ public class AdvancementsTrackerScreen extends Screen {
     }
   }
 
-  private SortType sortType = SortType.NORMAL;
+  private CategorySortType sortType = CategorySortType.NORMAL;
   private boolean sorted = false;
 
   // Advancements
@@ -144,21 +145,21 @@ public class AdvancementsTrackerScreen extends Screen {
   }
 
   public void reloadRootAdvancements() {
-    this.reloadRootAdvancements(SortType.NORMAL);
+    this.reloadRootAdvancements(CategorySortType.NORMAL);
   }
 
-  public void reloadRootAdvancements(SortType sortType) {
-    if (sortType == SortType.NORMAL) {
+  public void reloadRootAdvancements(CategorySortType sortType) {
+    if (sortType == CategorySortType.NORMAL) {
       this.rootAdvancements = AdvancementsManager.getRootAdvancements();
     } else {
       this.rootAdvancements = AdvancementsManager.getSortedRootAdvancements(sortType);
     }
   }
 
-  private void resortRootAdvancements(SortType newSort) {
+  private void resortRootAdvancements(CategorySortType newSort) {
     this.sortType = newSort;
 
-    for (SortType sort : SortType.values()) {
+    for (CategorySortType sort : CategorySortType.values()) {
       if (sort.button != null)
         sort.button.active = sortType != sort;
     }
@@ -192,13 +193,15 @@ public class AdvancementsTrackerScreen extends Screen {
     if (this.selectedRootAdvancement == null) {
       return;
     }
-    if (sortType == SortType.NORMAL) {
+    if (sortType == CategorySortType.NORMAL) {
       this.childAdvancements = AdvancementsManager.getAdvancements(this.selectedRootAdvancement);
     } else {
       this.childAdvancements =
           AdvancementsManager.getSortedAdvancements(this.selectedRootAdvancement, sortType);
     }
-    this.advancementOverviewPanel.refreshList();
+    if (this.advancementOverviewPanel != null) {
+      this.advancementOverviewPanel.refreshList();
+    }
   }
 
   public void setSelectedChildAdvancement(AdvancementOverviewPanel.ChildAdvancementEntry entry) {
@@ -220,11 +223,7 @@ public class AdvancementsTrackerScreen extends Screen {
 
     // Calculate viewport and general design
     listWidth = Math.max(width / 3, 100);
-    int topPosition = PADDING + 20;
-
-    // Advancements
-    reloadRootAdvancements();
-    reloadChildAdvancements();
+    int topPosition = PADDING + 10;
 
     // Panel Positions
     int categoryPanelLeftPosition = 0;
@@ -241,16 +240,24 @@ public class AdvancementsTrackerScreen extends Screen {
     this.addRenderableWidget(this.advancementOverviewPanel);
 
     // Sort Buttons
-    int x = PADDING;
-    addRenderableWidget(SortType.NORMAL.button = new Button(x, PADDING, 50, 20,
-        SortType.NORMAL.getButtonText(), b -> resortRootAdvancements(SortType.NORMAL)));
-    x += 50 + buttonMargin;
-    addRenderableWidget(SortType.A_TO_Z.button = new Button(x, PADDING, 50, 20,
-        SortType.A_TO_Z.getButtonText(), b -> resortRootAdvancements(SortType.A_TO_Z)));
-    x += 50 + buttonMargin;
-    addRenderableWidget(SortType.Z_TO_A.button = new Button(x, PADDING, 50, 20,
-        SortType.Z_TO_A.getButtonText(), b -> resortRootAdvancements(SortType.Z_TO_A)));
-    resortRootAdvancements(SortType.NORMAL);
+    int x = 5;
+    int y = this.height - 10;
+    this.addRenderableWidget(CategorySortType.NORMAL.button = new SmallButton(x,
+        y, 20, 10,
+        CategorySortType.NORMAL.getButtonText(), b -> resortRootAdvancements(CategorySortType.NORMAL)));
+    x += 20 + buttonMargin;
+    this.addRenderableWidget(CategorySortType.A_TO_Z.button = new SmallButton(x,
+        y, 20, 10,
+        CategorySortType.A_TO_Z.getButtonText(), b -> resortRootAdvancements(CategorySortType.A_TO_Z)));
+    x += 20 + buttonMargin;
+    this.addRenderableWidget(CategorySortType.Z_TO_A.button = new SmallButton(x,
+        y, 20, 10,
+        CategorySortType.Z_TO_A.getButtonText(), b -> resortRootAdvancements(CategorySortType.Z_TO_A)));
+    resortRootAdvancements(CategorySortType.NORMAL);
+
+    // Reload Advancements
+    reloadRootAdvancements();
+    reloadChildAdvancements();
   }
 
   @Override
@@ -270,8 +277,12 @@ public class AdvancementsTrackerScreen extends Screen {
 
     if (!this.sorted) {
       reloadRootAdvancements(sortType);
-      this.advancementCategoryPanel.refreshList();
-      this.advancementOverviewPanel.refreshList();
+      if (this.advancementCategoryPanel != null) {
+        this.advancementCategoryPanel.refreshList();
+      }
+      if (this.advancementOverviewPanel != null) {
+        this.advancementOverviewPanel.refreshList();
+      }
 
       this.sorted = true;
     }
