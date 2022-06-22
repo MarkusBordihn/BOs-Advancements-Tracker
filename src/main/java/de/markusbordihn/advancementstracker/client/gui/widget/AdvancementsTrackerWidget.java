@@ -19,10 +19,12 @@
 
 package de.markusbordihn.advancementstracker.client.gui.widget;
 
+import java.util.List;
 import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -39,6 +41,12 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -51,7 +59,9 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
+import de.markusbordihn.advancementstracker.client.advancements.AdvancementsManager;
 import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvancementsManager;
+import de.markusbordihn.advancementstracker.client.keymapping.ModKeyMapping;
 import de.markusbordihn.advancementstracker.config.ClientConfig;
 import de.markusbordihn.advancementstracker.utils.gui.PositionManager;
 
@@ -62,34 +72,49 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
   private static final ClientConfig.Config CLIENT = ClientConfig.CLIENT;
 
+  // Pre-defined colors and placeholders
   private static final int TEXT_COLOR_WHITE = ChatFormatting.WHITE.getColor();
   private static final int TEXT_COLOR_YELLOW = ChatFormatting.YELLOW.getColor();
+  private static final TextComponent ELLIPSIS = new TextComponent("\u2026");
+
+  // Pre-defined texts
+  private static MutableComponent noAdvancementsText =
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
+          .append(ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
+          .withStyle(ChatFormatting.WHITE);
+  private static MutableComponent noTrackedAdvancementsText =
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
+          .append(new TranslatableComponent(
+              Constants.MOD_PREFIX + "advancementWidget.hotkeyAdvancementOverview",
+              ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
+                  .withStyle(ChatFormatting.YELLOW))
+          .withStyle(ChatFormatting.WHITE);
 
   private static boolean hudVisible = true;
   private static Set<AdvancementEntry> trackedAdvancements;
 
-  private final PositionManager positionManager;
-  private final Font fontRender;
+  private final Font font;
   private final ItemRenderer itemRenderer;
+  private final PositionManager positionManager;
   private final TextureManager textureManager;
-  private final Minecraft minecraft;
 
   private int x;
   private int y;
 
   public AdvancementsTrackerWidget(Minecraft minecraft) {
-    this.minecraft = minecraft;
-    this.fontRender = minecraft.font;
+    this.font = minecraft.font;
     this.itemRenderer = minecraft.getItemRenderer();
     this.textureManager = minecraft.getTextureManager();
     positionManager = new PositionManager(minecraft);
     positionManager.setInstance(minecraft);
-    positionManager.setWidth(81);
+    positionManager.setWidth(80);
     positionManager.setHeight(22);
   }
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(WorldEvent.Load event) {}
+  public static void handleWorldEventLoad(WorldEvent.Load event) {
+    updatePredefinedText();
+  }
 
   @SubscribeEvent()
   public void renderOverlay(RenderGameOverlayEvent.Pre event) {
@@ -100,10 +125,10 @@ public class AdvancementsTrackerWidget extends GuiComponent {
       return;
     }
 
-    // Position Manager Updates
+    // Use Position Manager for Updates
     positionManager.updateWindow();
     positionManager.setPosition(positionManager.getMiddleRight());
-    positionManager.setWidth(140);
+    positionManager.setWidth(120);
     positionManager.setHeight(160);
     x = positionManager.getPositionX();
     y = positionManager.getPositionY();
@@ -111,72 +136,165 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     PoseStack poseStack = event.getMatrixStack();
     MultiBufferSource.BufferSource multiBufferSource =
         Minecraft.getInstance().renderBuffers().bufferSource();
-    float partialTicks = event.getPartialTicks();
 
-    poseStack.pushPose();
-    renderBackground(poseStack);
+    // Render background and GUI
     renderTitle(poseStack);
-    poseStack.popPose();
 
     // List tracked advancement
-    poseStack.pushPose();
-    renderAdvancements(poseStack, multiBufferSource, x, y + this.fontRender.lineHeight + 4,
-        partialTicks);
-    poseStack.popPose();
-  }
-
-  public void renderBackground(PoseStack poseStack) {
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), positionManager.getPositionYHeight(),
-        1325400064);
+    if (TrackedAdvancementsManager.hasTrackedAdvancements()) {
+      renderAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
+    } else if (AdvancementsManager.hasAdvancements()) {
+      renderNoTrackedAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
+    } else {
+      renderNoAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
+    }
   }
 
   public void renderTitle(PoseStack poseStack) {
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.fontRender.lineHeight + 2,
+    poseStack.pushPose();
+    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
         1325400064);
-    fontRender.draw(poseStack, "Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
+    font.draw(poseStack, "Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
+    poseStack.popPose();
+  }
+
+  public void renderNoTrackedAdvancements(PoseStack poseStack,
+      MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
+    int textContentHeight = (this.font.lineHeight + 2) * 9;
+    int textContentWidth = positionManager.getWidth();
+    poseStack.pushPose();
+    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, 1325400064);
+    font.drawWordWrap(noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
+        textContentHeight - 10);
+    poseStack.popPose();
+  }
+
+  public void renderNoAdvancements(PoseStack poseStack,
+      MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
+    int textContentHeight = (this.font.lineHeight + 2) * 9;
+    int textContentWidth = positionManager.getWidth();
+    poseStack.pushPose();
+    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, 1325400064);
+    font.drawWordWrap(noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
+        textContentHeight - 10);
+    poseStack.popPose();
   }
 
   public void renderAdvancements(PoseStack poseStack,
-      MultiBufferSource.BufferSource multiBufferSource, int x, int y, float partialTicks) {
+      MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
+    poseStack.pushPose();
     int topPos = y;
     for (AdvancementEntry advancementEntry : trackedAdvancements) {
-      topPos += renderAdvancement(poseStack, multiBufferSource, x + 2, topPos, advancementEntry,
-          partialTicks);
+      topPos += renderAdvancement(poseStack, multiBufferSource, x, topPos, advancementEntry) + 2;
     }
+    poseStack.popPose();
   }
 
   public int renderAdvancement(PoseStack poseStack,
       MultiBufferSource.BufferSource multiBufferSource, int x, int y,
-      AdvancementEntry advancementEntry, float partialTicks) {
+      AdvancementEntry advancementEntry) {
 
-    // Title
+    // Positions
+    int maxFontWidth = positionManager.getWidth() - 2;
+    int referenceTopPosition = y + 3;
+    int referenceLeftPosition = x + 2;
+
+    // Pre-calculations
     float titleScale = 0.75f;
+    int titlePaddingLeft = 10;
+    int titlePaddingRight = advancementEntry.getProgressTotal() > 1 ? 20 : 0;
+    int titleWidth = font.width(advancementEntry.getTitle()) * titleScale > maxFontWidth
+        - titlePaddingLeft - titlePaddingRight
+            ? maxFontWidth - titlePaddingLeft - titlePaddingRight - Math.round(7 * titleScale)
+            : maxFontWidth - titlePaddingLeft - titlePaddingRight;
+    int titleWidthScaled = Math.round(titleWidth / titleScale);
+    FormattedCharSequence titleText = Language.getInstance().getVisualOrder(
+        FormattedText.composite(font.substrByWidth(advancementEntry.getTitle(), titleWidthScaled)));
+
+    float descriptionScale = 0.75f;
+    List<FormattedCharSequence> descriptionParts = font.split(advancementEntry.getDescription(),
+        Math.round(maxFontWidth / descriptionScale) - 3);
+    int descriptionLines = 1;
+
+    // Calculate expected content size
+    int expectedContentSize =
+        Math.round((font.lineHeight * titleScale + 3) + ((font.lineHeight * descriptionScale + 3)
+            * (descriptionParts.size() <= 3 ? descriptionParts.size() : 3)));
+
+    // Background
+    poseStack.pushPose();
+    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + expectedContentSize, 1325400064);
+    poseStack.popPose();
+
+    // Title (only one line)
     poseStack.pushPose();
     poseStack.scale(titleScale, titleScale, titleScale);
-    fontRender.drawShadow(poseStack, advancementEntry.title, (x + 10) / titleScale, y / titleScale,
-        TEXT_COLOR_YELLOW);
-    fontRender.draw(poseStack, advancementEntry.title, (x + 10) / titleScale, y / titleScale,
-        TEXT_COLOR_YELLOW);
+    font.drawShadow(poseStack, titleText, (referenceLeftPosition + titlePaddingLeft) / titleScale,
+        referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
+    font.draw(poseStack, titleText, (referenceLeftPosition + titlePaddingLeft) / titleScale,
+        referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
+
+    // Show ellipsis if title is to long.
+    if (titleWidth != maxFontWidth - titlePaddingLeft - titlePaddingRight) {
+      font.draw(poseStack, ELLIPSIS,
+          ((referenceLeftPosition + titlePaddingLeft) / titleScale) + titleWidthScaled,
+          referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
+    }
     poseStack.popPose();
+
+    // Show Progress, if we have more than one requirements.
+    if (advancementEntry.getProgressTotal() > 1) {
+      float progressScale = 0.6f;
+      int progressPositionLeft = referenceLeftPosition + maxFontWidth - titlePaddingRight + 1;
+      poseStack.pushPose();
+      poseStack.scale(progressScale, progressScale, progressScale);
+      font.drawShadow(poseStack, advancementEntry.getProgressString(),
+          progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
+          TEXT_COLOR_YELLOW);
+      font.draw(poseStack, advancementEntry.getProgressString(),
+          progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
+          TEXT_COLOR_YELLOW);
+      poseStack.popPose();
+    }
+    referenceTopPosition += font.lineHeight * titleScale + 3;
 
     // Icon
     if (advancementEntry.icon != null) {
       poseStack.pushPose();
-      renderGuiItem(advancementEntry.icon, multiBufferSource, x - 4, y - 5, 0.65f);
+      renderGuiItem(advancementEntry.icon, multiBufferSource, referenceLeftPosition - 4,
+          referenceTopPosition - 14, 0.65f);
       poseStack.popPose();
     }
 
-    // Description
-    float descriptionScale = 0.75f;
+    // Description (max three lines)
     poseStack.pushPose();
     poseStack.scale(descriptionScale, descriptionScale, descriptionScale);
-    fontRender.drawShadow(poseStack, advancementEntry.description, x / descriptionScale,
-        (y + fontRender.lineHeight) / descriptionScale, advancementEntry.descriptionColor);
-    fontRender.draw(poseStack, advancementEntry.description, x / descriptionScale,
-        (y + fontRender.lineHeight) / descriptionScale, advancementEntry.descriptionColor);
+    for (FormattedCharSequence descriptionPart : descriptionParts) {
+      boolean shouldEnd = false;
+      font.drawShadow(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
+          referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
+      font.draw(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
+          referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
+      if ((descriptionParts.size() >= 3 && descriptionLines == 3)) {
+        font.draw(poseStack, ELLIPSIS, (referenceLeftPosition / descriptionScale)
+            + ((font.width(descriptionPart) / descriptionScale) < maxFontWidth / descriptionScale
+                - 3 ? (font.width(descriptionPart) / descriptionScale) - 7
+                    : (maxFontWidth / descriptionScale) - 7),
+            referenceTopPosition / descriptionScale, 0xFFFFFF);
+        shouldEnd = true;
+      } else if (descriptionParts.size() == 2 && descriptionLines == 2) {
+        shouldEnd = true;
+      }
+      referenceTopPosition += font.lineHeight * descriptionScale + 3;
+      if (shouldEnd) {
+        break;
+      }
+      descriptionLines++;
+    }
     poseStack.popPose();
 
-    return fontRender.lineHeight * 2 + 2;
+    // Return actual content position
+    return referenceTopPosition - y;
   }
 
   public static void updateTrackedAdvancements() {
@@ -185,6 +303,20 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
   public static void toggleVisibility() {
     hudVisible = !hudVisible;
+  }
+
+  private static void updatePredefinedText() {
+    // Update text for custom key-mapping.
+    noAdvancementsText =
+        new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
+            .withStyle(ChatFormatting.WHITE);
+    noTrackedAdvancementsText =
+        new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
+            .append(new TranslatableComponent(
+                Constants.MOD_PREFIX + "advancementWidget.hotkeyAdvancementOverview",
+                ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
+                    .withStyle(ChatFormatting.YELLOW))
+            .withStyle(ChatFormatting.WHITE);
   }
 
   public void renderGuiItem(ItemStack itemStack, MultiBufferSource.BufferSource multiBufferSource,
@@ -203,7 +335,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     PoseStack modelPoseStack = RenderSystem.getModelViewStack();
     modelPoseStack.pushPose();
-    modelPoseStack.translate((double) x, (double) y, (double) (100.0F + itemRenderer.blitOffset));
+    modelPoseStack.translate(x, y, 100.0F + itemRenderer.blitOffset);
     modelPoseStack.translate(8.0D, 8.0D, 0.0D);
     modelPoseStack.scale(scale, -scale, scale);
     modelPoseStack.scale(16.0F, 16.0F, 16.0F);

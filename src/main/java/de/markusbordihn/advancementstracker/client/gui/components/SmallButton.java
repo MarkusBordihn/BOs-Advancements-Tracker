@@ -21,6 +21,7 @@ package de.markusbordihn.advancementstracker.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.Button;
@@ -30,60 +31,58 @@ import net.minecraft.util.Mth;
 
 public class SmallButton extends Button {
 
-  private static float scaling = 0.5f;
-  private int scaledX;
-  private int scaledY;
-  private int scaledWidth;
-  private int scaledHeight;
+  private final Minecraft minecraft;
+  private final Font font;
+
+  private static final float SCALING = 0.5f;
+  private final int scaledX;
+  private final int scaledY;
+  private final int scaledWidth;
+  private final int scaledHeight;
 
   public SmallButton(int x, int y, int width, int height, Component component, OnPress onPress) {
     super(x, y, width, height, component, onPress);
-    // calculateScaledPositionAndSize();
+    this.minecraft = Minecraft.getInstance();
+    this.font = this.minecraft.font;
+    this.scaledX = Math.round(this.x / SCALING);
+    this.scaledY = Math.round(this.y / SCALING);
+    this.scaledWidth = Math.round(this.width / SCALING);
+    this.scaledHeight = Math.round(this.height / SCALING);
   }
 
   public SmallButton(int x, int y, int width, int height, Component component,
       Button.OnPress onPress, Button.OnTooltip onTooltip) {
     super(x, y, width, height, component, onPress, onTooltip);
-    // calculateScaledPositionAndSize();
-  }
-
-  private void calculateScaledPositionAndSize() {
-    this.scaledX = Math.round(this.x / scaling);
-    this.scaledY = Math.round(this.y / scaling);
-    this.scaledWidth = Math.round(this.width / scaling);
-    this.scaledHeight = Math.round(this.height / scaling);
+    this.minecraft = Minecraft.getInstance();
+    this.font = this.minecraft.font;
+    this.scaledX = Math.round(this.x / SCALING);
+    this.scaledY = Math.round(this.y / SCALING);
+    this.scaledWidth = Math.round(this.width / SCALING);
+    this.scaledHeight = Math.round(this.height / SCALING);
   }
 
   @Override
   public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-    scaledX = Math.round(this.x / scaling);
-    scaledY = Math.round(this.y / scaling);
-    scaledWidth = Math.round(this.width / scaling);
-    scaledHeight = Math.round(this.height / scaling);
-
-    Minecraft minecraft = Minecraft.getInstance();
-    Font font = minecraft.font;
     RenderSystem.setShader(GameRenderer::getPositionTexShader);
     RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
-    int i = this.getYImage(this.isHoveredOrFocused());
     RenderSystem.enableBlend();
     RenderSystem.defaultBlendFunc();
     RenderSystem.enableDepthTest();
 
-    // Scaling down the button image
-    int buttonPosTop = (46 + i * 20) / 2;
+    // Scaling down the button images
+    int buttonPosTop = (46 + this.getYImage(this.isHoveredOrFocused()) * 20) / 2;
     blit(poseStack, this.x, this.y, 0, buttonPosTop, this.width / 2, this.height, 256, 128);
-    blit(poseStack, this.x + this.width / 2, this.y, 200 - this.width / 2, buttonPosTop,
+    blit(poseStack, this.x + this.width / 2, this.y, 200 - this.width / 2.0f, buttonPosTop,
         this.width / 2, this.height, 256, 128);
     this.renderBg(poseStack, minecraft, mouseX, mouseY);
-    int j = getFGColor();
 
-    // Scaling Button Text
+    // Scaling down button text
     poseStack.pushPose();
-    poseStack.scale(scaling, scaling, scaling);
+    poseStack.scale(SCALING, SCALING, SCALING);
     drawCenteredString(poseStack, font, this.getMessage(), this.scaledX + this.scaledWidth / 2,
-        this.scaledY + (this.scaledHeight - 8) / 2, j | Mth.ceil(this.alpha * 255.0F) << 24);
+        this.scaledY + (this.scaledHeight - 8) / 2,
+        getFGColor() | Mth.ceil(this.alpha * 255.0F) << 24);
     poseStack.popPose();
 
     if (this.isHoveredOrFocused()) {

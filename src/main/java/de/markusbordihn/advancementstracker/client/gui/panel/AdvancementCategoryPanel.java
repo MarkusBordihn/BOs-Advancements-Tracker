@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
+
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
@@ -40,6 +40,7 @@ import net.minecraft.network.chat.TextComponent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
+import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvancementsManager;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
 public class AdvancementCategoryPanel
@@ -49,7 +50,6 @@ public class AdvancementCategoryPanel
 
   private final int listLeft;
   private final int listWidth;
-  private final Minecraft minecraft;
 
   private AdvancementsTrackerScreen parent;
 
@@ -58,7 +58,6 @@ public class AdvancementCategoryPanel
     super(parent.getMinecraftInstance(), listWidth, parent.height, top, bottom,
         parent.getFontRenderer().lineHeight * 3 + 8);
     this.parent = parent;
-    this.minecraft = parent.getMinecraft();
     this.listWidth = listWidth;
     this.listLeft = listLeft;
     this.setLeftPos(listLeft);
@@ -89,12 +88,16 @@ public class AdvancementCategoryPanel
 
   public class RootAdvancementEntry extends ObjectSelectionList.Entry<RootAdvancementEntry> {
 
+    private static final ResourceLocation miscTexture =
+        new ResourceLocation(Constants.MOD_ID, "textures/gui/misc.png");
+
     private final AdvancementEntry advancementEntry;
     private final AdvancementsTrackerScreen parent;
-    private final ResourceLocation background;
+    private final Font font;
     private final ItemStack icon;
-    private final TextComponent title;
+    private final ResourceLocation background;
     private final TextComponent description;
+    private final TextComponent title;
     private final int descriptionColor;
 
     RootAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
@@ -102,6 +105,7 @@ public class AdvancementCategoryPanel
       this.background = advancementEntry.background;
       this.description = new TextComponent(stripControlCodes(advancementEntry.description));
       this.descriptionColor = advancementEntry.descriptionColor;
+      this.font = parent.getFontRenderer();
       this.icon = advancementEntry.icon;
       this.parent = parent;
       this.title = new TextComponent(stripControlCodes(advancementEntry.title));
@@ -126,6 +130,17 @@ public class AdvancementCategoryPanel
       minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 1, top + 6);
     }
 
+    private void renderTrackedAdvancementsStatus(PoseStack poseStack, int top, int left, int entryWidth) {
+      if (TrackedAdvancementsManager.hasTrackedAdvancement(advancementEntry)) {
+        RenderSystem.setShaderColor(1, 1, 1, 1);
+        RenderSystem.setShaderTexture(0, miscTexture);
+        poseStack.pushPose();
+        poseStack.scale(0.5f, 0.5f, 0.5f);
+        GuiComponent.blit(poseStack, (left + entryWidth - 12) * 2, (top + 1) * 2, 81, 6, 16, 16, 256, 256);
+        poseStack.popPose();
+      }
+    }
+
     public AdvancementEntry getAdvancementEntry() {
       return advancementEntry;
     }
@@ -137,31 +152,34 @@ public class AdvancementCategoryPanel
 
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
-        int entryHeight, int mouseX, int mouseY, boolean p_194999_5_, float partialTick) {
+        int entryHeight, int mouseX, int mouseY, boolean unused, float partialTick) {
 
+      // Positions
       int iconWidth = 14;
       int maxFontWidth = listWidth - iconWidth - 4;
+      float textPositionLeft = (float) left + iconWidth;
 
       // Background
       this.renderBackground(poseStack, top, entryWidth, entryHeight);
 
-      Font font = this.parent.getFontRenderer();
-
       // Icon
       this.renderIcon(top);
+
+      // Tracked Advancements
+      this.renderTrackedAdvancementsStatus(poseStack, top, left, entryWidth);
 
       // Title (only one line)
       int titleWidth = font.width(title) > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
       font.drawShadow(poseStack,
           Language.getInstance()
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          left + iconWidth + (float) 3, top + (float) 1, 0xFFFFFF);
+          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
       font.draw(poseStack,
           Language.getInstance()
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          left + iconWidth + (float) 3, top + (float) 1, 0xFFFFFF);
+          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
       if (titleWidth != maxFontWidth) {
-        font.draw(poseStack, new TextComponent("…"), left + iconWidth + titleWidth, top + (float) 1,
+        font.draw(poseStack, new TextComponent("…"), textPositionLeft + titleWidth, top + 1.0f,
             0xFFFFFF);
       }
 
@@ -170,16 +188,15 @@ public class AdvancementCategoryPanel
       int descriptionLines = 1;
       for (FormattedCharSequence descriptionPart : descriptionParts) {
         float descriptionTopPosition = top + (float) (2 + font.lineHeight) * descriptionLines;
-        font.drawShadow(poseStack, descriptionPart, left + iconWidth + (float) 3,
-            descriptionTopPosition, this.descriptionColor);
-        font.draw(poseStack, descriptionPart, left + iconWidth + (float) 3, descriptionTopPosition,
+        font.drawShadow(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
+            this.descriptionColor);
+        font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
         if (descriptionParts.size() == 3 && descriptionLines == 2) {
           font.draw(poseStack, new TextComponent("…"),
-              left + iconWidth
-                  + (float) (font.width(descriptionPart) < maxFontWidth - 6
-                      ? font.width(descriptionPart) + 6
-                      : maxFontWidth - 6),
+              textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
+                  ? font.width(descriptionPart) + 6
+                  : maxFontWidth - 6),
               descriptionTopPosition, 0xFFFFFF);
           break;
         }

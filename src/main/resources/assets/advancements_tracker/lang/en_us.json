@@ -1,11 +1,12 @@
 {
-  "advancementstracker.configScreen.title": "%1$s Settings",
-  "advancementstracker.keys.category": "Advancements Tracker",
-  "advancementstracker.keys.showOverview": "Show Overview",
-  "advancementstracker.keys.showGui": "Show Gui",
-  "advancementstracker.advancementScreen.title": "Advancements Tracker Overview",
-  "advancementstracker.advancementScreen.noAdvancements": "Found no advancements. Maybe you should get some wood and build a workbench.",
-  "advancementstracker.advancementWidget.title": "Advancements Tracker",
-  "advancementstracker.advancementWidget.noAdvancements": "Found no advancements, yet. Fresh start?",
-  "advancementstracker.advancementWidget.noTrackedAdvancements": "No tracked advancements. Please add them over the Advancements Overview."
+  "advancements_tracker.configScreen.title": "%1$s Settings",
+  "advancements_tracker.keys.category": "Advancements Tracker",
+  "advancements_tracker.keys.show_overview": "Show Overview",
+  "advancements_tracker.keys.show_widget": "Show Widget",
+  "advancements_tracker.advancementScreen.title": "Advancements Tracker Overview",
+  "advancements_tracker.advancementScreen.noAdvancements": "Found no advancements.\nMaybe you should get some wood and build a workbench.",
+  "advancements_tracker.advancementWidget.title": "Advancements Tracker",
+  "advancements_tracker.advancementWidget.noAdvancements": "Found no advancements, yet!\nFresh start?\nMaybe you should get some wood and build a workbench.",
+  "advancements_tracker.advancementWidget.noTrackedAdvancements": "No tracked advancements!\nPlease add them over the advancements overview.\n\n",
+  "advancements_tracker.advancementWidget.hotkeyAdvancementOverview": "Press %1$s to open the advancements overview."
 }

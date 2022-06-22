@@ -35,6 +35,7 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
@@ -69,6 +70,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public int maxCriteraRequired;
   public int remainingCriteriaNumber;
   public int requirementsNumber;
+
+  // Progress
+  private String progressString = "";
+  private int progressTotal = 0;
+
+  // Text Components
+  private final TextComponent descriptionComponent;
+  private final TextComponent titleComponent;
 
   // Rewards
   private AdvancementRewards rewards = null;
@@ -118,6 +127,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       this.background = this.rootAdvancement.getDisplay().getBackground();
     }
 
+    // Create final references
+    this.descriptionComponent = new TextComponent(stripControlCodes(this.description));
+    this.titleComponent = new TextComponent(stripControlCodes(this.title));
+
     if (advancementProgress != null) {
       this.addAdvancementProgress(advancementProgress);
     }
@@ -135,13 +148,19 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.advancement;
   }
 
-  public String toString() {
-    if (this.rootAdvancement == null) {
-      return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title,
-          this.progress);
-    }
-    return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType,
-        this.rootId, this.id, this.title, this.progress);
+  public TextComponent getDescription() {
+    return this.descriptionComponent;
+  }
+
+  public TextComponent getTitle() {
+    return this.titleComponent;
+  }
+
+  public String getProgressString() {
+    return this.progressString;
+  }
+  public int getProgressTotal() {
+    return this.progressTotal;
   }
 
   public void addAdvancementProgress(AdvancementProgress advancementProgress) {
@@ -166,6 +185,12 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     this.remainingCriteriaNumber = (int) this.remainingCriteria.spliterator().getExactSizeIfKnown();
     for (String criteriaId : this.remainingCriteria) {
       criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
+    }
+
+    // Number of complete Criteria
+    if (this.remainingCriteriaNumber > 0) {
+      this.progressTotal = this.completedCriteriaNumber + this.remainingCriteriaNumber;
+      this.progressString = this.completedCriteriaNumber + "/" + this.progressTotal;
     }
 
     this.lastProgressDate = this.getLastProgressDate();
@@ -256,6 +281,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.hasRewards && this.hasRewardsData;
   }
 
+  private static String stripControlCodes(String value) {
+    return net.minecraft.util.StringUtil.stripColor(value);
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (obj == null) {
@@ -295,6 +324,16 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       }
       return result;
     };
+  }
+
+  @Override
+  public String toString() {
+    if (this.rootAdvancement == null) {
+      return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title,
+          this.progress);
+    }
+    return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType,
+        this.rootId, this.id, this.title, this.progress);
   }
 
 }

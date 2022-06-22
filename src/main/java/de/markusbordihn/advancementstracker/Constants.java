@@ -21,19 +21,18 @@ package de.markusbordihn.advancementstracker;
 
 public final class Constants {
 
-  protected Constants() {
-  }
+  protected Constants() {}
 
   // General Mod definitions
   public static final String LOG_NAME = "Advancements Tracker";
   public static final String LOG_REGISTER_PREFIX = " Register AdvancementsTracker";
   public static final String MOD_COMMAND = "advancements_tracker";
   public static final String MOD_ID = "advancements_tracker";
-  public static final String MOD_TEXTURE = "advancementstracker";
-  public static final String MOD_PREFIX = "advancementstracker.";
+  public static final String MOD_PREFIX = "advancements_tracker.";
   public static final String MOD_NAME = "Advancements Tracker";
+  public static final String MOD_URL =
+      "https://www.curseforge.com/minecraft/mc-mods/advancements-tracker";
 
   // Prefixes
-  public static final String TEXT_PREFIX = "text.advancements_tracker.";
-  public static final String KEY_PREFIX = "key.advancements_tracker.";
+  public static final String KEY_PREFIX = "advancements_tracker.keys.";
 }

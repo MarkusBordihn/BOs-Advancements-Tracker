@@ -68,10 +68,6 @@ public class AdvancementOverviewPanel
     this.setRenderBackground(false);
   }
 
-  private static String stripControlCodes(String value) {
-    return net.minecraft.util.StringUtil.stripColor(value);
-  }
-
   public void refreshList() {
     this.clearEntries();
 
@@ -108,14 +104,14 @@ public class AdvancementOverviewPanel
       this.advancementEntry = advancementEntry;
       this.background = advancementEntry.background;
       this.completedCriteriaNumber = advancementEntry.completedCriteriaNumber;
-      this.description = new TextComponent(stripControlCodes(advancementEntry.description));
+      this.description = advancementEntry.getDescription();
       this.descriptionColor = advancementEntry.descriptionColor;
       this.font = parent.getFontRenderer();
       this.icon = advancementEntry.icon;
       this.isDone = advancementEntry.isDone;
       this.parent = parent;
       this.remainingCriteriaNumber = advancementEntry.remainingCriteriaNumber;
-      this.title = new TextComponent(stripControlCodes(advancementEntry.title));
+      this.title = advancementEntry.getTitle();
     }
 
     private void renderBackground(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
@@ -145,7 +141,7 @@ public class AdvancementOverviewPanel
 
       // Render empty bar.
       RenderSystem.setShaderColor(1, 1, 1, 1);
-      RenderSystem.setShaderTexture(0, this.icons);
+      RenderSystem.setShaderTexture(0, icons);
       poseStack.pushPose();
       GuiComponent.blit(poseStack, progressPositionLeft, progressPositionTop, 0, 64, progressWidth,
           5, 256, 256);
@@ -156,7 +152,7 @@ public class AdvancementOverviewPanel
         int progressTotal = this.completedCriteriaNumber + this.remainingCriteriaNumber;
         int progressDone = this.completedCriteriaNumber;
         RenderSystem.setShaderColor(1, 1, 1, 1);
-        RenderSystem.setShaderTexture(0, this.icons);
+        RenderSystem.setShaderTexture(0, icons);
         poseStack.pushPose();
         GuiComponent.blit(poseStack, progressPositionLeft, progressPositionTop, 0, 69,
             isDone ? progressWidth : (progressWidth / progressTotal * progressDone), 5, 256, 256);
@@ -223,9 +219,14 @@ public class AdvancementOverviewPanel
 
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
-        int entryHeight, int mouseX, int mouseY, boolean p_194999_5_, float partialTick) {
+        int entryHeight, int mouseX, int mouseY, boolean unused, float partialTick) {
+
+      // Positions
       int iconWidth = 18;
       int maxFontWidth = listWidth - iconWidth - 4;
+      float textPositionLeft = (float) left + iconWidth;
+
+      // Update relative position for other calculations like mouse clicks.
       this.relativeLeftPosition = left;
       this.relativeTopPosition = top;
 
@@ -240,14 +241,14 @@ public class AdvancementOverviewPanel
       font.drawShadow(poseStack,
           Language.getInstance()
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          left + iconWidth + (float) 3, top + (float) 1, 0xFFFFFF);
+          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
       font.draw(poseStack,
           Language.getInstance()
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          left + iconWidth + (float) 3, top + (float) 1, 0xFFFFFF);
+          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
       if (titleWidth != maxFontWidth) {
-        font.draw(poseStack, new TextComponent("…"), left + iconWidth + titleWidth, top + (float) 1,
-            0xFFFFFF);
+        font.draw(poseStack, new TextComponent("\u2026"), textPositionLeft + titleWidth,
+            top + (float) 1, 0xFFFFFF);
       }
 
       // Description (two lines)
@@ -255,16 +256,15 @@ public class AdvancementOverviewPanel
       int descriptionLines = 1;
       for (FormattedCharSequence descriptionPart : descriptionParts) {
         float descriptionTopPosition = top + (float) (2 + font.lineHeight) * descriptionLines;
-        font.drawShadow(poseStack, descriptionPart, left + iconWidth + (float) 3,
-            descriptionTopPosition, this.descriptionColor);
-        font.draw(poseStack, descriptionPart, left + iconWidth + (float) 3, descriptionTopPosition,
+        font.drawShadow(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
-        if (descriptionParts.size() == 3 && descriptionLines == 2) {
-          font.draw(poseStack, new TextComponent("…"),
-              left + iconWidth
-                  + (float) (font.width(descriptionPart) < maxFontWidth - 6
-                      ? font.width(descriptionPart) + 6
-                      : maxFontWidth - 6),
+        font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
+            this.descriptionColor);
+        if (descriptionParts.size() >= 3 && descriptionLines == 2) {
+          font.draw(poseStack, new TextComponent("\u2026"),
+              textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
+                  ? font.width(descriptionPart) + 6
+                  : maxFontWidth - 6),
               descriptionTopPosition, 0xFFFFFF);
           break;
         }

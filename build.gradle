@@ -183,7 +183,7 @@ curseforge {
   project {
     id = "${curseforge_project_id}"
     changelog = 'See https://github.com/MarkusBordihn/BOs-Advancements-Tracker/commits/main'
-    releaseType = 'release'
+    releaseType = 'beta'
     addGameVersion("1.18.2")
     addGameVersion("Forge")
   }

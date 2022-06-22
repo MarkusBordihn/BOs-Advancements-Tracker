@@ -30,7 +30,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
@@ -43,7 +42,7 @@ import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 import de.markusbordihn.advancementstracker.client.gui.widget.AdvancementsTrackerWidget;
 
-@EventBusSubscriber
+@EventBusSubscriber(value = Dist.CLIENT)
 public class ModKeyMapping {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
@@ -58,7 +57,6 @@ public class ModKeyMapping {
       Constants.KEY_PREFIX + "show_overview", KeyConflictContext.IN_GAME, KeyModifier.CONTROL,
       InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_L), Constants.KEY_PREFIX + "category");
 
-  @OnlyIn(Dist.CLIENT)
   @SubscribeEvent
   public static void handleKeyboardKeyPressedEvent(InputEvent.KeyInputEvent event) {
     if (ModKeyMapping.KEY_SHOW_WIDGET.isDown()) {

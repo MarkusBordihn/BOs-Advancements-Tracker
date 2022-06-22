@@ -32,6 +32,7 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.resources.ResourceLocation;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -47,7 +48,7 @@ public class TrackedAdvancementsManager {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
-  private static int maxNumberOfTrackedAdvancements = 3;
+  private static int maxNumberOfTrackedAdvancements = 4;
   private static List<String> trackedAdvancementsDefault = new ArrayList<>();
   private static List<String> trackedAdvancementsLocal = new ArrayList<>();
   private static List<String> trackedAdvancementsRemote = new ArrayList<>();
@@ -250,6 +251,20 @@ public class TrackedAdvancementsManager {
 
   public static boolean hasReachedTrackedAdvancementLimit() {
     return trackedAdvancements.size() >= maxNumberOfTrackedAdvancements;
+  }
+
+  public static boolean hasTrackedAdvancement(AdvancementEntry advancementEntry) {
+    ResourceLocation rootAdvancementId = advancementEntry.getId();
+    for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
+      if (trackedAdvancementEntry.rootAdvancement != null && trackedAdvancementEntry.rootAdvancement.getId() == rootAdvancementId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static boolean hasTrackedAdvancements() {
+    return !trackedAdvancements.isEmpty();
   }
 
   public static boolean isTrackedAdvancement(AdvancementEntry advancementEntry) {
