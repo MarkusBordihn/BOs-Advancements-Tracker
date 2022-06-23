@@ -52,7 +52,6 @@ public class AdvancementOverviewPanel
 
   private final int listLeft;
   private final int listWidth;
-  private ResourceLocation background;
 
   private AdvancementsTrackerScreen parent;
 
@@ -66,6 +65,7 @@ public class AdvancementOverviewPanel
     this.setLeftPos(listLeft + 1);
     this.refreshList();
     this.setRenderBackground(false);
+    this.setRenderSelection(false);
   }
 
   public void refreshList() {
@@ -76,7 +76,9 @@ public class AdvancementOverviewPanel
         mod -> new ChildAdvancementEntry(mod, this.parent));
 
     // Reset scroll bar
-    setScrollAmount(0);
+    if (getScrollAmount() > 0) {
+      setScrollAmount(0);
+    }
   }
 
   public class ChildAdvancementEntry extends ObjectSelectionList.Entry<ChildAdvancementEntry> {
@@ -97,6 +99,8 @@ public class AdvancementOverviewPanel
     private final int completedCriteriaNumber;
     private final int descriptionColor;
     private final int remainingCriteriaNumber;
+
+    private boolean isSelected = false;
     private int relativeLeftPosition;
     private int relativeTopPosition;
 
@@ -112,6 +116,10 @@ public class AdvancementOverviewPanel
       this.parent = parent;
       this.remainingCriteriaNumber = advancementEntry.remainingCriteriaNumber;
       this.title = advancementEntry.getTitle();
+    }
+
+    public AdvancementEntry getAdvancementEntry() {
+      return advancementEntry;
     }
 
     private void renderBackground(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
@@ -174,7 +182,7 @@ public class AdvancementOverviewPanel
       }
     }
 
-    private void renderSeparator(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
+    private void renderDecoration(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
       int topPosition = top - 2;
       int leftPosition = getLeft();
       int rightPosition = leftPosition + entryWidth - 2;
@@ -208,10 +216,6 @@ public class AdvancementOverviewPanel
       poseStack.popPose();
     }
 
-    public AdvancementEntry getAdvancementEntry() {
-      return advancementEntry;
-    }
-
     @Override
     public Component getNarration() {
       return new TranslatableComponent("narrator.select", advancementEntry.title);
@@ -220,6 +224,9 @@ public class AdvancementOverviewPanel
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
         int entryHeight, int mouseX, int mouseY, boolean unused, float partialTick) {
+
+      // Selection state
+      this.isSelected = isSelectedItem(entryIdx);
 
       // Positions
       int iconWidth = 18;
@@ -247,8 +254,8 @@ public class AdvancementOverviewPanel
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
           textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
       if (titleWidth != maxFontWidth) {
-        font.draw(poseStack, new TextComponent("\u2026"), textPositionLeft + titleWidth,
-            top + (float) 1, 0xFFFFFF);
+        font.draw(poseStack, Constants.ELLIPSIS, textPositionLeft + titleWidth, top + (float) 1,
+            0xFFFFFF);
       }
 
       // Description (two lines)
@@ -261,7 +268,7 @@ public class AdvancementOverviewPanel
         font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
         if (descriptionParts.size() >= 3 && descriptionLines == 2) {
-          font.draw(poseStack, new TextComponent("\u2026"),
+          font.draw(poseStack, Constants.ELLIPSIS,
               textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
                   ? font.width(descriptionPart) + 6
                   : maxFontWidth - 6),
@@ -274,8 +281,8 @@ public class AdvancementOverviewPanel
       // Progress
       this.renderProgress(poseStack, top, entryWidth, entryHeight, iconWidth);
 
-      // Separator
-      this.renderSeparator(poseStack, top, entryWidth, entryHeight);
+      // Decoration
+      this.renderDecoration(poseStack, top, entryWidth, entryHeight);
 
       // Checkbox for enabling tracking
       this.renderTrackingCheckbox(poseStack, top, left);
@@ -290,8 +297,10 @@ public class AdvancementOverviewPanel
       double relativeY = mouseY - this.relativeTopPosition;
       if ((relativeX > 3 && relativeX < 15) && (relativeY > 25 && relativeX < 35)) {
         TrackedAdvancementsManager.toggleTrackedAdvancement(this.getAdvancementEntry());
+      } else {
+        parent.setSelectedChildAdvancement(this);
+        setSelected(this);
       }
-      parent.setSelectedChildAdvancement(this);
       return false;
     }
   }

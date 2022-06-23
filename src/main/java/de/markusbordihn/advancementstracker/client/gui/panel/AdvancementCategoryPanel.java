@@ -63,6 +63,7 @@ public class AdvancementCategoryPanel
     this.setLeftPos(listLeft);
     this.refreshList();
     this.setRenderBackground(false);
+    this.setRenderSelection(false);
   }
 
   private static String stripControlCodes(String value) {
@@ -77,10 +78,8 @@ public class AdvancementCategoryPanel
         mod -> new RootAdvancementEntry(mod, this.parent));
 
     // Pre-select first entry if we have nothing selected.
-    log.info("{}", getEntry(0));
     if (this.getSelected() == null && getItemCount() > 0 && getEntry(0) != null) {
       RootAdvancementEntry rootAdvancementEntry = getEntry(0);
-      log.info("Pre-select {}", rootAdvancementEntry);
       parent.setSelectedRootAdvancement(rootAdvancementEntry);
       this.setSelected(rootAdvancementEntry);
     }
@@ -100,6 +99,8 @@ public class AdvancementCategoryPanel
     private final TextComponent title;
     private final int descriptionColor;
 
+    private boolean isSelected = false;
+
     RootAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
       this.background = advancementEntry.background;
@@ -111,11 +112,19 @@ public class AdvancementCategoryPanel
       this.title = new TextComponent(stripControlCodes(advancementEntry.title));
     }
 
+    public AdvancementEntry getAdvancementEntry() {
+      return advancementEntry;
+    }
+
     private void renderBackground(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
       if (this.background == null) {
         return;
       }
-      RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
+      if (isSelected) {
+        RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
+      } else {
+        RenderSystem.setShaderColor(0.4f, 0.4f, 0.4f, 1);
+      }
       RenderSystem.setShaderTexture(0, this.background);
       poseStack.pushPose();
       GuiComponent.blit(poseStack, getLeft() + 1, top - 1, 0, 0, entryWidth - 2, entryHeight + 2,
@@ -130,19 +139,37 @@ public class AdvancementCategoryPanel
       minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 1, top + 6);
     }
 
-    private void renderTrackedAdvancementsStatus(PoseStack poseStack, int top, int left, int entryWidth) {
+    private void renderTrackedAdvancementsStatus(PoseStack poseStack, int top, int left,
+        int entryWidth) {
       if (TrackedAdvancementsManager.hasTrackedAdvancement(advancementEntry)) {
         RenderSystem.setShaderColor(1, 1, 1, 1);
         RenderSystem.setShaderTexture(0, miscTexture);
         poseStack.pushPose();
         poseStack.scale(0.5f, 0.5f, 0.5f);
-        GuiComponent.blit(poseStack, (left + entryWidth - 12) * 2, (top + 1) * 2, 81, 6, 16, 16, 256, 256);
+        GuiComponent.blit(poseStack, (left + entryWidth - 12) * 2, (top + 1) * 2, 81, 6, 16, 16,
+            256, 256);
         poseStack.popPose();
       }
     }
 
-    public AdvancementEntry getAdvancementEntry() {
-      return advancementEntry;
+    private void renderDecoration(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
+      int topPosition = top - 2;
+      int leftPosition = getLeft();
+      int rightPosition = leftPosition + entryWidth - 2;
+      int bottomPosition = top + entryHeight;
+
+      RenderSystem.setShaderColor(1, 1, 1, 1);
+      RenderSystem.setShaderTexture(0, miscTexture);
+      poseStack.pushPose();
+      GuiComponent.blit(poseStack, leftPosition, topPosition, 0, 0, entryWidth - 1, 1,
+          entryWidth - 1, 256);
+      GuiComponent.blit(poseStack, rightPosition, topPosition + 1, 255, 0, 1, entryHeight + 2, 256,
+          entryHeight);
+      GuiComponent.blit(poseStack, leftPosition, bottomPosition, 0, 255, entryWidth - 1, 1,
+          entryWidth - 1, 256);
+      GuiComponent.blit(poseStack, leftPosition, topPosition + 1, 0, 0, 1, entryHeight + 2, 256,
+          entryHeight);
+      poseStack.popPose();
     }
 
     @Override
@@ -153,6 +180,9 @@ public class AdvancementCategoryPanel
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
         int entryHeight, int mouseX, int mouseY, boolean unused, float partialTick) {
+
+      // Selection state
+      this.isSelected = isSelectedItem(entryIdx);
 
       // Positions
       int iconWidth = 14;
@@ -169,18 +199,19 @@ public class AdvancementCategoryPanel
       this.renderTrackedAdvancementsStatus(poseStack, top, left, entryWidth);
 
       // Title (only one line)
+      int titleColor = isSelected ? 0xFFFF00 : 0xFFFFFF;
       int titleWidth = font.width(title) > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
       font.drawShadow(poseStack,
           Language.getInstance()
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
+          textPositionLeft + 3, top + (float) 1, titleColor);
       font.draw(poseStack,
           Language.getInstance()
               .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
+          textPositionLeft + 3, top + (float) 1, titleColor);
       if (titleWidth != maxFontWidth) {
-        font.draw(poseStack, new TextComponent("…"), textPositionLeft + titleWidth, top + 1.0f,
-            0xFFFFFF);
+        font.draw(poseStack, Constants.ELLIPSIS, textPositionLeft + titleWidth, top + 1.0f,
+            titleColor);
       }
 
       // Description (two lines)
@@ -193,7 +224,7 @@ public class AdvancementCategoryPanel
         font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
         if (descriptionParts.size() == 3 && descriptionLines == 2) {
-          font.draw(poseStack, new TextComponent("…"),
+          font.draw(poseStack, Constants.ELLIPSIS,
               textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
                   ? font.width(descriptionPart) + 6
                   : maxFontWidth - 6),
@@ -202,6 +233,9 @@ public class AdvancementCategoryPanel
         }
         descriptionLines++;
       }
+
+      // Decoration
+      this.renderDecoration(poseStack, top, entryWidth, entryHeight);
     }
 
     @Override
@@ -228,7 +262,7 @@ public class AdvancementCategoryPanel
 
   @Override
   protected void renderBackground(PoseStack poseStack) {
-    this.parent.renderBackground(poseStack);
+    // this.parent.renderBackground(poseStack);
   }
 
 }

@@ -19,6 +19,8 @@
 
 package de.markusbordihn.advancementstracker;
 
+import net.minecraft.network.chat.TextComponent;
+
 public final class Constants {
 
   protected Constants() {}
@@ -35,4 +37,7 @@ public final class Constants {
 
   // Prefixes
   public static final String KEY_PREFIX = "advancements_tracker.keys.";
+
+  // Pre-defined Texts
+  public static final TextComponent ELLIPSIS = new TextComponent("\u2026");
 }

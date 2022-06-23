@@ -44,6 +44,7 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
   private static final short ADD_LISTENER_TICK = 2;
   private static boolean hasListener = false;
   private static ClientAdvancementManager clientAdvancementManager;
+  private static ClientAdvancements clientAdvancements;
 
   protected ClientAdvancementManager() {}
 
@@ -71,11 +72,15 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
   public static void reset() {
     log.debug("Resetting Client Advancement Manager ...");
     clientAdvancementManager = new ClientAdvancementManager();
+    clientAdvancements = null;
     hasListener = false;
     ticks = 0;
   }
 
   public static void addListener() {
+    if (clientAdvancements != null) {
+      return;
+    }
     Minecraft minecraft = Minecraft.getInstance();
     if (minecraft == null || minecraft.player == null || minecraft.player.connection == null
         || minecraft.player.connection.getAdvancements() == null || minecraft.player.connection
@@ -83,6 +88,7 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
       return;
     }
     log.debug("Adding client advancement manager listener...");
+    clientAdvancements = minecraft.player.connection.getAdvancements();
     minecraft.player.connection.getAdvancements().setListener(clientAdvancementManager);
     hasListener = true;
   }

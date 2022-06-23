@@ -91,7 +91,7 @@ public class AdvancementsManager {
     AdvancementEntry advancementEntry = new AdvancementEntry(advancement, advancementProgress);
     rootAdvancements.add(advancementEntry);
     advancementsIndex.add(advancementId);
-    log.info("{}", advancementEntry);
+    log.debug("Added Root Advancement: {}", advancementEntry);
   }
 
   public static void addAdvancementTask(Advancement advancement) {
@@ -118,7 +118,7 @@ public class AdvancementsManager {
     if (!hasAdvancements) {
       hasAdvancements = true;
     }
-    log.info("{}", advancementEntry);
+    log.debug("Added Advancement Task: {}", advancementEntry);
     TrackedAdvancementsManager.checkForTrackedAdvancement(advancementEntry);
   }
 
@@ -166,6 +166,26 @@ public class AdvancementsManager {
     return getSortedRootAdvancements(AdvancementEntry.sortByTitle());
   }
 
+  public static int getNumberOfRootAdvancements() {
+    return rootAdvancements.size();
+  }
+
+  public static int getNumberOfAdvancements(AdvancementEntry rootAdvancement) {
+    Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
+    return advancements != null ? advancements.size() : 0;
+  }
+
+  public static int getNumberOfCompletedAdvancements(AdvancementEntry rootAdvancement) {
+    int completedAdvancements = 0;
+    Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
+    for (AdvancementEntry advancementEntry : advancements) {
+      if (advancementEntry.isDone) {
+        completedAdvancements++;
+      }
+    }
+    return completedAdvancements;
+  }
+
   public static AdvancementEntry getAdvancement(Advancement advancement) {
     return getAdvancement(advancement.getId().toString());
   }
@@ -209,7 +229,6 @@ public class AdvancementsManager {
 
   public static void updateAdvancementProgress(Advancement advancement,
       AdvancementProgress advancementProgress) {
-    String advancementId = advancement.getId().toString();
     advancementProgressMap.put(advancement, advancementProgress);
     AdvancementEntry advancementEntry = getAdvancement(advancement);
     if (advancementEntry == null) {

@@ -44,7 +44,6 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.LivingEntity;
@@ -75,7 +74,6 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   // Pre-defined colors and placeholders
   private static final int TEXT_COLOR_WHITE = ChatFormatting.WHITE.getColor();
   private static final int TEXT_COLOR_YELLOW = ChatFormatting.YELLOW.getColor();
-  private static final TextComponent ELLIPSIS = new TextComponent("\u2026");
 
   // Pre-defined texts
   private static MutableComponent noAdvancementsText =
@@ -144,13 +142,21 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     if (TrackedAdvancementsManager.hasTrackedAdvancements()) {
       renderAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
     } else if (AdvancementsManager.hasAdvancements()) {
-      renderNoTrackedAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
+      renderNoTrackedAdvancements(poseStack, x, y + this.font.lineHeight + 4);
     } else {
-      renderNoAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
+      renderNoAdvancements(poseStack, x, y + this.font.lineHeight + 4);
     }
   }
 
-  public void renderTitle(PoseStack poseStack) {
+  public static void updateTrackedAdvancements() {
+    trackedAdvancements = TrackedAdvancementsManager.getTrackedAdvancements();
+  }
+
+  public static void toggleVisibility() {
+    hudVisible = !hudVisible;
+  }
+
+  private void renderTitle(PoseStack poseStack) {
     poseStack.pushPose();
     fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
         1325400064);
@@ -158,8 +164,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.popPose();
   }
 
-  public void renderNoTrackedAdvancements(PoseStack poseStack,
-      MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
+  private void renderNoTrackedAdvancements(PoseStack poseStack, int x, int y) {
     int textContentHeight = (this.font.lineHeight + 2) * 9;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
@@ -169,8 +174,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.popPose();
   }
 
-  public void renderNoAdvancements(PoseStack poseStack,
-      MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
+  private void renderNoAdvancements(PoseStack poseStack, int x, int y) {
     int textContentHeight = (this.font.lineHeight + 2) * 9;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
@@ -180,7 +184,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.popPose();
   }
 
-  public void renderAdvancements(PoseStack poseStack,
+  private void renderAdvancements(PoseStack poseStack,
       MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
     poseStack.pushPose();
     int topPos = y;
@@ -190,7 +194,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.popPose();
   }
 
-  public int renderAdvancement(PoseStack poseStack,
+  private int renderAdvancement(PoseStack poseStack,
       MultiBufferSource.BufferSource multiBufferSource, int x, int y,
       AdvancementEntry advancementEntry) {
 
@@ -236,7 +240,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Show ellipsis if title is to long.
     if (titleWidth != maxFontWidth - titlePaddingLeft - titlePaddingRight) {
-      font.draw(poseStack, ELLIPSIS,
+      font.draw(poseStack, Constants.ELLIPSIS,
           ((referenceLeftPosition + titlePaddingLeft) / titleScale) + titleWidthScaled,
           referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
     }
@@ -276,7 +280,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
       font.draw(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
           referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
       if ((descriptionParts.size() >= 3 && descriptionLines == 3)) {
-        font.draw(poseStack, ELLIPSIS, (referenceLeftPosition / descriptionScale)
+        font.draw(poseStack, Constants.ELLIPSIS, (referenceLeftPosition / descriptionScale)
             + ((font.width(descriptionPart) / descriptionScale) < maxFontWidth / descriptionScale
                 - 3 ? (font.width(descriptionPart) / descriptionScale) - 7
                     : (maxFontWidth / descriptionScale) - 7),
@@ -297,14 +301,6 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     return referenceTopPosition - y;
   }
 
-  public static void updateTrackedAdvancements() {
-    trackedAdvancements = TrackedAdvancementsManager.getTrackedAdvancements();
-  }
-
-  public static void toggleVisibility() {
-    hudVisible = !hudVisible;
-  }
-
   private static void updatePredefinedText() {
     // Update text for custom key-mapping.
     noAdvancementsText =
@@ -319,7 +315,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
             .withStyle(ChatFormatting.WHITE);
   }
 
-  public void renderGuiItem(ItemStack itemStack, MultiBufferSource.BufferSource multiBufferSource,
+  private void renderGuiItem(ItemStack itemStack, MultiBufferSource.BufferSource multiBufferSource,
       int x, int y, float scale) {
     this.renderGuiItem(itemStack, multiBufferSource, x, y, scale,
         itemRenderer.getModel(itemStack, (Level) null, (LivingEntity) null, 0));

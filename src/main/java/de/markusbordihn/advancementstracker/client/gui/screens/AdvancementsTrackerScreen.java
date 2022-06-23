@@ -57,6 +57,8 @@ public class AdvancementsTrackerScreen extends Screen {
 
   // Layout
   private static final int PADDING = 10;
+  private static final int STATUS_BAR_HEIGHT = 11;
+  private static final int SCROLLBAR_WIDTH = 6;
   private int buttonMargin = 1;
 
   private Screen parentScreen = null;
@@ -90,7 +92,8 @@ public class AdvancementsTrackerScreen extends Screen {
     }
 
     Component getButtonText() {
-      return new TranslatableComponent("fml.menu.mods." + StringUtils.toLowerCase(name()));
+      return new TranslatableComponent(
+          "advancements_tracker.sort." + StringUtils.toLowerCase(name()));
     }
   }
 
@@ -109,6 +112,11 @@ public class AdvancementsTrackerScreen extends Screen {
 
   // Layout specific settings
   private int listWidth;
+
+  // Cached values
+  private int numberOfRootAdvancements = 0;
+  private int numberOfCompletedAdvancements = 0;
+  private int numberOfTotalAdvancements = 0;
 
   public AdvancementsTrackerScreen() {
     this(new TextComponent("Advancements Tracker"));
@@ -172,8 +180,12 @@ public class AdvancementsTrackerScreen extends Screen {
       return;
     }
     this.selectedRootAdvancement = advancementEntry;
-    log.info("Selected root entry ... {}", this.selectedRootAdvancement);
+    log.debug("Selected root entry ... {}", this.selectedRootAdvancement);
     this.reloadChildAdvancements();
+    this.numberOfCompletedAdvancements =
+        AdvancementsManager.getNumberOfCompletedAdvancements(this.selectedRootAdvancement);
+    this.numberOfTotalAdvancements =
+        AdvancementsManager.getNumberOfAdvancements(this.selectedRootAdvancement);
   }
 
   public AdvancementEntry getSelectedRootAdvancement() {
@@ -210,11 +222,36 @@ public class AdvancementsTrackerScreen extends Screen {
       return;
     }
     this.selectedChildAdvancement = advancementEntry;
-    log.info("Selected child entry ... {}", this.selectedChildAdvancement);
+    log.debug("Selected child entry ... {}", this.selectedChildAdvancement);
   }
 
   public AdvancementEntry getSelectedChildAdvancement() {
     return this.selectedChildAdvancement;
+  }
+
+  private void renderNumberOfRootAdvancements(PoseStack poseStack) {
+    if (numberOfRootAdvancements > 0) {
+      float scaleFactor = 0.75f;
+      poseStack.pushPose();
+      poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
+      font.draw(poseStack, "categories: " + numberOfRootAdvancements,
+          (this.listWidth - PADDING - 48.0f) / scaleFactor, (this.height - 8) / scaleFactor,
+          0xFFFFFF);
+      poseStack.popPose();
+    }
+  }
+
+  private void renderAdvancementsStats(PoseStack poseStack) {
+    if (this.numberOfTotalAdvancements > 0) {
+      float scaleFactor = 0.75f;
+      poseStack.pushPose();
+      poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
+      font.draw(poseStack,
+          this.numberOfCompletedAdvancements + " of " + this.numberOfTotalAdvancements
+              + " completed ",
+          (width - 80.0f) / scaleFactor, (this.height - 8) / scaleFactor, 0xFFFFFF);
+      poseStack.popPose();
+    }
   }
 
   @Override
@@ -222,54 +259,75 @@ public class AdvancementsTrackerScreen extends Screen {
     super.init();
 
     // Calculate viewport and general design
-    listWidth = Math.max(width / 3, 100);
+    this.listWidth = Math.max(width / 3, 100);
     int topPosition = PADDING + 10;
 
     // Panel Positions
     int categoryPanelLeftPosition = 0;
-    int overviewPanelLeftPosition = listWidth + PADDING;
 
-    // Define areas
-    this.advancementCategoryPanel = new AdvancementCategoryPanel(this, listWidth, topPosition,
-        categoryPanelLeftPosition, height - PADDING);
-    this.advancementOverviewPanel = new AdvancementOverviewPanel(this, listWidth * 2 - 13,
-        topPosition, overviewPanelLeftPosition, height - PADDING);
+    // Define scroll panels
+    this.advancementCategoryPanel = new AdvancementCategoryPanel(this, this.listWidth, topPosition,
+        categoryPanelLeftPosition, height - STATUS_BAR_HEIGHT);
+    this.advancementOverviewPanel = new AdvancementOverviewPanel(this,
+        width - this.listWidth - (2 * SCROLLBAR_WIDTH) - 1, topPosition,
+        this.advancementCategoryPanel.getWidth() + SCROLLBAR_WIDTH, height - STATUS_BAR_HEIGHT);
 
     // Add Scroll panels for advancements
     this.addRenderableWidget(this.advancementCategoryPanel);
     this.addRenderableWidget(this.advancementOverviewPanel);
 
-    // Sort Buttons
-    int x = 5;
-    int y = this.height - 10;
-    this.addRenderableWidget(CategorySortType.NORMAL.button = new SmallButton(x,
-        y, 20, 10,
-        CategorySortType.NORMAL.getButtonText(), b -> resortRootAdvancements(CategorySortType.NORMAL)));
-    x += 20 + buttonMargin;
-    this.addRenderableWidget(CategorySortType.A_TO_Z.button = new SmallButton(x,
-        y, 20, 10,
-        CategorySortType.A_TO_Z.getButtonText(), b -> resortRootAdvancements(CategorySortType.A_TO_Z)));
-    x += 20 + buttonMargin;
-    this.addRenderableWidget(CategorySortType.Z_TO_A.button = new SmallButton(x,
-        y, 20, 10,
-        CategorySortType.Z_TO_A.getButtonText(), b -> resortRootAdvancements(CategorySortType.Z_TO_A)));
-    resortRootAdvancements(CategorySortType.NORMAL);
+    // Sort Buttons for root advancements
+    int buttonPositionX = 5;
+    int buttonPositionY = this.height - 11;
+    CategorySortType.NORMAL.button = new SmallButton(buttonPositionX, buttonPositionY, 20, 10,
+        CategorySortType.NORMAL.getButtonText(),
+        b -> resortRootAdvancements(CategorySortType.NORMAL));
+    this.addRenderableWidget(CategorySortType.NORMAL.button);
+    buttonPositionX += 20 + buttonMargin;
+    CategorySortType.A_TO_Z.button = new SmallButton(buttonPositionX, buttonPositionY, 20, 10,
+        CategorySortType.A_TO_Z.getButtonText(),
+        b -> resortRootAdvancements(CategorySortType.A_TO_Z));
+    this.addRenderableWidget(CategorySortType.A_TO_Z.button);
+    buttonPositionX += 20 + buttonMargin;
+    CategorySortType.Z_TO_A.button = new SmallButton(buttonPositionX, buttonPositionY, 20, 10,
+        CategorySortType.Z_TO_A.getButtonText(),
+        b -> resortRootAdvancements(CategorySortType.Z_TO_A));
+    this.addRenderableWidget(CategorySortType.Z_TO_A.button);
+    reloadRootAdvancements();
+
+    // Sort Buttons for child Advancements
 
     // Reload Advancements
-    reloadRootAdvancements();
+
     reloadChildAdvancements();
+
+    // Cache specific numbers
+    this.numberOfRootAdvancements = AdvancementsManager.getNumberOfRootAdvancements();
   }
 
   @Override
   public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
     this.renderBackground(poseStack);
 
+    // Render panels for category and overview
     this.advancementCategoryPanel.render(poseStack, mouseX, mouseY, partialTick);
     this.advancementOverviewPanel.render(poseStack, mouseX, mouseY, partialTick);
 
     super.render(poseStack, mouseX, mouseY, partialTick);
 
-    drawCenteredString(poseStack, this.font, this.title, this.width / 2, 8, 16777215);
+    // Render stats
+    this.renderNumberOfRootAdvancements(poseStack);
+    this.renderAdvancementsStats(poseStack);
+
+    // Title
+    font.draw(poseStack, this.title, this.listWidth + PADDING + 10, 8, 16777215);
+  }
+
+  @Override
+  public void renderBackground(PoseStack poseStack) {
+    // Background
+    this.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
+    this.fillGradient(poseStack, 0, height - 12, this.width, this.height, -1072689136, -804253680);
   }
 
   @Override

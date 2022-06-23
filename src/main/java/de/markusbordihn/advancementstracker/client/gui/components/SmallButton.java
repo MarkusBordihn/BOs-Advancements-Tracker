@@ -34,7 +34,7 @@ public class SmallButton extends Button {
   private final Minecraft minecraft;
   private final Font font;
 
-  private static final float SCALING = 0.5f;
+  private static final float SCALING = 0.55f;
   private final int scaledX;
   private final int scaledY;
   private final int scaledWidth;
