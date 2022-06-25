@@ -141,7 +141,7 @@ dependencies {
   minecraft 'net.minecraftforge:forge:1.18.2-40.1.52'
 
   // Compability tests for better advancements
-  implementation fg.deobf("curse.maven:better-advancements-272515:3703960")
+  runtimeOnly fg.deobf("curse.maven:better-advancements-272515:3703960")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

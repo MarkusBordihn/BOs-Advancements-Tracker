@@ -19,14 +19,11 @@
 
 package de.markusbordihn.advancementstracker.client.advancements;
 
-import java.io.File;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -35,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.resources.ResourceLocation;
 
 import net.minecraftforge.api.distmarker.Dist;
@@ -44,7 +40,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
-import de.markusbordihn.advancementstracker.config.ClientConfig;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class AdvancementsManager {
@@ -53,7 +48,6 @@ public class AdvancementsManager {
 
   private static AdvancementEntry selectedAdvancement;
   private static AdvancementEntry selectedRootAdvancement;
-  private static Date startDate = new Date();
   private static Map<Advancement, AdvancementProgress> advancementProgressMap = new HashMap<>();
   private static Map<ResourceLocation, Set<AdvancementEntry>> advancementsMap = new HashMap<>();
   private static Set<AdvancementEntry> rootAdvancements = new HashSet<>();
@@ -71,8 +65,7 @@ public class AdvancementsManager {
   }
 
   public static void reset() {
-    log.info("Reset Advancements Manager ...");
-    startDate = new Date();
+    log.debug("Reset Advancements Manager ...");
     advancementProgressMap = new HashMap<>();
     advancementsIndex = new HashSet<>();
     advancementsMap = new HashMap<>();

@@ -60,10 +60,10 @@ public class ModKeyMapping {
   @SubscribeEvent
   public static void handleKeyboardKeyPressedEvent(InputEvent.KeyInputEvent event) {
     if (ModKeyMapping.KEY_SHOW_WIDGET.isDown()) {
-      log.info("Show/hide Widget ...");
+      log.debug("Show/hide Widget ...");
       AdvancementsTrackerWidget.toggleVisibility();
     } else if (ModKeyMapping.KEY_SHOW_OVERVIEW.isDown()) {
-      log.info("Show/hide Overview ...");
+      log.debug("Show/hide Overview ...");
       Minecraft.getInstance().setScreen(new AdvancementsTrackerScreen());
     }
   }

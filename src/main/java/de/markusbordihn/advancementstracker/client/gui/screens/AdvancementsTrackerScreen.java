@@ -296,9 +296,6 @@ public class AdvancementsTrackerScreen extends Screen {
     reloadRootAdvancements();
 
     // Sort Buttons for child Advancements
-
-    // Reload Advancements
-
     reloadChildAdvancements();
 
     // Cache specific numbers
@@ -320,7 +317,7 @@ public class AdvancementsTrackerScreen extends Screen {
     this.renderAdvancementsStats(poseStack);
 
     // Title
-    font.draw(poseStack, this.title, this.listWidth + PADDING + 10, 8, 16777215);
+    font.draw(poseStack, this.title, this.listWidth + PADDING + 10f, 8, 16777215);
   }
 
   @Override

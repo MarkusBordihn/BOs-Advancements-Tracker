@@ -25,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 
 import net.minecraftforge.api.distmarker.Dist;
@@ -34,17 +36,20 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
+import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
 @EventBusSubscriber(value = Dist.CLIENT)
 public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static short ticks = 0;
   private static final short ADD_LISTENER_TICK = 2;
-  private static boolean hasListener = false;
+
   private static ClientAdvancementManager clientAdvancementManager;
   private static ClientAdvancements clientAdvancements;
+  private static boolean hasListener = false;
+  private static boolean needsReload = false;
+  private static int listenerTicks = 0;
 
   protected ClientAdvancementManager() {}
 
@@ -59,13 +64,30 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
   @SubscribeEvent
   public static void handleClientTickEvent(TickEvent.ClientTickEvent event) {
     if (event.phase == TickEvent.Phase.END) {
-      ticks++;
+      listenerTicks++;
       return;
     }
 
-    if (ticks == ADD_LISTENER_TICK && !hasListener) {
+    if (listenerTicks >= ADD_LISTENER_TICK && !hasListener) {
       addListener();
-      ticks = 0;
+      listenerTicks = 0;
+    }
+
+    // Other advancements screen will remove the event listener, for this reason we need to check
+    // if we need to reload the advancements after such advancements screen was open.
+    Minecraft minecraft = Minecraft.getInstance();
+    if (minecraft != null) {
+      if (minecraft.screen != null) {
+        Screen screen = minecraft.screen;
+        if (!needsReload && !(screen instanceof AdvancementsTrackerScreen)
+            && (screen instanceof AdvancementsScreen
+                || screen instanceof ClientAdvancements.Listener)) {
+          log.debug("Need to reload advancements after screen {} is closed!", minecraft.screen);
+          needsReload = true;
+        }
+      } else if (needsReload) {
+        reset();
+      }
     }
   }
 
@@ -74,7 +96,8 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
     clientAdvancementManager = new ClientAdvancementManager();
     clientAdvancements = null;
     hasListener = false;
-    ticks = 0;
+    listenerTicks = 0;
+    needsReload = false;
   }
 
   public static void addListener() {
@@ -95,8 +118,15 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   public static boolean isValidAdvancement(Advancement advancement) {
     String advancementId = advancement.getId().toString();
-    return advancement.getDisplay() != null && !advancementId.startsWith("minecraft:recipes/")
-        && !advancementId.startsWith("smallships:recipes");
+    if (advancementId.startsWith("minecraft:recipes/")
+        || advancementId.startsWith("smallships:recipes")) {
+      return false;
+    }
+    if (advancement.getDisplay() == null) {
+      log.debug("[Invalid Advancement] {} with {}", advancement, advancement.getDisplay());
+      return false;
+    }
+    return true;
   }
 
   @Override
@@ -118,6 +148,7 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   @Override
   public void onRemoveAdvancementRoot(Advancement advancement) {
+    // Not used.
     log.debug("[Remove Advancement Root] {}", advancement);
   }
 
@@ -136,6 +167,7 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   @Override
   public void onAdvancementsCleared() {
+    // Not used.
     log.debug("[Advancements Cleared] ...");
   }
 

@@ -79,6 +79,7 @@ public class AdvancementCategoryPanel
 
     // Pre-select first entry if we have nothing selected.
     if (this.getSelected() == null && getItemCount() > 0 && getEntry(0) != null) {
+      this.refreshSelection();
       RootAdvancementEntry rootAdvancementEntry = getEntry(0);
       parent.setSelectedRootAdvancement(rootAdvancementEntry);
       this.setSelected(rootAdvancementEntry);

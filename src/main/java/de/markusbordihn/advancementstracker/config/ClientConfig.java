@@ -49,7 +49,7 @@ public class ClientConfig {
     final Pair<Config, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Config::new);
     clientSpec = specPair.getRight();
     CLIENT = specPair.getLeft();
-    log.info("Registering client config ...");
+    log.info("{} Client config ...", Constants.LOG_REGISTER_PREFIX);
     ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, clientSpec);
   }
 

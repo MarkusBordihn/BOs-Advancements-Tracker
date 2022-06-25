@@ -321,6 +321,10 @@ public class AdvancementsTrackerWidget extends GuiComponent {
         itemRenderer.getModel(itemStack, (Level) null, (LivingEntity) null, 0));
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated
   private void renderGuiItem(ItemStack itemStack, MultiBufferSource.BufferSource multiBufferSource,
       int x, int y, float scale, BakedModel model) {
     this.textureManager.getTexture(TextureAtlas.LOCATION_BLOCKS).setFilter(false, false);
