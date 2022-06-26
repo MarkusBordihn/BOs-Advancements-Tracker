@@ -1,11 +1,15 @@
-# Advancements Tracker
+# Advancements Tracker and Overview
 
 Advancements Tracker is a Minecraft Forge Client Mod which give you an overlay which shows you the current process of your advancements to easier follow them.
-It will also add additional features to make archiving the advancements more interesting and meaningful.
+It will also add additional features to make achieving the advancements more interesting and meaningful.
 
 **WARNING: The 1.18.2 version is still in development, so it could include some error and ugly UI parts.**
 
 ## 🚀Features
+
+- Client side only, works with multiplayer server
+- Easy overview of advancements
+- Easy way to track specific advancements and their process
 
 ### 📜Advancements Overview
 
@@ -71,7 +75,6 @@ This mod works great together with Better Advancements mod, but let me know if y
 
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
 [platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
-
 [logo]: logo.png
 [overview_example]: example/overview_example.png
 [widget_example]: example/widget_example.png
