@@ -36,19 +36,18 @@ import de.markusbordihn.advancementstracker.Constants;
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class KeyBindings {
 
-  protected KeyBindings() {
-  }
+  protected KeyBindings() {}
 
   private static final int KEY_L = 76;
 
   public static final KeyBinding SHOW_OVERVIEW = new KeyBinding(
-      new TranslationTextComponent(Constants.MOD_PREFIX + "keys.showOverview").getString(), KeyConflictContext.IN_GAME,
-      KeyModifier.CONTROL, InputMappings.Type.KEYSYM, KEY_L,
+      new TranslationTextComponent(Constants.MOD_PREFIX + "keys.showOverview").getString(),
+      KeyConflictContext.IN_GAME, KeyModifier.CONTROL, InputMappings.Type.KEYSYM, KEY_L,
       new TranslationTextComponent(Constants.MOD_PREFIX + "keys.category").getString());
 
   public static final KeyBinding SHOW_GUI = new KeyBinding(
-      new TranslationTextComponent(Constants.MOD_PREFIX + "keys.showGui").getString(), KeyConflictContext.IN_GAME,
-      KeyModifier.ALT, InputMappings.Type.KEYSYM, KEY_L,
+      new TranslationTextComponent(Constants.MOD_PREFIX + "keys.showGui").getString(),
+      KeyConflictContext.IN_GAME, KeyModifier.ALT, InputMappings.Type.KEYSYM, KEY_L,
       new TranslationTextComponent(Constants.MOD_PREFIX + "keys.category").getString());
 
   @SubscribeEvent

@@ -50,7 +50,7 @@ import de.markusbordihn.advancementstracker.config.ClientConfig;
 @EventBusSubscriber(Dist.CLIENT)
 public class AdvancementsManager {
 
-  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static AdvancementEntry selectedAdvancement;
   private static AdvancementEntry selectedRootAdvancement;
@@ -256,8 +256,7 @@ public class AdvancementsManager {
             log.info("Found new advancement {} which was done on {}", advancementId,
                 lastProgressionDate);
             String screenshotFolder = advancementId.split("/")[0].replace(":", "_");
-            String screenshotName =
-                String.format("advancement-unknown-%s", random.nextInt(99));
+            String screenshotName = String.format("advancement-unknown-%s", random.nextInt(99));
             if (advancementId.contains("/") && advancementId.split("/").length > 1) {
               screenshotName = advancementId.split("/", 2)[1].replace("/", "_");
             } else if (advancementId.contains(":") && advancementId.split(":").length > 1) {

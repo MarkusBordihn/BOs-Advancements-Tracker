@@ -45,7 +45,7 @@ import de.markusbordihn.advancementstracker.config.ClientConfig;
 @EventBusSubscriber(Dist.CLIENT)
 public class TrackedAdvancementsManager {
 
-  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
   private static int maxNumberOfTrackedAdvancements =

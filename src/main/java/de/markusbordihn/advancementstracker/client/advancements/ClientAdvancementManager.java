@@ -25,6 +25,8 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.advancements.AdvancementsScreen;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancementManager.IListener;
 
 import net.minecraftforge.api.distmarker.Dist;
@@ -34,18 +36,21 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 import de.markusbordihn.advancementstracker.Constants;
+import de.markusbordihn.advancementstracker.client.gui.overview.OverviewScreen;
 
 @EventBusSubscriber(Dist.CLIENT)
 public class ClientAdvancementManager implements IListener {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static short ticks = 0;
   private static final short ADD_LISTENER_TICK = 2;
-  private static boolean hasListener = false;
   private static ClientAdvancementManager clientAdvancementManager;
   private static long listenerStart = System.currentTimeMillis();
   private static long listenerEnd = System.currentTimeMillis();
+
+  private static boolean needsReload = false;
+  private static boolean hasListener = false;
+  private static int listenerTicks = 0;
 
   protected ClientAdvancementManager() {}
 
@@ -64,9 +69,25 @@ public class ClientAdvancementManager implements IListener {
     }
 
     // Try to attach the event listener every second tick after start.
-    if (ticks++ == ADD_LISTENER_TICK && !hasListener) {
+    if (listenerTicks++ == ADD_LISTENER_TICK && !hasListener) {
       addListener();
-      ticks = 0;
+      listenerTicks = 0;
+    }
+
+    // Other advancements screen will remove the event listener, for this reason we need to check
+    // if we need to reload the advancements after such advancements screen was open.
+    Minecraft minecraft = Minecraft.getInstance();
+    if (minecraft != null) {
+      if (minecraft.screen != null) {
+        Screen screen = minecraft.screen;
+        if (!needsReload && !(screen instanceof OverviewScreen)
+            && (screen instanceof AdvancementsScreen || screen instanceof IListener)) {
+          log.debug("Need to reload advancements after screen {} is closed!", minecraft.screen);
+          needsReload = true;
+        }
+      } else if (needsReload) {
+        reset();
+      }
     }
   }
 
@@ -74,9 +95,10 @@ public class ClientAdvancementManager implements IListener {
     log.debug("Resetting Client Advancement Manager ...");
     clientAdvancementManager = new ClientAdvancementManager();
     hasListener = false;
-    ticks = 0;
+    listenerTicks = 0;
     listenerStart = System.currentTimeMillis();
     listenerEnd = System.currentTimeMillis();
+    needsReload = false;
   }
 
   public static void addListener() {

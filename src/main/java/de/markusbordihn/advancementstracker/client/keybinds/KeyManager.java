@@ -32,8 +32,7 @@ import de.markusbordihn.advancementstracker.client.gui.widgets.TrackerWidget;
 @EventBusSubscriber(value = Dist.CLIENT)
 public class KeyManager {
 
-  protected KeyManager() {
-  }
+  protected KeyManager() {}
 
   @SubscribeEvent
   public static void handleKeyInputEvent(InputEvent.KeyInputEvent event) {

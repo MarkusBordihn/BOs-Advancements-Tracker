@@ -35,6 +35,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
+
 import net.minecraftforge.client.gui.ScrollPanel;
 
 import de.markusbordihn.advancementstracker.Constants;
@@ -58,7 +59,8 @@ public class ScrollPanelManager extends ScrollPanel {
 
   protected ScrollPanelManager(Minecraft minecraft, int width, int height, int top, int left) {
     super(minecraft, width, height, top, left);
-    log.debug("[Scroll Panel Manager] width:{} height:{} at top:{} left:{}", width, height, top, left);
+    log.debug("[Scroll Panel Manager] width:{} height:{} at top:{} left:{}", width, height, top,
+        left);
     this.baseContentX = this.contentX = left;
     this.baseContentY = this.contentY = top;
     this.fontRenderer = minecraft.font;
@@ -67,8 +69,8 @@ public class ScrollPanelManager extends ScrollPanel {
   }
 
   public void addContent(String contentName, ScrollPanelContent content, boolean active) {
-    log.debug("[Scroll Content] {} to scroll panel manager with {}x{} at x:{} y:{}", contentName, content.width,
-        content.height, this.contentX, this.contentY);
+    log.debug("[Scroll Content] {} to scroll panel manager with {}x{} at x:{} y:{}", contentName,
+        content.width, content.height, this.contentX, this.contentY);
     content.setMinecraftInstance(this.minecraft);
     content.hasScrollBar(hasScrollBar());
     content.setPosition(this.contentX, this.contentY);
@@ -133,7 +135,8 @@ public class ScrollPanelManager extends ScrollPanel {
       int baseY = (int) mouseY + this.baseContentY + this.border;
       for (ScrollPanelContent scrollPanelContent : this.contentMap.values()) {
         if (scrollPanelContent.isInsideEventAreaY(baseY + scrollPanelContent.relativeY)) {
-          log.debug("Detected click for {} at x:{} y:{}", scrollPanelContent.getContentName(), baseX, baseY);
+          log.debug("Detected click for {} at x:{} y:{}", scrollPanelContent.getContentName(),
+              baseX, baseY);
           handleClick(scrollPanelContent, button);
           scrollPanelContent.handleClick(baseX, baseY, button);
           foundClickTarget = true;
@@ -143,28 +146,32 @@ public class ScrollPanelManager extends ScrollPanel {
         }
       }
       if (!foundClickTarget) {
-        log.warn("Detected unmatched click on ScrollPanelManager at x:{} y:{}({}) button:{}", mouseX, mouseY, baseY,
-            button);
+        log.warn("Detected unmatched click on ScrollPanelManager at x:{} y:{}({}) button:{}",
+            mouseX, mouseY, baseY, button);
       }
     }
     return false;
   }
 
   @Override
-  protected void drawPanel(MatrixStack matrixStack, int entryRight, int relativeY, Tessellator tessellator, int mouseX,
-      int mouseY) {
+  protected void drawPanel(MatrixStack matrixStack, int entryRight, int relativeY,
+      Tessellator tessellator, int mouseX, int mouseY) {
     if (this.background != null && this.background != TextureManager.INTENTIONAL_MISSING_TEXTURE) {
       this.textureManager.bind(this.background);
       BufferBuilder buffer = tessellator.getBuilder();
       buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR_TEX);
       buffer.vertex(this.left, this.bottom, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
-          .uv(this.left / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
+          .uv(this.left / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE)
+          .endVertex();
       buffer.vertex(this.right, this.bottom, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
-          .uv(this.right / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
+          .uv(this.right / TEXTURE_SCALE, (this.bottom + (int) this.scrollDistance) / TEXTURE_SCALE)
+          .endVertex();
       buffer.vertex(this.right, this.top, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
-          .uv(this.right / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
+          .uv(this.right / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE)
+          .endVertex();
       buffer.vertex(this.left, this.top, 0.0D).color(0x80, 0x80, 0x80, this.backgroundAlpha)
-          .uv(this.left / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE).endVertex();
+          .uv(this.left / TEXTURE_SCALE, (this.top + (int) this.scrollDistance) / TEXTURE_SCALE)
+          .endVertex();
       tessellator.end();
     }
     int baseY = (int) this.scrollDistance * -1;
@@ -175,16 +182,19 @@ public class ScrollPanelManager extends ScrollPanel {
       }
       scrollPanelContent.drawBackground(matrixStack, tessellator);
       if (scrollPanelContent.isActive) {
-        fill(matrixStack, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.xMax, scrollPanelContent.yMax,
-            0x40000000);
-        this.hLine(matrixStack, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.y, BORDER_COLOR);
-        this.hLine(matrixStack, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.yMax - 1,
+        fill(matrixStack, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.xMax,
+            scrollPanelContent.yMax, 0x40000000);
+        this.hLine(matrixStack, scrollPanelContent.x, scrollPanelContent.xMax, scrollPanelContent.y,
             BORDER_COLOR);
-        this.vLine(matrixStack, scrollPanelContent.x, scrollPanelContent.y, scrollPanelContent.yMax - 1, BORDER_COLOR);
-        this.vLine(matrixStack, scrollPanelContent.xMax - 1, scrollPanelContent.y, scrollPanelContent.yMax - 1,
-            BORDER_COLOR);
+        this.hLine(matrixStack, scrollPanelContent.x, scrollPanelContent.xMax,
+            scrollPanelContent.yMax - 1, BORDER_COLOR);
+        this.vLine(matrixStack, scrollPanelContent.x, scrollPanelContent.y,
+            scrollPanelContent.yMax - 1, BORDER_COLOR);
+        this.vLine(matrixStack, scrollPanelContent.xMax - 1, scrollPanelContent.y,
+            scrollPanelContent.yMax - 1, BORDER_COLOR);
       }
-      scrollPanelContent.drawContent(matrixStack, entryRight, relativeY, tessellator, mouseX, mouseY);
+      scrollPanelContent.drawContent(matrixStack, entryRight, relativeY, tessellator, mouseX,
+          mouseY);
     }
   }
 

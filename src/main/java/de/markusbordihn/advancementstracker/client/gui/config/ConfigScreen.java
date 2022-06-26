@@ -19,10 +19,11 @@
 
 package de.markusbordihn.advancementstracker.client.gui.config;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
+
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.TranslationTextComponent;
-import com.mojang.blaze3d.matrix.MatrixStack;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.gui.ScreenBuilder;

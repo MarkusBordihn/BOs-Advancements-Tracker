@@ -29,6 +29,7 @@ import org.lwjgl.opengl.GL11;
 import net.minecraft.client.MainWindow;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TranslationTextComponent;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.world.WorldEvent;
@@ -93,8 +94,8 @@ public class TrackerWidget extends WidgetBuilder {
     configWidth = ClientConfig.CLIENT.widgetWidth.get();
     maxLinesForDescription = ClientConfig.CLIENT.widgetMaxLinesForDescription.get();
     if (enabled) {
-      log.info("Enable Tracker Widget with {}x{} at top:{} and left:{}", configHeight,
-          configWidth, configTop, configLeft);
+      log.info("Enable Tracker Widget with {}x{} at top:{} and left:{}", configHeight, configWidth,
+          configTop, configLeft);
     } else {
       log.warn("Tracker Widget is disabled!");
     }

@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
@@ -40,14 +39,14 @@ public class ClientConfig {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private ClientConfig() {
-  }
+  private ClientConfig() {}
 
   static final ForgeConfigSpec clientSpec;
   public static final Config CLIENT;
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
-    final Pair<Config, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Config::new);
+    final Pair<Config, ForgeConfigSpec> specPair =
+        new ForgeConfigSpec.Builder().configure(Config::new);
     clientSpec = specPair.getRight();
     CLIENT = specPair.getLeft();
     log.info("Registering client config ...");
@@ -79,9 +78,11 @@ public class ClientConfig {
       builder.comment("Advancements Tracker (Client configuration)");
 
       builder.push("general");
-      maxNumberOfTrackedAdvancements = builder.defineInRange("maxNumberOfTrackedAdvancements", 3, 1, 5);
-      trackedAdvancements = builder.comment("List of default tracked advancements, mostly used by mod packs.")
-          .define("trackedAdvancements", new ArrayList<String>(Arrays.asList("")));
+      maxNumberOfTrackedAdvancements =
+          builder.defineInRange("maxNumberOfTrackedAdvancements", 3, 1, 5);
+      trackedAdvancements =
+          builder.comment("List of default tracked advancements, mostly used by mod packs.")
+              .define("trackedAdvancements", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
 
       builder.push("screenshots");
@@ -112,20 +113,12 @@ public class ClientConfig {
       builder.pop();
 
       builder.push("cache");
-      trackedAdvancementsRemote = builder.define("trackedAdvancementsRemote", new ArrayList<String>(Arrays.asList("")));
-      trackedAdvancementsLocal = builder.define("trackedAdvancementsLocal", new ArrayList<String>(Arrays.asList("")));
+      trackedAdvancementsRemote =
+          builder.define("trackedAdvancementsRemote", new ArrayList<String>(Arrays.asList("")));
+      trackedAdvancementsLocal =
+          builder.define("trackedAdvancementsLocal", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
     }
-  }
-
-  @SubscribeEvent
-  public static void handleModConfigLoadEvent(ModConfig.Loading event) {
-    log.info("Loading client config file {}", event.getConfig().getFileName());
-  }
-
-  @SubscribeEvent
-  public static void handleModConfigReloadEvent(ModConfig.Reloading event) {
-    log.info("Reloading client config file {}", event.getConfig().getFileName());
   }
 
 }

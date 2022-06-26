@@ -21,8 +21,7 @@ package de.markusbordihn.advancementstracker;
 
 public final class Constants {
 
-  protected Constants() {
-  }
+  protected Constants() {}
 
   public static final String LOG_NAME = "AdvancementsTracker";
   public static final String LOG_STATUS_PREFIX = "⌚ [Advancements Tracker]";

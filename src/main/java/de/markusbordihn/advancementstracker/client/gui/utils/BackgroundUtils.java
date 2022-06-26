@@ -38,26 +38,27 @@ public class BackgroundUtils {
     this.textureManager = minecraft.getTextureManager();
   }
 
-  public void drawBackground(Tessellator tessellator, ResourceLocation background, int x, int y, int width,
-      int height) {
+  public void drawBackground(Tessellator tessellator, ResourceLocation background, int x, int y,
+      int width, int height) {
     drawBackground(tessellator, background, x, y, width, height, BACKGROUND_ALPHA);
   }
 
-  public void drawBackground(Tessellator tessellator, ResourceLocation background, int x, int y, int width, int height,
-      int alpha) {
+  public void drawBackground(Tessellator tessellator, ResourceLocation background, int x, int y,
+      int width, int height, int alpha) {
     if (background != null && background != TextureManager.INTENTIONAL_MISSING_TEXTURE) {
       int xMax = x + width;
       int yMax = y + height;
       textureManager.bind(background);
       BufferBuilder buffer = tessellator.getBuilder();
       buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR_TEX);
-      buffer.vertex(x, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(x / TEXTURE_SCALE, yMax / TEXTURE_SCALE)
-          .endVertex();
-      buffer.vertex(xMax, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(xMax / TEXTURE_SCALE, yMax / TEXTURE_SCALE)
-          .endVertex();
-      buffer.vertex(xMax, y, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(xMax / TEXTURE_SCALE, y / TEXTURE_SCALE)
-          .endVertex();
-      buffer.vertex(x, y, 0.0D).color(0x80, 0x80, 0x80, alpha).uv(x / TEXTURE_SCALE, y / TEXTURE_SCALE).endVertex();
+      buffer.vertex(x, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(x / TEXTURE_SCALE, yMax / TEXTURE_SCALE).endVertex();
+      buffer.vertex(xMax, yMax, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(xMax / TEXTURE_SCALE, yMax / TEXTURE_SCALE).endVertex();
+      buffer.vertex(xMax, y, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(xMax / TEXTURE_SCALE, y / TEXTURE_SCALE).endVertex();
+      buffer.vertex(x, y, 0.0D).color(0x80, 0x80, 0x80, alpha)
+          .uv(x / TEXTURE_SCALE, y / TEXTURE_SCALE).endVertex();
       tessellator.end();
     }
   }
