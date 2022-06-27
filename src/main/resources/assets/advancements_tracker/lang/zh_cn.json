@@ -3,9 +3,9 @@
   "advancements_tracker.keys.category": "进度追踪器",
   "advancements_tracker.keys.show_overview": "打开概览",
   "advancements_tracker.keys.show_widget": "打开 Widget",
-  "advancements_tracker.advancementScreen.title": "进度追踪器概览",
-  "advancements_tracker.advancementScreen.noAdvancements": "未找到进度，\n可能你先要找点原木做一个工作台。",
-  "advancements_tracker.advancementWidget.title": "进度追踪器",
-  "advancements_tracker.advancementWidget.noAdvancements": "未找到进度，\n重新开始？",
-  "advancements_tracker.advancementWidget.noTrackedAdvancements": "无追踪中的进度，\n请在进度概览中添加。"
+  "advancements_tracker.advancementsScreen.title": "进度追踪器概览",
+  "advancements_tracker.advancementsScreen.noAdvancements": "未找到进度，\n可能你先要找点原木做一个工作台。",
+  "advancements_tracker.advancementsWidget.title": "进度追踪器",
+  "advancements_tracker.advancementsWidget.noAdvancements": "未找到进度，\n重新开始？",
+  "advancements_tracker.advancementsWidget.noTrackedAdvancements": "无追踪中的进度，\n请在进度概览中添加。"
 }

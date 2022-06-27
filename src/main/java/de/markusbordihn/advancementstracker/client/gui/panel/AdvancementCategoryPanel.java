@@ -180,7 +180,7 @@ public class AdvancementCategoryPanel
 
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
-        int entryHeight, int mouseX, int mouseY, boolean unused, float partialTick) {
+        int entryHeight, int mouseX, int mouseY, boolean isFocused, float partialTick) {
 
       // Selection state
       this.isSelected = isSelectedItem(entryIdx);
@@ -241,11 +241,10 @@ public class AdvancementCategoryPanel
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-      if (button != 0) {
-        return false;
+      if (button == 0) {
+        parent.setSelectedRootAdvancement(this);
+        setSelected(this);
       }
-      parent.setSelectedRootAdvancement(this);
-      setSelected(this);
       return false;
     }
 

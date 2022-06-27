@@ -19,6 +19,7 @@
 
 package de.markusbordihn.advancementstracker.client.gui.widget;
 
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Set;
 
@@ -74,16 +75,17 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   // Pre-defined colors and placeholders
   private static final int TEXT_COLOR_WHITE = ChatFormatting.WHITE.getColor();
   private static final int TEXT_COLOR_YELLOW = ChatFormatting.YELLOW.getColor();
+  private static final int TEXT_COLOR_GRAY = ChatFormatting.GRAY.getColor();
 
   // Pre-defined texts
   private static MutableComponent noAdvancementsText =
-      new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
           .append(ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
           .withStyle(ChatFormatting.WHITE);
   private static MutableComponent noTrackedAdvancementsText =
-      new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
+      new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
           .append(new TranslatableComponent(
-              Constants.MOD_PREFIX + "advancementWidget.hotkeyAdvancementOverview",
+              Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
               ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
                   .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
@@ -93,6 +95,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
   private final Font font;
   private final ItemRenderer itemRenderer;
+  private final Minecraft minecraft;
   private final PositionManager positionManager;
   private final TextureManager textureManager;
 
@@ -102,6 +105,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   public AdvancementsTrackerWidget(Minecraft minecraft) {
     this.font = minecraft.font;
     this.itemRenderer = minecraft.getItemRenderer();
+    this.minecraft = minecraft;
     this.textureManager = minecraft.getTextureManager();
     positionManager = new PositionManager(minecraft);
     positionManager.setInstance(minecraft);
@@ -112,6 +116,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
     updatePredefinedText();
+    hudVisible = CLIENT.widgetEnabled.get() && CLIENT.widgetVisible.get();
   }
 
   @SubscribeEvent()
@@ -119,7 +124,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) {
       return;
     }
-    if (!hudVisible) {
+
+    // Disable overlay if visibility is disabled or if there is another screen open.
+    if (!hudVisible || (this.minecraft != null && this.minecraft.screen != null)) {
       return;
     }
 
@@ -188,9 +195,43 @@ public class AdvancementsTrackerWidget extends GuiComponent {
       MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
     poseStack.pushPose();
     int topPos = y;
-    for (AdvancementEntry advancementEntry : trackedAdvancements) {
-      topPos += renderAdvancement(poseStack, multiBufferSource, x, topPos, advancementEntry) + 2;
+    int numberOfAdvancementsRendered = 0;
+    try {
+      for (AdvancementEntry advancementEntry : trackedAdvancements) {
+        // Check if the screen space is big enough to render all advancements.
+        if (topPos + (font.lineHeight * 4) < positionManager.getWindowHeightScaled()) {
+          topPos +=
+              renderAdvancement(poseStack, multiBufferSource, x, topPos, advancementEntry) + 2;
+          numberOfAdvancementsRendered++;
+        } else {
+          renderAdvancementEllipsis(poseStack, x, topPos, trackedAdvancements.size(),
+              numberOfAdvancementsRendered);
+          break;
+        }
+      }
+    } catch (ConcurrentModificationException exception) {
+      log.debug("Advancement list was modified during rendering. This is expected in some cases.");
     }
+    poseStack.popPose();
+  }
+
+  private void renderAdvancementEllipsis(PoseStack poseStack, int x, int y,
+      int numberOfAdvancements, int numberOfAdvancementsRendered) {
+
+    // Background
+    poseStack.pushPose();
+    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight, 1325400064);
+    poseStack.popPose();
+
+    // Text
+    float textScale = 0.75f;
+    TranslatableComponent text =
+        new TranslatableComponent(Constants.ADVANCEMENTS_WIDGET_PREFIX + "notAllVisible",
+            numberOfAdvancementsRendered, numberOfAdvancements);
+    poseStack.pushPose();
+    poseStack.scale(textScale, textScale, textScale);
+    font.drawShadow(poseStack, text, (x + 16) / textScale, (y + 2) / textScale, TEXT_COLOR_GRAY);
+    font.draw(poseStack, text, (x + 16) / textScale, (y + 2) / textScale, TEXT_COLOR_GRAY);
     poseStack.popPose();
   }
 
@@ -304,12 +345,12 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private static void updatePredefinedText() {
     // Update text for custom key-mapping.
     noAdvancementsText =
-        new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noAdvancements")
+        new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
             .withStyle(ChatFormatting.WHITE);
     noTrackedAdvancementsText =
-        new TranslatableComponent(Constants.MOD_PREFIX + "advancementWidget.noTrackedAdvancements")
+        new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
             .append(new TranslatableComponent(
-                Constants.MOD_PREFIX + "advancementWidget.hotkeyAdvancementOverview",
+                Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
                 ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
                     .withStyle(ChatFormatting.YELLOW))
             .withStyle(ChatFormatting.WHITE);

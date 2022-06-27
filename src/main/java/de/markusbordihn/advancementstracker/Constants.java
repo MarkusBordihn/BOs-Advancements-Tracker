@@ -36,7 +36,9 @@ public final class Constants {
       "https://www.curseforge.com/minecraft/mc-mods/advancements-tracker";
 
   // Prefixes
-  public static final String KEY_PREFIX = "advancements_tracker.keys.";
+  public static final String KEY_PREFIX = MOD_PREFIX + "keys.";
+  public static final String ADVANCEMENTS_SCREEN_PREFIX = MOD_PREFIX + "advancementsScreen.";
+  public static final String ADVANCEMENTS_WIDGET_PREFIX = MOD_PREFIX + "advancementsWidget.";
 
   // Pre-defined Texts
   public static final TextComponent ELLIPSIS = new TextComponent("\u2026");

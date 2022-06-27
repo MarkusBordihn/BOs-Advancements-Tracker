@@ -27,7 +27,6 @@ import org.lwjgl.glfw.GLFW;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.ClientRegistry;
@@ -41,11 +40,14 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 import de.markusbordihn.advancementstracker.client.gui.widget.AdvancementsTrackerWidget;
+import de.markusbordihn.advancementstracker.config.ClientConfig;
 
 @EventBusSubscriber(value = Dist.CLIENT)
 public class ModKeyMapping {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+
+  private static final ClientConfig.Config CLIENT = ClientConfig.CLIENT;
 
   protected ModKeyMapping() {}
 
@@ -60,11 +62,15 @@ public class ModKeyMapping {
   @SubscribeEvent
   public static void handleKeyboardKeyPressedEvent(InputEvent.KeyInputEvent event) {
     if (ModKeyMapping.KEY_SHOW_WIDGET.isDown()) {
-      log.debug("Show/hide Widget ...");
-      AdvancementsTrackerWidget.toggleVisibility();
+      if (Boolean.TRUE.equals(CLIENT.widgetEnabled.get())) {
+        log.debug("Show/hide Advancements Widget ...");
+        AdvancementsTrackerWidget.toggleVisibility();
+      }
     } else if (ModKeyMapping.KEY_SHOW_OVERVIEW.isDown()) {
-      log.debug("Show/hide Overview ...");
-      Minecraft.getInstance().setScreen(new AdvancementsTrackerScreen());
+      if (Boolean.TRUE.equals(CLIENT.overviewEnabled.get())) {
+        log.debug("Show/hide Advancements Overview ...");
+        AdvancementsTrackerScreen.toggleVisibility();
+      }
     }
   }
 

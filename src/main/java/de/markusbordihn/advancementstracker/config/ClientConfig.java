@@ -39,14 +39,14 @@ public class ClientConfig {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private ClientConfig() {
-  }
+  private ClientConfig() {}
 
   static final ForgeConfigSpec clientSpec;
   public static final Config CLIENT;
   static {
     com.electronwill.nightconfig.core.Config.setInsertionOrderPreserved(true);
-    final Pair<Config, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Config::new);
+    final Pair<Config, ForgeConfigSpec> specPair =
+        new ForgeConfigSpec.Builder().configure(Config::new);
     clientSpec = specPair.getRight();
     CLIENT = specPair.getLeft();
     log.info("{} Client config ...", Constants.LOG_REGISTER_PREFIX);
@@ -54,16 +54,15 @@ public class ClientConfig {
   }
 
   public static class Config {
-    public final ForgeConfigSpec.IntValue maxNumberOfTrackedAdvancements;
 
     public final ForgeConfigSpec.BooleanValue overviewEnabled;
 
     public final ForgeConfigSpec.BooleanValue widgetEnabled;
-    public final ForgeConfigSpec.DoubleValue widgetHeight;
-    public final ForgeConfigSpec.DoubleValue widgetWidth;
-    public final ForgeConfigSpec.DoubleValue widgetTop;
-    public final ForgeConfigSpec.DoubleValue widgetLeft;
-    public final ForgeConfigSpec.IntValue widgetMaxLinesForDescription;
+    public final ForgeConfigSpec.BooleanValue widgetVisible;
+    public final ForgeConfigSpec.IntValue widgetHeight;
+    public final ForgeConfigSpec.IntValue widgetWidth;
+    public final ForgeConfigSpec.IntValue widgetTop;
+    public final ForgeConfigSpec.IntValue widgetLeft;
 
     public final ForgeConfigSpec.ConfigValue<String> logLevel;
 
@@ -75,24 +74,31 @@ public class ClientConfig {
       builder.comment("Advancements Tracker (Client configuration)");
 
       builder.push("general");
-      maxNumberOfTrackedAdvancements = builder.defineInRange("maxNumberOfTrackedAdvancements", 4, 1, 8);
-      trackedAdvancements = builder.comment("List of default tracked advancements, mostly used by mod packs.")
-          .define("trackedAdvancements", new ArrayList<String>(Arrays.asList("")));
+      trackedAdvancements =
+          builder.comment("List of default tracked advancements, mostly used by mod packs.")
+              .define("trackedAdvancements", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
 
       builder.push("gui");
 
       builder.push("overview");
-      overviewEnabled = builder.define("overviewEnabled", true);
+      overviewEnabled = builder.comment("Enable/Disable the advancements overview screen.")
+          .define("overviewEnabled", true);
       builder.pop();
 
       builder.push("widget");
-      widgetEnabled = builder.define("widgetEnabled", true);
-      widgetHeight = builder.defineInRange("widgetHeight", 0.45, 0.0, 1.0);
-      widgetWidth = builder.defineInRange("widgetWidth", 0.3, 0.0, 1.0);
-      widgetTop = builder.defineInRange("widgetTop", 0.5, 0.0, 1.0);
-      widgetLeft = builder.defineInRange("widgetLeft", 1.0, 0.0, 1.0);
-      widgetMaxLinesForDescription = builder.defineInRange("widgetMaxLinesForDescription", 4, 1, 8);
+      widgetEnabled = builder.comment("Enable/Disable the advancements tracker widget.")
+          .define("widgetEnabled", true);
+      widgetVisible = builder.comment(
+          "Shows the widget automatically. If this is set to false the widget will be only visible after pressing the defined hot-keys.")
+          .define("widgetVisible", true);
+      widgetHeight = builder.comment(
+          "Defines the max. height of the widget. Default is 0 which mean use the max. available height.")
+          .defineInRange("widgetHeight", 0, 0, 600);
+      widgetWidth = builder.comment("Defines the max.width of the widget.")
+          .defineInRange("widgetWidth", 80, 40, 400);
+      widgetTop = builder.defineInRange("widgetTop", 0, 0, 400);
+      widgetLeft = builder.defineInRange("widgetLeft", 0, 0, 400);
       builder.pop();
 
       builder.pop();
@@ -103,8 +109,10 @@ public class ClientConfig {
       builder.pop();
 
       builder.push("cache");
-      trackedAdvancementsRemote = builder.define("trackedAdvancementsRemote", new ArrayList<String>(Arrays.asList("")));
-      trackedAdvancementsLocal = builder.define("trackedAdvancementsLocal", new ArrayList<String>(Arrays.asList("")));
+      trackedAdvancementsRemote =
+          builder.define("trackedAdvancementsRemote", new ArrayList<String>(Arrays.asList("")));
+      trackedAdvancementsLocal =
+          builder.define("trackedAdvancementsLocal", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
     }
   }

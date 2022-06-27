@@ -155,7 +155,7 @@ public class AdvancementOverviewPanel
           5, 256, 256);
       poseStack.popPose();
 
-      // Render Green bar with progress and numbers.
+      // Render progress bar and numbers.
       if (this.remainingCriteriaNumber > 0 || this.isDone) {
         int progressTotal = this.completedCriteriaNumber + this.remainingCriteriaNumber;
         int progressDone = this.completedCriteriaNumber;
@@ -223,7 +223,7 @@ public class AdvancementOverviewPanel
 
     @Override
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
-        int entryHeight, int mouseX, int mouseY, boolean unused, float partialTick) {
+        int entryHeight, int mouseX, int mouseY, boolean isFocused, float partialTick) {
 
       // Selection state
       this.isSelected = isSelectedItem(entryIdx);

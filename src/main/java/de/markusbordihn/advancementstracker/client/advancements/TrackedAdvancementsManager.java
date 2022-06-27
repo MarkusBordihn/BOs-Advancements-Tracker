@@ -48,7 +48,6 @@ public class TrackedAdvancementsManager {
   public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static Set<AdvancementEntry> trackedAdvancements = new HashSet<>();
-  private static int maxNumberOfTrackedAdvancements = 4;
   private static List<String> trackedAdvancementsDefault = new ArrayList<>();
   private static List<String> trackedAdvancementsLocal = new ArrayList<>();
   private static List<String> trackedAdvancementsRemote = new ArrayList<>();
@@ -70,8 +69,7 @@ public class TrackedAdvancementsManager {
       serverId = null;
     }
     trackedAdvancements = new HashSet<>();
-    maxNumberOfTrackedAdvancements = ClientConfig.CLIENT.maxNumberOfTrackedAdvancements.get();
-    log.info("Preparing tracked advancements with max. {} ...", maxNumberOfTrackedAdvancements);
+    log.info("Preparing tracked advancements ...");
 
     // Loading default (over config file) tracked advancements.
     trackedAdvancementsDefault = ClientConfig.CLIENT.trackedAdvancements.get();
@@ -97,7 +95,8 @@ public class TrackedAdvancementsManager {
   }
 
   public static void checkForTrackedAdvancement(AdvancementEntry advancement) {
-    if (advancement.isDone || trackedAdvancements.size() >= maxNumberOfTrackedAdvancements) {
+    // Ignore advancements which are done.
+    if (advancement.isDone) {
       return;
     }
     AdvancementEntry trackedAdvancement = null;
@@ -168,10 +167,6 @@ public class TrackedAdvancementsManager {
         log.warn("Advancement {} is already tracked.", advancement);
         return;
       }
-    }
-    if (trackedAdvancements.size() >= maxNumberOfTrackedAdvancements) {
-      log.error("Number of tracked advancements {} exceeds the limit of {}",
-          trackedAdvancements.size(), advancement);
     }
     log.info("Track Advancement {}", advancement);
     trackedAdvancements.add(advancement);
@@ -247,10 +242,6 @@ public class TrackedAdvancementsManager {
 
   public static int numOfTrackedAdvancements() {
     return trackedAdvancements.size();
-  }
-
-  public static boolean hasReachedTrackedAdvancementLimit() {
-    return trackedAdvancements.size() >= maxNumberOfTrackedAdvancements;
   }
 
   public static boolean hasTrackedAdvancement(AdvancementEntry advancementEntry) {
