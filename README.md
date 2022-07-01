@@ -1,43 +1,37 @@
 # Advancements Tracker and Overview
 
-Advancements Tracker is a Minecraft Forge Client Mod which give you an overlay which shows you the current process of your advancements to easier follow them.
-It will also add additional features to make achieving the advancements more interesting and meaningful.
-
-**WARNING: The 1.18.2 version is still in development, so it could include some error and ugly UI parts.**
+Advancements Tracker is a Minecraft Forge Client Mod which give you an overlay which shows you the current process of your selected advancements to easier follow them.
+Additional you will get a better overview of Advancements with sorting and filter options.
+This mod will make achieving the advancements more easier, interesting and meaningful.
 
 ## 🚀Features
 
 - Client side only, works with multiplayer server
-- Easy overview of advancements
+- Easy overview of advancements with sorting and filter
 - Easy way to track specific advancements and their process
 
 ### 📜Advancements Overview
 
-Could be open with **CTRL + L** and displays all current advancements and allow the tracking of single advancements.
+The overview could be open with **CTRL + L** and displays all current advancements and allow the tracking of single advancements.
 
 ![Advancement Overview][overview_example]
 
 ### 🎯Advancements Widget
 
-Could be show/hide with **ALT + L** and displays the currently tracked advancements and their progress.
+The widget could be show/hide with **ALT + L** and displays the currently tracked advancements and their progress.
 
 ![Advancement Widget][widget_example]
 
-### 📷Automatic Screenshots (1.16.5 only)
-
-As soon you finished an advancements it will automatically take a screenshot.
-This feature could be disabled over the settings file.
-
 ### 💾Storing tracked advancements
 
-The tracked advancements are stored directly in the settings file and could be easily adjusted.
+The tracked advancements are stored directly in the client settings file and could be easily adjusted.
 They are stored per server, so you can have different tracked advancements for each single server.
 Local games (single-player) however sharing the same tracked advancements.
 
 ## 🗄️Setting file
 
 The setting file allows you to disable / enable the overview or widget screen.
-You could also adjust the position and size of the widget overlay and the max. number of tracked advancements.
+You could also adjust the position and size of the widget overlay.
 
 ## 🧳Mod pack Support
 
@@ -62,8 +56,8 @@ Unfortunately not because of my time constrains and missing knowledge about the 
 
 ### How can I adjust the position and size of the widget❓
 
-You can adjust this settings in the config with percentage values.
-E.g. left = 1 means 100% from left, 0.01 means 1% from left.
+You can adjust the position in the config, most of the settings are updated live.
+Other settings may need a client restart before showing up correctly.
 
 ### Is this mod compatible with Better Advancements❓
 

@@ -260,9 +260,4 @@ public class AdvancementCategoryPanel
     return this.listWidth;
   }
 
-  @Override
-  protected void renderBackground(PoseStack poseStack) {
-    // this.parent.renderBackground(poseStack);
-  }
-
 }

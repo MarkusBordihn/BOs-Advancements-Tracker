@@ -35,6 +35,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -64,6 +65,7 @@ import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvanceme
 import de.markusbordihn.advancementstracker.client.keymapping.ModKeyMapping;
 import de.markusbordihn.advancementstracker.config.ClientConfig;
 import de.markusbordihn.advancementstracker.utils.gui.PositionManager;
+import de.markusbordihn.advancementstracker.utils.gui.PositionManager.BasePosition;
 
 @EventBusSubscriber(value = Dist.CLIENT)
 public class AdvancementsTrackerWidget extends GuiComponent {
@@ -90,13 +92,13 @@ public class AdvancementsTrackerWidget extends GuiComponent {
                   .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
 
-  private static boolean hudVisible = true;
+  private static PositionManager positionManager = new PositionManager();
   private static Set<AdvancementEntry> trackedAdvancements;
+  private static boolean hudVisible = true;
 
   private final Font font;
   private final ItemRenderer itemRenderer;
   private final Minecraft minecraft;
-  private final PositionManager positionManager;
   private final TextureManager textureManager;
 
   private int x;
@@ -107,16 +109,37 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     this.itemRenderer = minecraft.getItemRenderer();
     this.minecraft = minecraft;
     this.textureManager = minecraft.getTextureManager();
-    positionManager = new PositionManager(minecraft);
     positionManager.setInstance(minecraft);
-    positionManager.setWidth(80);
-    positionManager.setHeight(22);
+    positionManager.setWidth(120);
+    positionManager.setHeight(0);
+    positionManager.setBasePosition(BasePosition.MIDDLE_RIGHT);
   }
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
     updatePredefinedText();
     hudVisible = CLIENT.widgetEnabled.get() && CLIENT.widgetVisible.get();
+    if (hudVisible) {
+      log.info("Widget will be automatically visible on the start.");
+    } else if (Boolean.TRUE.equals(CLIENT.widgetEnabled.get())) {
+      log.info(
+          "Widget will not be automatically visible on the start and you need to use the hot-keys to make it visible!");
+    } else {
+      log.info("Widget is disabled!");
+      return;
+    }
+
+    log.info("Set widget size to {}x{}", CLIENT.widgetWidth.get(), CLIENT.widgetHeight.get());
+    positionManager.setHeight(CLIENT.widgetHeight.get());
+    positionManager.setWidth(CLIENT.widgetWidth.get());
+
+    log.info("Set widget base position to: {}", CLIENT.widgetPosition.get());
+    positionManager.setBasePosition(CLIENT.widgetPosition.get());
+
+    log.info("Set widget position top offset {} and left offset {}", CLIENT.widgetTop.get(),
+        CLIENT.widgetLeft.get());
+    positionManager.setPositionX(CLIENT.widgetLeft.get());
+    positionManager.setPositionY(CLIENT.widgetTop.get());
   }
 
   @SubscribeEvent()
@@ -125,27 +148,26 @@ public class AdvancementsTrackerWidget extends GuiComponent {
       return;
     }
 
-    // Disable overlay if visibility is disabled or if there is another screen open.
-    if (!hudVisible || (this.minecraft != null && this.minecraft.screen != null)) {
+    // Disable overlay if visibility is disabled or if there is another screen besides chat.
+    if (!hudVisible || (this.minecraft != null && this.minecraft.screen != null
+        && !(this.minecraft.screen instanceof ChatScreen))) {
       return;
     }
 
-    // Use Position Manager for Updates
+    // Use Position Manager for Updates and update x and y reference.
     positionManager.updateWindow();
-    positionManager.setPosition(positionManager.getMiddleRight());
-    positionManager.setWidth(120);
-    positionManager.setHeight(160);
     x = positionManager.getPositionX();
     y = positionManager.getPositionY();
 
+    // Get pose stack and render buffer for additional effects.
     PoseStack poseStack = event.getMatrixStack();
     MultiBufferSource.BufferSource multiBufferSource =
         Minecraft.getInstance().renderBuffers().bufferSource();
 
-    // Render background and GUI
+    // Render background and title
     renderTitle(poseStack);
 
-    // List tracked advancement
+    // Render tracked advancement or additional hints, if needed.
     if (TrackedAdvancementsManager.hasTrackedAdvancements()) {
       renderAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
     } else if (AdvancementsManager.hasAdvancements()) {
@@ -153,6 +175,14 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     } else {
       renderNoAdvancements(poseStack, x, y + this.font.lineHeight + 4);
     }
+  }
+
+  public static void reloadConfig() {
+    positionManager.setHeight(CLIENT.widgetHeight.get());
+    positionManager.setWidth(CLIENT.widgetWidth.get());
+    positionManager.setBasePosition(CLIENT.widgetPosition.get());
+    positionManager.setPositionX(CLIENT.widgetLeft.get());
+    positionManager.setPositionY(CLIENT.widgetTop.get());
   }
 
   public static void updateTrackedAdvancements() {
@@ -223,7 +253,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight, 1325400064);
     poseStack.popPose();
 
-    // Text
+    // Note that not all tracked advancements are visible.
     float textScale = 0.75f;
     TranslatableComponent text =
         new TranslatableComponent(Constants.ADVANCEMENTS_WIDGET_PREFIX + "notAllVisible",

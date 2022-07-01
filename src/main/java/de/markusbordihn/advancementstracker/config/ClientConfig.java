@@ -28,11 +28,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
+import de.markusbordihn.advancementstracker.client.gui.widget.AdvancementsTrackerWidget;
+import de.markusbordihn.advancementstracker.utils.gui.PositionManager.BasePosition;
 
 @EventBusSubscriber(bus = EventBusSubscriber.Bus.MOD)
 public class ClientConfig {
@@ -59,6 +63,7 @@ public class ClientConfig {
 
     public final ForgeConfigSpec.BooleanValue widgetEnabled;
     public final ForgeConfigSpec.BooleanValue widgetVisible;
+    public final ForgeConfigSpec.EnumValue<BasePosition> widgetPosition;
     public final ForgeConfigSpec.IntValue widgetHeight;
     public final ForgeConfigSpec.IntValue widgetWidth;
     public final ForgeConfigSpec.IntValue widgetTop;
@@ -79,28 +84,27 @@ public class ClientConfig {
               .define("trackedAdvancements", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
 
-      builder.push("gui");
-
-      builder.push("overview");
+      builder.push("Advancements Tracker: Overview");
       overviewEnabled = builder.comment("Enable/Disable the advancements overview screen.")
           .define("overviewEnabled", true);
       builder.pop();
 
-      builder.push("widget");
+      builder.push("Advancements Tracker: Widget");
       widgetEnabled = builder.comment("Enable/Disable the advancements tracker widget.")
           .define("widgetEnabled", true);
       widgetVisible = builder.comment(
           "Shows the widget automatically. If this is set to false the widget will be only visible after pressing the defined hot-keys.")
           .define("widgetVisible", true);
+      widgetPosition =
+          builder.comment("Defines the base position of the widget, default is MIDDLE_RIGHT")
+              .defineEnum("widgetPosition", BasePosition.MIDDLE_RIGHT);
       widgetHeight = builder.comment(
           "Defines the max. height of the widget. Default is 0 which mean use the max. available height.")
           .defineInRange("widgetHeight", 0, 0, 600);
       widgetWidth = builder.comment("Defines the max.width of the widget.")
-          .defineInRange("widgetWidth", 80, 40, 400);
-      widgetTop = builder.defineInRange("widgetTop", 0, 0, 400);
-      widgetLeft = builder.defineInRange("widgetLeft", 0, 0, 400);
-      builder.pop();
-
+          .defineInRange("widgetWidth", 120, 120, 600);
+      widgetTop = builder.comment("Defines the top position relative to the widget position.").defineInRange("widgetTop", 0, -400, 400);
+      widgetLeft = builder.comment("Defines the left position relative to the widget position.").defineInRange("widgetLeft", 0, -400, 400);
       builder.pop();
 
       builder.push("Debug");
@@ -114,6 +118,13 @@ public class ClientConfig {
       trackedAdvancementsLocal =
           builder.define("trackedAdvancementsLocal", new ArrayList<String>(Arrays.asList("")));
       builder.pop();
+    }
+  }
+
+  @SubscribeEvent
+  public static void onConfigReloading(final ModConfigEvent.Reloading configEvent) {
+    if(configEvent.getConfig().getSpec() == ClientConfig.clientSpec) {
+      AdvancementsTrackerWidget.reloadConfig();
     }
   }
 

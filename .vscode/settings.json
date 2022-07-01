@@ -41,7 +41,8 @@
     ".gradle",
     ".vscode",
     "build",
-    "run"
+    "run",
+    "src/main/resources/assets/advancements_tracker/",
   ],
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.format.settings.url": "./java-google-style.xml",

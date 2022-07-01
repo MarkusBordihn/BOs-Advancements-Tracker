@@ -100,7 +100,6 @@ public class AdvancementOverviewPanel
     private final int descriptionColor;
     private final int remainingCriteriaNumber;
 
-    private boolean isSelected = false;
     private int relativeLeftPosition;
     private int relativeTopPosition;
 
@@ -141,8 +140,7 @@ public class AdvancementOverviewPanel
       minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 3, top + 2);
     }
 
-    private void renderProgress(PoseStack poseStack, int top, int entryWidth, int entryHeight,
-        int iconWidth) {
+    private void renderProgress(PoseStack poseStack, int top, int entryWidth, int iconWidth) {
       int progressPositionLeft = getLeft() + iconWidth + 5;
       int progressPositionTop = top + 33;
       int progressWidth = 182;
@@ -225,9 +223,6 @@ public class AdvancementOverviewPanel
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
         int entryHeight, int mouseX, int mouseY, boolean isFocused, float partialTick) {
 
-      // Selection state
-      this.isSelected = isSelectedItem(entryIdx);
-
       // Positions
       int iconWidth = 18;
       int maxFontWidth = listWidth - iconWidth - 4;
@@ -279,7 +274,7 @@ public class AdvancementOverviewPanel
       }
 
       // Progress
-      this.renderProgress(poseStack, top, entryWidth, entryHeight, iconWidth);
+      this.renderProgress(poseStack, top, entryWidth, iconWidth);
 
       // Decoration
       this.renderDecoration(poseStack, top, entryWidth, entryHeight);
@@ -290,16 +285,16 @@ public class AdvancementOverviewPanel
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-      if (button != 0) {
-        return false;
-      }
-      double relativeX = mouseX - this.relativeLeftPosition;
-      double relativeY = mouseY - this.relativeTopPosition;
-      if ((relativeX > 3 && relativeX < 15) && (relativeY > 25 && relativeX < 35)) {
-        TrackedAdvancementsManager.toggleTrackedAdvancement(this.getAdvancementEntry());
-      } else {
-        parent.setSelectedChildAdvancement(this);
-        setSelected(this);
+       // We only care for mouse click events with button 0.
+      if (button == 0) {
+        double relativeX = mouseX - this.relativeLeftPosition;
+        double relativeY = mouseY - this.relativeTopPosition;
+        if ((relativeX > 3 && relativeX < 15) && (relativeY > 25 && relativeX < 35)) {
+          TrackedAdvancementsManager.toggleTrackedAdvancement(this.getAdvancementEntry());
+        } else {
+          parent.setSelectedChildAdvancement(this);
+          setSelected(this);
+        }
       }
       return false;
     }

@@ -23,30 +23,85 @@ public class PositionPoint {
 
   private int x;
   private int y;
+  private int offsetX;
+  private int offsetY;
+  private int absoluteX;
+  private int absoluteY;
+
+  public PositionPoint() {
+    this(0, 0, 0, 0);
+  }
 
   public PositionPoint(int x, int y) {
+    this(x, y, 0, 0);
+  }
+
+  public PositionPoint(int x, int y, int offsetX, int offsetY) {
+    this.offsetX = offsetX;
+    this.offsetY = offsetY;
     this.x = x;
     this.y = y;
+    recalculateAbsolutePosition();
+  }
+
+  public int getAbsoluteX() {
+    return this.absoluteX;
+  }
+
+  public int getAbsoluteY() {
+    return this.absoluteY;
   }
 
   public int getX() {
-    return x;
+    return this.x;
   }
 
   public void setX(int x) {
     this.x = x;
+    recalculateAbsolutePosition();
   }
 
   public int getY() {
-    return y;
+    return this.y;
   }
 
   public void setY(int y) {
     this.y = y;
+    recalculateAbsolutePosition();
+  }
+
+  public int getOffsetX() {
+    return this.offsetX;
+  }
+
+  public void setOffsetX(int offsetX) {
+    this.offsetX = offsetX;
+    recalculateAbsolutePosition();
+  }
+
+  public int getOffsetY() {
+    return this.offsetY;
+  }
+
+  public void setOffsetY(int offsetY) {
+    this.offsetY = offsetY;
+    recalculateAbsolutePosition();
+  }
+
+  public void setOffset(PositionPoint positionPoint) {
+    setOffsetX(positionPoint.getX());
+    setOffsetY(positionPoint.getY());
+  }
+
+  private void recalculateAbsolutePosition() {
+    // Cache absolute position and make sure it's always greater than 0.
+    this.absoluteX = Math.max(0, this.offsetX + this.x);
+    this.absoluteY = Math.max(0, this.offsetY + this.y);
   }
 
   public String toString() {
-    return "PositionPoint{x:" + this.x + ", y:" + this.y + "}";
+    return "PositionPoint{x:" + this.x + ", y:" + this.y + ", offsetX:" + this.offsetX
+        + ", offsetY:" + this.offsetY + "}";
   }
 
 }

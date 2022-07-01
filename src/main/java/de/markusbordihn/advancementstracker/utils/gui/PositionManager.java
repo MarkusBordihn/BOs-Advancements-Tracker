@@ -19,23 +19,40 @@
 
 package de.markusbordihn.advancementstracker.utils.gui;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.mojang.blaze3d.platform.Window;
 
 import net.minecraft.client.Minecraft;
 
+import de.markusbordihn.advancementstracker.Constants;
+
 public class PositionManager {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static final int HOTBAR_RIGHT = 90;
   private static final int HOTBAR_LEFT = -90;
+  private static final int SAFE_AREA = 25;
 
+  private PositionPoint position = new PositionPoint();
+  private BasePosition basePosition = BasePosition.MIDDLE_RIGHT;
   private Window window;
-  private int guiScaledWidth;
   private int guiScaledHeight;
-  private int width = 100;
+  private int guiScaledWidth;
   private int height = 100;
-  private int windowWidth = 640;
+  private int width = 100;
+  private int defaultHeight = 100;
+  private int defaultWidth = 100;
   private int windowHeight = 400;
-  private PositionPoint position = new PositionPoint(0, 0);
+  private int windowWidth = 640;
+
+  public enum BasePosition {
+    BOTTOM_LEFT, BOTTOM_RIGHT, MIDDLE_LEFT, MIDDLE_RIGHT, TOP_LEFT, TOP_RIGHT
+  }
+
+  public PositionManager() {}
 
   public PositionManager(Minecraft minecraft) {
     setInstance(minecraft);
@@ -51,30 +68,65 @@ public class PositionManager {
   }
 
   public PositionPoint getTopRight() {
-    return new PositionPoint(this.guiScaledWidth - this.width, 0);
+    return new PositionPoint(this.guiScaledWidth - getWidthOrDefault(), 0);
   }
 
   public PositionPoint getBottomLeft() {
-    return new PositionPoint(0, this.guiScaledHeight - this.height);
+    return new PositionPoint(0, this.guiScaledHeight - getHeightOrDefault());
   }
 
   public PositionPoint getBottomRight() {
-    return new PositionPoint(this.guiScaledWidth - this.width, this.guiScaledHeight - this.height);
+    return new PositionPoint(this.guiScaledWidth - getWidthOrDefault(),
+        this.guiScaledHeight - getHeightOrDefault());
+  }
+
+  public PositionPoint getMiddleLeft() {
+    return new PositionPoint(0, this.guiScaledHeight / 2 - getHeightOrDefault() / 2);
   }
 
   public PositionPoint getMiddleRight() {
     return new PositionPoint(this.guiScaledWidth - this.width,
-        this.guiScaledHeight / 2 - this.height / 2);
+        this.guiScaledHeight / 2 - getHeightOrDefault() / 2);
   }
 
   public PositionPoint getHotbarLeft() {
-    return new PositionPoint(this.guiScaledWidth / 2 + HOTBAR_LEFT - this.width,
-        this.guiScaledHeight - this.height);
+    return new PositionPoint(this.guiScaledWidth / 2 + HOTBAR_LEFT - getWidthOrDefault(),
+        this.guiScaledHeight - getHeightOrDefault());
   }
 
   public PositionPoint getHotbarRight() {
     return new PositionPoint(this.guiScaledWidth / 2 + HOTBAR_RIGHT,
-        this.guiScaledHeight - this.height);
+        this.guiScaledHeight - getHeightOrDefault());
+  }
+
+  public void setBasePosition(BasePosition basePosition) {
+    this.basePosition = basePosition;
+    updateBasePosition();
+  }
+
+  public void updateBasePosition() {
+    switch (this.basePosition) {
+      case TOP_LEFT:
+        this.position.setOffset(getTopLeft());
+        break;
+      case TOP_RIGHT:
+        this.position.setOffset(getTopRight());
+        break;
+      case BOTTOM_LEFT:
+        this.position.setOffset(getBottomLeft());
+        break;
+      case BOTTOM_RIGHT:
+        this.position.setOffset(getBottomRight());
+        break;
+      case MIDDLE_LEFT:
+        this.position.setOffset(getMiddleLeft());
+        break;
+      case MIDDLE_RIGHT:
+        this.position.setOffset(getMiddleRight());
+        break;
+      default:
+        this.position.setOffset(getMiddleRight());
+    }
   }
 
   public int getWidth() {
@@ -97,20 +149,36 @@ public class PositionManager {
     return position;
   }
 
+  public void setPositionX(int x) {
+    if (x > this.guiScaledWidth - getWidthOrDefault() - SAFE_AREA) {
+      position.setX(this.guiScaledWidth - getWidthOrDefault() - SAFE_AREA);
+    } else {
+      position.setX(x);
+    }
+  }
+
+  public void setPositionY(int y) {
+    if (y > this.guiScaledHeight - getHeightOrDefault() - SAFE_AREA) {
+      position.setY(this.guiScaledHeight - getHeightOrDefault() - SAFE_AREA);
+    } else {
+      position.setY(y);
+    }
+  }
+
   public int getPositionX() {
-    return position.getX();
+    return position.getAbsoluteX();
   }
 
   public int getPositionY() {
-    return position.getY();
+    return position.getAbsoluteY();
   }
 
   public int getPositionXWidth() {
-    return position.getX() + this.width;
+    return position.getAbsoluteX() + this.width;
   }
 
   public int getPositionYHeight() {
-    return position.getY() + this.height;
+    return position.getAbsoluteY() + this.height;
   }
 
   public int getWindowHeight() {
@@ -129,7 +197,7 @@ public class PositionManager {
     return this.guiScaledWidth;
   }
 
-  public void setPosition(PositionPoint position) {
+  public void setPositionPoint(PositionPoint position) {
     this.position = position;
   }
 
@@ -146,6 +214,15 @@ public class PositionManager {
     this.guiScaledWidth = currentGuiScaledWidth;
     this.windowHeight = window.getHeight();
     this.windowWidth = window.getWidth();
+    updateBasePosition();
+  }
+
+  private int getWidthOrDefault() {
+    return this.width == 0 ? this.defaultWidth : this.width;
+  }
+
+  private int getHeightOrDefault() {
+    return this.height == 0 ? this.defaultHeight : this.height;
   }
 
 }

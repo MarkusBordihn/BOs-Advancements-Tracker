@@ -86,7 +86,7 @@ public class AdvancementsTrackerScreen extends Screen {
     Button button;
 
     protected int compare(String name1, String name2) {
-      return 0;
+      return name1.equals(name2) ? 1 : 0;
     }
 
     @Override

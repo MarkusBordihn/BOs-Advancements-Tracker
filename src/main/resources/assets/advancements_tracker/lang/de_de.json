@@ -1,0 +1,18 @@
+{
+  "advancements_tracker.advancementsScreen.noAdvancements": "Keine Erungenschaften gefunden! Vielleicht solltest du Holz sammeln und eine Werkbank bauen.",
+  "advancements_tracker.advancementsScreen.numCategories": "Kategorien: %1$s",
+  "advancements_tracker.advancementsScreen.numCompleted": "%1$s von %2$s abgschlossen",
+  "advancements_tracker.advancementsScreen.showCompleted": "Zeige abgeschlossene",
+  "advancements_tracker.advancementsScreen.title": "Advancements Tracker Übersicht",
+  "advancements_tracker.advancementsWidget.hotkeyAdvancementOverview": "Drücke %1$s um die Advancements Übersicht zu öffnen.",
+  "advancements_tracker.advancementsWidget.noAdvancements": "Keine Erungenschaften gefunden!\nGerade gestartet?\nVielleicht solltest du Holz sammeln und eine Werkbank bauen.",
+  "advancements_tracker.advancementsWidget.noTrackedAdvancements": "Keine verfolgten Erungeschaften!\nBitte füge welche über die Advancments Übersicht hinzu.\n\n",
+  "advancements_tracker.advancementsWidget.title": "Advancements Tracker",
+  "advancements_tracker.advancementsWidget.notAllVisible": "\u2026 %1$s von %2$s sichtbar \u2026",
+  "advancements_tracker.keys.category": "Advancements Tracker",
+  "advancements_tracker.keys.show_overview": "Zeige Übersicht",
+  "advancements_tracker.keys.show_widget": "Zeige Widget",
+  "advancements_tracker.sort.a_to_z": "A-Z",
+  "advancements_tracker.sort.normal": "Aus",
+  "advancements_tracker.sort.z_to_a": "Z-A"
+}
