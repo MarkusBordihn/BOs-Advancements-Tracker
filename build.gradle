@@ -126,6 +126,7 @@ dependencies {
 
   // Compability tests for better advancements
   runtimeOnly fg.deobf("curse.maven:better-advancements-272515:3703960")
+  runtimeOnly fg.deobf("curse.maven:configured-457570:3721946")
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -167,8 +168,14 @@ curseforge {
   project {
     id = "${curseforge_project_id}"
     changelog = 'See https://github.com/MarkusBordihn/BOs-Advancements-Tracker/commits/main'
-    releaseType = 'beta'
+    releaseType = 'release'
     addGameVersion("1.18.2")
     addGameVersion("Forge")
+    mainArtifact(jar) {
+      relations {
+        optionalDependency 'better-advancements'
+        optionalDependency 'configured'
+      }
+    }
   }
 }
