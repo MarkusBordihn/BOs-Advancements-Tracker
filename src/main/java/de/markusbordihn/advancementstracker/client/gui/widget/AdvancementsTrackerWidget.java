@@ -44,9 +44,9 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -81,15 +81,15 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
   // Pre-defined texts
   private static MutableComponent noAdvancementsText =
-      new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
+      Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
           .append(ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
           .withStyle(ChatFormatting.WHITE);
   private static MutableComponent noTrackedAdvancementsText =
-      new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
-          .append(new TranslatableComponent(
-              Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
-              ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
-                  .withStyle(ChatFormatting.YELLOW))
+      Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
+          .append(Component
+              .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
+                  ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
+              .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
 
   private static PositionManager positionManager = new PositionManager();
@@ -160,7 +160,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     y = positionManager.getPositionY();
 
     // Get pose stack and render buffer for additional effects.
-    PoseStack poseStack = event.getMatrixStack();
+    PoseStack poseStack = event.getPoseStack();
     MultiBufferSource.BufferSource multiBufferSource =
         Minecraft.getInstance().renderBuffers().bufferSource();
 
@@ -255,9 +255,8 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Note that not all tracked advancements are visible.
     float textScale = 0.75f;
-    TranslatableComponent text =
-        new TranslatableComponent(Constants.ADVANCEMENTS_WIDGET_PREFIX + "notAllVisible",
-            numberOfAdvancementsRendered, numberOfAdvancements);
+    Component text = Component.translatable(Constants.ADVANCEMENTS_WIDGET_PREFIX + "notAllVisible",
+        numberOfAdvancementsRendered, numberOfAdvancements);
     poseStack.pushPose();
     poseStack.scale(textScale, textScale, textScale);
     font.drawShadow(poseStack, text, (x + 16) / textScale, (y + 2) / textScale, TEXT_COLOR_GRAY);
@@ -375,14 +374,14 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private static void updatePredefinedText() {
     // Update text for custom key-mapping.
     noAdvancementsText =
-        new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
+        Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
             .withStyle(ChatFormatting.WHITE);
     noTrackedAdvancementsText =
-        new TranslatableComponent(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
-            .append(new TranslatableComponent(
-                Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
-                ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
-                    .withStyle(ChatFormatting.YELLOW))
+        Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
+            .append(Component
+                .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
+                    ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
+                .withStyle(ChatFormatting.YELLOW))
             .withStyle(ChatFormatting.WHITE);
   }
 

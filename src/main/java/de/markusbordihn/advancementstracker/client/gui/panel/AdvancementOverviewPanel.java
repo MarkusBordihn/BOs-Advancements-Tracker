@@ -31,14 +31,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.TextComponent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
@@ -93,8 +91,8 @@ public class AdvancementOverviewPanel
     private final Font font;
     private final ItemStack icon;
     private final ResourceLocation background;
-    private final TextComponent description;
-    private final TextComponent title;
+    private final Component description;
+    private final Component title;
     private final boolean isDone;
     private final int completedCriteriaNumber;
     private final int descriptionColor;
@@ -170,7 +168,7 @@ public class AdvancementOverviewPanel
           float positionScaling = 1.33f;
           poseStack.pushPose();
           poseStack.scale(scaling, scaling, scaling);
-          font.draw(poseStack, new TextComponent(progressDone + "/" + progressTotal),
+          font.draw(poseStack, Component.literal(progressDone + "/" + progressTotal),
               (progressPositionLeft + progressWidth + 5) * positionScaling,
               (progressPositionTop) * positionScaling,
               this.remainingCriteriaNumber >= 1 ? ChatFormatting.YELLOW.getColor()
@@ -216,7 +214,7 @@ public class AdvancementOverviewPanel
 
     @Override
     public Component getNarration() {
-      return new TranslatableComponent("narrator.select", advancementEntry.title);
+      return Component.translatable("narrator.select", advancementEntry.title);
     }
 
     @Override
@@ -285,7 +283,7 @@ public class AdvancementOverviewPanel
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-       // We only care for mouse click events with button 0.
+      // We only care for mouse click events with button 0.
       if (button == 0) {
         double relativeX = mouseX - this.relativeLeftPosition;
         double relativeY = mouseY - this.relativeTopPosition;

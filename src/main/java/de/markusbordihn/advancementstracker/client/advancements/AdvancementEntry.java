@@ -35,7 +35,7 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
@@ -76,8 +76,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   private int progressTotal = 0;
 
   // Text Components
-  private final TextComponent descriptionComponent;
-  private final TextComponent titleComponent;
+  private final Component descriptionComponent;
+  private final Component titleComponent;
 
   // Rewards
   private AdvancementRewards rewards = null;
@@ -128,8 +128,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     }
 
     // Create final references
-    this.descriptionComponent = new TextComponent(stripControlCodes(this.description));
-    this.titleComponent = new TextComponent(stripControlCodes(this.title));
+    this.descriptionComponent = Component.literal(stripControlCodes(this.description));
+    this.titleComponent = Component.literal(stripControlCodes(this.title));
 
     if (advancementProgress != null) {
       this.addAdvancementProgress(advancementProgress);
@@ -148,17 +148,18 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.advancement;
   }
 
-  public TextComponent getDescription() {
+  public Component getDescription() {
     return this.descriptionComponent;
   }
 
-  public TextComponent getTitle() {
+  public Component getTitle() {
     return this.titleComponent;
   }
 
   public String getProgressString() {
     return this.progressString;
   }
+
   public int getProgressTotal() {
     return this.progressTotal;
   }
@@ -311,9 +312,9 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public static Comparator<AdvancementEntry> sortByTitle() {
-    return (AdvancementEntry firstAdvancementEntry, AdvancementEntry secondAdvancementEntry) -> {
-      return firstAdvancementEntry.title.compareTo(secondAdvancementEntry.title);
-    };
+    return (AdvancementEntry firstAdvancementEntry,
+        AdvancementEntry secondAdvancementEntry) -> firstAdvancementEntry.title
+            .compareTo(secondAdvancementEntry.title);
   }
 
   public static Comparator<AdvancementEntry> sortByStatus() {

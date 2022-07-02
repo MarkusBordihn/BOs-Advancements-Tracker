@@ -19,7 +19,7 @@
 
 package de.markusbordihn.advancementstracker;
 
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 public final class Constants {
 
@@ -41,5 +41,5 @@ public final class Constants {
   public static final String ADVANCEMENTS_WIDGET_PREFIX = MOD_PREFIX + "advancementsWidget.";
 
   // Pre-defined Texts
-  public static final TextComponent ELLIPSIS = new TextComponent("\u2026");
+  public static final Component ELLIPSIS = Component.literal("\u2026");
 }

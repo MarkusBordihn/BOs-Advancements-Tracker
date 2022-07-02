@@ -29,14 +29,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.TextComponent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
@@ -96,8 +94,8 @@ public class AdvancementCategoryPanel
     private final Font font;
     private final ItemStack icon;
     private final ResourceLocation background;
-    private final TextComponent description;
-    private final TextComponent title;
+    private final Component description;
+    private final Component title;
     private final int descriptionColor;
 
     private boolean isSelected = false;
@@ -105,12 +103,12 @@ public class AdvancementCategoryPanel
     RootAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
       this.background = advancementEntry.background;
-      this.description = new TextComponent(stripControlCodes(advancementEntry.description));
+      this.description = Component.literal(stripControlCodes(advancementEntry.description));
       this.descriptionColor = advancementEntry.descriptionColor;
       this.font = parent.getFontRenderer();
       this.icon = advancementEntry.icon;
       this.parent = parent;
-      this.title = new TextComponent(stripControlCodes(advancementEntry.title));
+      this.title = Component.literal(stripControlCodes(advancementEntry.title));
     }
 
     public AdvancementEntry getAdvancementEntry() {
@@ -175,7 +173,7 @@ public class AdvancementCategoryPanel
 
     @Override
     public Component getNarration() {
-      return new TranslatableComponent("narrator.select", advancementEntry.title);
+      return Component.translatable("narrator.select", advancementEntry.title);
     }
 
     @Override

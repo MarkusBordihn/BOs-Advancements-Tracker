@@ -37,8 +37,6 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import net.minecraftforge.api.distmarker.Dist;
@@ -97,8 +95,8 @@ public class AdvancementsTrackerScreen extends Screen {
     }
 
     Component getButtonText() {
-      return new TranslatableComponent(
-          Constants.MOD_PREFIX + "sort." + StringUtils.toLowerCase(name()));
+      return Component
+          .translatable(Constants.MOD_PREFIX + "sort." + StringUtils.toLowerCase(name()));
     }
   }
 
@@ -124,7 +122,7 @@ public class AdvancementsTrackerScreen extends Screen {
   private int numberOfTotalAdvancements = 0;
 
   public AdvancementsTrackerScreen() {
-    this(new TextComponent("Advancements Tracker"));
+    this(Component.literal("Advancements Tracker"));
   }
 
   public static void toggleVisibility() {
@@ -137,7 +135,7 @@ public class AdvancementsTrackerScreen extends Screen {
       Minecraft.getInstance().setScreen(new AdvancementsTrackerScreen());
     } else if (minecraft.screen instanceof AdvancementsTrackerScreen) {
       Minecraft.getInstance().setScreen(parentScreen);
-      parentScreen =null;
+      parentScreen = null;
     }
 
   }
@@ -260,7 +258,7 @@ public class AdvancementsTrackerScreen extends Screen {
       poseStack.pushPose();
       poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
       font.draw(poseStack,
-          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCategories",
+          Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCategories",
               numberOfRootAdvancements),
           (this.listWidth - PADDING - 48.0f) / scaleFactor, (this.height - 8) / scaleFactor,
           0xFFFFFF);
@@ -274,7 +272,7 @@ public class AdvancementsTrackerScreen extends Screen {
       poseStack.pushPose();
       poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
       font.draw(poseStack,
-          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCompleted",
+          Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCompleted",
               this.numberOfCompletedAdvancements, this.numberOfTotalAdvancements),
           (width - 80.0f) / scaleFactor, (this.height - 8) / scaleFactor, 0xFFFFFF);
       poseStack.popPose();
@@ -300,7 +298,7 @@ public class AdvancementsTrackerScreen extends Screen {
     poseStack.pushPose();
     poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
     font.draw(poseStack,
-        new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showCompleted"),
+        Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showCompleted"),
         Math.round((this.listWidth + 22.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
     poseStack.popPose();
