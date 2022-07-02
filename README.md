@@ -1,5 +1,8 @@
 # Advancements Tracker and Overview
 
+[![Advancements Tracker and Overview Downloads](http://cf.way2muchnoise.eu/full_453074_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
+[![Advancements Tracker and Overview Versions](http://cf.way2muchnoise.eu/versions/Minecraft_453074_all.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
+
 Advancements Tracker is a Minecraft Forge Client Mod which give you an overlay which shows you the current process of your selected advancements to easier follow them.
 Additional you will get a better overview of Advancements with sorting and filter options.
 This mod will make achieving the advancements more easier, interesting and meaningful.
@@ -69,6 +72,6 @@ This mod works great together with Better Advancements mod, but let me know if y
 
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
 [platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
-[logo]: logo.png
+[logo]: logo.gif
 [overview_example]: example/overview_example.png
 [widget_example]: example/widget_example.png
