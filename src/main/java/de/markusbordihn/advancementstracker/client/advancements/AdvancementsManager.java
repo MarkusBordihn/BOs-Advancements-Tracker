@@ -90,15 +90,21 @@ public class AdvancementsManager {
   public static void addAdvancementTask(Advancement advancement) {
     String advancementId = advancement.getId().toString();
     Advancement rootAdvancement = advancement.getParent();
+
+    // Try to add root advancement, if this is a child advancement.
     if (rootAdvancement != null) {
       while (rootAdvancement.getParent() != null) {
         rootAdvancement = rootAdvancement.getParent();
       }
       addAdvancementRoot(rootAdvancement);
     }
+
+    // Skip rest, if the advancement is already known.
     if (hasAdvancement(advancementId)) {
       return;
     }
+
+    // Get advancements stats and store the advancement data.
     AdvancementProgress advancementProgress = getAdvancementProgress(advancement);
     AdvancementEntry advancementEntry = new AdvancementEntry(advancement, advancementProgress);
     Set<AdvancementEntry> childAdvancements = advancementsMap.get(advancementEntry.rootId);
@@ -165,7 +171,7 @@ public class AdvancementsManager {
 
   public static int getNumberOfAdvancements(AdvancementEntry rootAdvancement) {
     Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
-    return advancements != null ? advancements.size() : 0;
+    return advancements.size();
   }
 
   public static int getNumberOfCompletedAdvancements(AdvancementEntry rootAdvancement) {
@@ -199,17 +205,19 @@ public class AdvancementsManager {
       log.error("Unable to get advancements for root advancement {}", rootAdvancement);
       return new HashSet<>();
     }
-    return advancementsMap.get(rootAdvancement.id);
+    Set<AdvancementEntry> advancements = advancementsMap.get(rootAdvancement.id);
+    if (advancements == null) {
+      return new HashSet<>();
+    }
+    return advancements;
   }
 
   public static Set<AdvancementEntry> getSortedAdvancements(AdvancementEntry rootAdvancement,
       Comparator<AdvancementEntry> comparator) {
     Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
-    if (advancements == null) {
-      return new HashSet<>();
-    }
-    return advancements.stream().sorted(comparator)
-        .collect(Collectors.toCollection(LinkedHashSet::new));
+    return advancements.isEmpty() ? advancements
+        : advancements.stream().sorted(comparator)
+            .collect(Collectors.toCollection(LinkedHashSet::new));
   }
 
   public static Set<AdvancementEntry> getAdvancementsByTile(AdvancementEntry rootAdvancement) {
@@ -245,7 +253,7 @@ public class AdvancementsManager {
   public static AdvancementEntry getSelectedAdvancement() {
     if (selectedAdvancement == null && getSelectedRootAdvancement() != null) {
       Set<AdvancementEntry> possibleAdvancements = getAdvancements(getSelectedRootAdvancement());
-      if (possibleAdvancements != null && possibleAdvancements.iterator().hasNext()) {
+      if (!possibleAdvancements.isEmpty() && possibleAdvancements.iterator().hasNext()) {
         selectedAdvancement = possibleAdvancements.iterator().next();
       }
     }
