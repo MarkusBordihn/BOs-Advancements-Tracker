@@ -24,6 +24,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -39,8 +42,13 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.loading.StringUtils;
+
+import de.markusbordihn.advancementstracker.Constants;
 
 public class AdvancementEntry implements Comparator<AdvancementEntry> {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   Advancement advancement;
   Advancement rootAdvancement;
@@ -55,37 +63,46 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public Date firstProgressDate;
   public Date lastProgressDate;
   public FrameType frameType;
-  public ItemStack icon;
   public Iterable<String> completedCriteria;
   public Iterable<String> remainingCriteria;
-  public ResourceLocation background;
-  public ResourceLocation id;
-  public String description;
-  public String idString;
-  public String title;
-  public boolean isDone;
   public int completedCriteriaNumber;
   public int criteriaNumber;
-  public int descriptionColor = 0xFFCCCCCC;
   public int maxCriteraRequired;
   public int remainingCriteriaNumber;
   public int requirementsNumber;
 
+  // General
+  private final ResourceLocation id;
+  private final String idString;
+
+  // Display Information
+  private ItemStack icon;
+  private ResourceLocation background;
+  private String description;
+  private String title;
+
   // Progress
   private String progressString = "";
+  private boolean isDone;
   private int progressTotal = 0;
 
   // Text Components
   private final TextComponent descriptionComponent;
   private final TextComponent titleComponent;
+  private int descriptionColor = 0xFFCCCCCC;
+  private int titleColor = 0xFFFFFFFF;
 
   // Rewards
   private AdvancementRewards rewards = null;
   private ResourceLocation[] rewardsLoot = null;
   private ResourceLocation[] rewardsRecipes = null;
+  private Integer rewardsExperience = null;
+  private boolean hasExperienceReward = false;
+  private boolean hasLootReward = false;
+  private boolean hasRecipesReward = false;
   private boolean hasRewards = false;
   private boolean hasRewardsData = false;
-  private Integer rewardsExperience = null;
+  private boolean hasRewardsLoaded = false;
 
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
     this.advancement = advancement;
@@ -95,8 +112,6 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     this.rootAdvancement = advancement.getParent();
     this.requirements = advancement.getRequirements();
     this.maxCriteraRequired = advancement.getMaxCriteraRequired();
-    this.rewards = advancement.getRewards();
-    this.hasRewards = this.rewards != null;
     if (this.rootAdvancement != null) {
       while (this.rootAdvancement.getParent() != null) {
         this.rootAdvancement = this.rootAdvancement.getParent();
@@ -108,12 +123,20 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     // Handle display information like background, colors and description.
     if (this.displayInfo != null) {
       this.background = this.displayInfo.getBackground();
+
+      // Title
+      this.icon = this.displayInfo.getIcon();
+      this.title = this.displayInfo.getTitle().getString();
+      if (this.displayInfo.getTitle().getStyle().getColor() != null) {
+        this.titleColor = this.displayInfo.getTitle().getStyle().getColor().getValue();
+      }
+
+      // Description
       this.description = this.displayInfo.getDescription().getString();
       if (this.displayInfo.getDescription().getStyle().getColor() != null) {
         this.descriptionColor = this.displayInfo.getDescription().getStyle().getColor().getValue();
       }
-      this.icon = this.displayInfo.getIcon();
-      this.title = this.displayInfo.getTitle().getString();
+
       this.frameType = this.displayInfo.getFrame();
     } else {
       this.background = null;
@@ -127,10 +150,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       this.background = this.rootAdvancement.getDisplay().getBackground();
     }
 
-    // Create final references
+    // Stripped version for ui renderer.
     this.descriptionComponent = new TextComponent(stripControlCodes(this.description));
     this.titleComponent = new TextComponent(stripControlCodes(this.title));
 
+    // Handle Rewards like experience, loot and recipes.
+    this.rewards = advancement.getRewards();
+
+    // Process advancement progress, if needed.
     if (advancementProgress != null) {
       this.addAdvancementProgress(advancementProgress);
     }
@@ -140,8 +167,24 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return TrackedAdvancementsManager.isTrackedAdvancement(advancement);
   }
 
+  public boolean isDone() {
+    return this.isDone;
+  }
+
   public ResourceLocation getId() {
     return this.id;
+  }
+
+  public String getIdString() {
+    return this.idString;
+  }
+
+  public ResourceLocation getBackground() {
+    return this.background;
+  }
+
+  public ItemStack getIcon() {
+    return this.icon;
   }
 
   public Advancement getAdvancement() {
@@ -152,13 +195,34 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.descriptionComponent;
   }
 
+  public String getDescriptionString() {
+    return this.description;
+  }
+
+  public int getDescriptionColor() {
+    return this.descriptionColor;
+  }
+
+  public String getSortName() {
+    return StringUtils.toLowerCase(stripControlCodes(this.title));
+  }
+
   public TextComponent getTitle() {
     return this.titleComponent;
+  }
+
+  public String getTitleString() {
+    return this.title;
+  }
+
+  public int getTitleColor() {
+    return this.titleColor;
   }
 
   public String getProgressString() {
     return this.progressString;
   }
+
   public int getProgressTotal() {
     return this.progressTotal;
   }
@@ -208,12 +272,13 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public Integer getRewardsExperience() {
-    if (this.hasRewards && this.rewardsExperience == null) {
+    if (this.rewardsExperience == null) {
       JsonObject rewardsData = getRewardsData();
       if (rewardsData != null) {
         // Getting rewards experience
         this.rewardsExperience = GsonHelper.getAsInt(rewardsData, "experience", 0);
         if (this.rewardsExperience > 0) {
+          this.hasExperienceReward = true;
           this.hasRewardsData = true;
         }
       }
@@ -222,7 +287,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public ResourceLocation[] getRewardsLoot() {
-    if (this.hasRewards && this.rewardsLoot == null) {
+    if (this.rewardsLoot == null) {
       JsonObject rewardsData = getRewardsData();
       if (rewardsData != null) {
         // Getting Loot entries
@@ -231,6 +296,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
         for (int j = 0; j < this.rewardsLoot.length; ++j) {
           this.rewardsLoot[j] =
               new ResourceLocation(GsonHelper.convertToString(lootArray.get(j), "loot[" + j + "]"));
+          this.hasLootReward = true;
           this.hasRewardsData = true;
         }
       }
@@ -239,7 +305,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public ResourceLocation[] getRewardsRecipes() {
-    if (this.hasRewards && this.rewardsRecipes == null) {
+    if (this.rewardsRecipes == null) {
       JsonObject rewardsData = getRewardsData();
       if (rewardsData != null) {
         // Getting recipes entries
@@ -248,6 +314,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
         for (int k = 0; k < this.rewardsRecipes.length; ++k) {
           this.rewardsRecipes[k] = new ResourceLocation(
               GsonHelper.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
+          this.hasRecipesReward = true;
           this.hasRewardsData = true;
         }
       }
@@ -274,11 +341,28 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public boolean hasRewards() {
+    if (!this.hasRewardsLoaded && this.rewards != null) {
+      this.hasRewards =
+          getRewardsExperience() != null || getRewardsLoot() != null || getRewardsRecipes() != null;
+      this.hasRewardsLoaded = true;
+    }
     return this.hasRewards;
   }
 
   public boolean hasRewardsData() {
-    return this.hasRewards && this.hasRewardsData;
+    return this.hasRewards() && this.hasRewardsData;
+  }
+
+  public boolean hasExperienceReward() {
+    return this.hasExperienceReward;
+  }
+
+  public boolean hasLootReward() {
+    return this.hasLootReward;
+  }
+
+  public boolean hasRecipesReward() {
+    return this.hasRecipesReward;
   }
 
   private static String stripControlCodes(String value) {
@@ -286,17 +370,17 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
+  public boolean equals(Object object) {
+    if (object == null) {
       return false;
     }
-    if (!(obj instanceof AdvancementEntry)) {
+    if (!(object instanceof AdvancementEntry)) {
       return false;
     }
-    if (obj == this) {
+    if (object == this) {
       return true;
     }
-    return this.id == ((AdvancementEntry) obj).id;
+    return this.id == ((AdvancementEntry) object).id;
   }
 
   @Override
@@ -311,9 +395,9 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public static Comparator<AdvancementEntry> sortByTitle() {
-    return (AdvancementEntry firstAdvancementEntry, AdvancementEntry secondAdvancementEntry) -> {
-      return firstAdvancementEntry.title.compareTo(secondAdvancementEntry.title);
-    };
+    return (AdvancementEntry firstAdvancementEntry,
+        AdvancementEntry secondAdvancementEntry) -> firstAdvancementEntry.title
+            .compareTo(secondAdvancementEntry.title);
   }
 
   public static Comparator<AdvancementEntry> sortByStatus() {

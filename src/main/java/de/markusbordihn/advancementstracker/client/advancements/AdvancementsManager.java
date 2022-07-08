@@ -44,7 +44,7 @@ import de.markusbordihn.advancementstracker.Constants;
 @EventBusSubscriber(Dist.CLIENT)
 public class AdvancementsManager {
 
-  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static AdvancementEntry selectedAdvancement;
   private static AdvancementEntry selectedRootAdvancement;
@@ -131,7 +131,7 @@ public class AdvancementsManager {
 
   public static boolean hasRootAdvancement(Advancement advancement) {
     for (AdvancementEntry rootAdvancement : rootAdvancements) {
-      if (advancement.getId() == rootAdvancement.id) {
+      if (advancement.getId() == rootAdvancement.getId()) {
         return true;
       }
     }
@@ -140,7 +140,7 @@ public class AdvancementsManager {
 
   public static AdvancementEntry getRootAdvancement(Advancement advancement) {
     for (AdvancementEntry rootAdvancement : rootAdvancements) {
-      if (advancement.getId() == rootAdvancement.id) {
+      if (advancement.getId() == rootAdvancement.getId()) {
         return rootAdvancement;
       }
     }
@@ -178,7 +178,7 @@ public class AdvancementsManager {
     int completedAdvancements = 0;
     Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
     for (AdvancementEntry advancementEntry : advancements) {
-      if (advancementEntry.isDone) {
+      if (advancementEntry.isDone()) {
         completedAdvancements++;
       }
     }
@@ -192,7 +192,7 @@ public class AdvancementsManager {
   public static AdvancementEntry getAdvancement(String id) {
     for (Set<AdvancementEntry> advancementEntries : advancementsMap.values()) {
       for (AdvancementEntry advancementEntry : advancementEntries) {
-        if (id.equals(advancementEntry.id.toString())) {
+        if (id.equals(advancementEntry.getIdString())) {
           return advancementEntry;
         }
       }
@@ -205,7 +205,7 @@ public class AdvancementsManager {
       log.error("Unable to get advancements for root advancement {}", rootAdvancement);
       return new HashSet<>();
     }
-    Set<AdvancementEntry> advancements = advancementsMap.get(rootAdvancement.id);
+    Set<AdvancementEntry> advancements = advancementsMap.get(rootAdvancement.getId());
     if (advancements == null) {
       return new HashSet<>();
     }
@@ -279,7 +279,8 @@ public class AdvancementsManager {
 
   public static void setSelectedRootAdvancement(AdvancementEntry selectedRootAdvancement) {
     AdvancementsManager.selectedRootAdvancement = selectedRootAdvancement;
-    if (selectedAdvancement != null && selectedRootAdvancement.id != selectedAdvancement.rootId) {
+    if (selectedAdvancement != null
+        && selectedRootAdvancement.getId() != selectedAdvancement.rootId) {
       selectedAdvancement = null;
     }
   }

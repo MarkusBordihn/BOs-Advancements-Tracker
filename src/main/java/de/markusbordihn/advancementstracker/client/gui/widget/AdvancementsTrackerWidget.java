@@ -334,9 +334,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     referenceTopPosition += font.lineHeight * titleScale + 3;
 
     // Icon
-    if (advancementEntry.icon != null) {
+    if (advancementEntry.getIcon() != null) {
       poseStack.pushPose();
-      renderGuiItem(advancementEntry.icon, multiBufferSource, referenceLeftPosition - 4,
+      renderGuiItem(advancementEntry.getIcon(), multiBufferSource, referenceLeftPosition - 4,
           referenceTopPosition - 14, 0.65f);
       poseStack.popPose();
     }
@@ -347,9 +347,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     for (FormattedCharSequence descriptionPart : descriptionParts) {
       boolean shouldEnd = false;
       font.drawShadow(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
-          referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
+          referenceTopPosition / descriptionScale, advancementEntry.getDescriptionColor());
       font.draw(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
-          referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
+          referenceTopPosition / descriptionScale, advancementEntry.getDescriptionColor());
       if ((descriptionParts.size() >= 3 && descriptionLines == 3)) {
         font.draw(poseStack, Constants.ELLIPSIS, (referenceLeftPosition / descriptionScale)
             + ((font.width(descriptionPart) / descriptionScale) < maxFontWidth / descriptionScale

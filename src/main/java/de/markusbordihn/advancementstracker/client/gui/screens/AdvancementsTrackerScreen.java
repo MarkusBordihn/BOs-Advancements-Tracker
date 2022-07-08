@@ -90,10 +90,8 @@ public class AdvancementsTrackerScreen extends Screen {
     }
 
     @Override
-    public int compare(AdvancementEntry o1, AdvancementEntry o2) {
-      String name1 = StringUtils.toLowerCase(stripControlCodes(o1.title));
-      String name2 = StringUtils.toLowerCase(stripControlCodes(o2.title));
-      return compare(name1, name2);
+    public int compare(AdvancementEntry advancement1, AdvancementEntry advancement2) {
+      return compare(advancement1.getSortName(), advancement2.getSortName());
     }
 
     Component getButtonText() {
@@ -104,6 +102,7 @@ public class AdvancementsTrackerScreen extends Screen {
 
   // Stats
   private static boolean showCompletedAdvancements = true;
+  private static boolean showOnlyRewardedAdvancements = false;
   private CategorySortType sortType = CategorySortType.NORMAL;
   private boolean sorted = false;
 
@@ -137,13 +136,9 @@ public class AdvancementsTrackerScreen extends Screen {
       Minecraft.getInstance().setScreen(new AdvancementsTrackerScreen());
     } else if (minecraft.screen instanceof AdvancementsTrackerScreen) {
       Minecraft.getInstance().setScreen(parentScreen);
-      parentScreen =null;
+      parentScreen = null;
     }
 
-  }
-
-  private static String stripControlCodes(String value) {
-    return net.minecraft.util.StringUtil.stripColor(value);
   }
 
   public AdvancementsTrackerScreen(Component component) {
@@ -216,7 +211,8 @@ public class AdvancementsTrackerScreen extends Screen {
       return;
     }
     this.childAdvancements.forEach(advancementEntry -> {
-      if (showCompletedAdvancements || !advancementEntry.isDone) {
+      if ((showCompletedAdvancements || !advancementEntry.isDone())
+          && (!showOnlyRewardedAdvancements || advancementEntry.hasRewards())) {
         listViewConsumer.accept(newEntry.apply(advancementEntry));
       }
     });
@@ -257,13 +253,14 @@ public class AdvancementsTrackerScreen extends Screen {
   private void renderNumberOfRootAdvancements(PoseStack poseStack) {
     if (numberOfRootAdvancements > 0) {
       float scaleFactor = 0.75f;
+      TranslatableComponent text = new TranslatableComponent(
+          Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCategories", numberOfRootAdvancements);
       poseStack.pushPose();
       poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
-      font.draw(poseStack,
-          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCategories",
-              numberOfRootAdvancements),
-          (this.listWidth - PADDING - 48.0f) / scaleFactor, (this.height - 8) / scaleFactor,
-          0xFFFFFF);
+      font.drawShadow(poseStack, text, (this.listWidth - PADDING - 48.0f) / scaleFactor,
+          (this.height - 8) / scaleFactor, 0xFFFFFF);
+      font.draw(poseStack, text, (this.listWidth - PADDING - 48.0f) / scaleFactor,
+          (this.height - 8) / scaleFactor, 0xFFFFFF);
       poseStack.popPose();
     }
   }
@@ -271,12 +268,16 @@ public class AdvancementsTrackerScreen extends Screen {
   private void renderAdvancementsStats(PoseStack poseStack) {
     if (this.numberOfTotalAdvancements > 0) {
       float scaleFactor = 0.75f;
+      TranslatableComponent text =
+          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCompleted",
+              this.numberOfCompletedAdvancements, this.numberOfTotalAdvancements);
+
       poseStack.pushPose();
       poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
-      font.draw(poseStack,
-          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCompleted",
-              this.numberOfCompletedAdvancements, this.numberOfTotalAdvancements),
-          (width - 80.0f) / scaleFactor, (this.height - 8) / scaleFactor, 0xFFFFFF);
+      font.drawShadow(poseStack, text, (width - 80.0f) / scaleFactor,
+          (this.height - 8) / scaleFactor, 0xFFFFFF);
+      font.draw(poseStack, text, (width - 80.0f) / scaleFactor, (this.height - 8) / scaleFactor,
+          0xFFFFFF);
       poseStack.popPose();
     }
   }
@@ -297,17 +298,52 @@ public class AdvancementsTrackerScreen extends Screen {
     poseStack.popPose();
 
     float scaleFactorText = 0.75f;
+    TranslatableComponent text =
+        new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showCompleted");
+
     poseStack.pushPose();
     poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
-    font.draw(poseStack,
-        new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showCompleted"),
-        Math.round((this.listWidth + 22.0f) / scaleFactorText),
+    font.drawShadow(poseStack, text, Math.round((this.listWidth + 22.0f) / scaleFactorText),
+        Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
+    font.draw(poseStack, text, Math.round((this.listWidth + 22.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
     poseStack.popPose();
   }
 
   private static void toggleShowCompletedAdvancements() {
     showCompletedAdvancements = !showCompletedAdvancements;
+  }
+
+  private void renderOnlyRewardedCheckbox(PoseStack poseStack) {
+    int iconPosition = 22;
+    if (showOnlyRewardedAdvancements) {
+      iconPosition = 42;
+    }
+    RenderSystem.setShaderColor(1, 1, 1, 1);
+    RenderSystem.setShaderTexture(0, miscTexture);
+
+    float scaleFactorIcon = 0.6f;
+    poseStack.pushPose();
+    poseStack.scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
+    GuiComponent.blit(poseStack, Math.round((this.listWidth + 65.0f) / scaleFactorIcon),
+        Math.round((this.height - 10) / scaleFactorIcon), iconPosition, 6, 15, 15, 256, 256);
+    poseStack.popPose();
+
+    float scaleFactorText = 0.75f;
+    int fontColor = showOnlyRewardedAdvancements ? 0xFF0000 : 0xFFFFFF;
+    TranslatableComponent text =
+        new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showOnlyRewarded");
+    poseStack.pushPose();
+    poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
+    font.drawShadow(poseStack, text, Math.round((this.listWidth + 77.0f) / scaleFactorText),
+        Math.round((this.height - 8) / scaleFactorText), fontColor);
+    font.draw(poseStack, text, Math.round((this.listWidth + 77.0f) / scaleFactorText),
+        Math.round((this.height - 8) / scaleFactorText), fontColor);
+    poseStack.popPose();
+  }
+
+  private static void toggleShowOnlyRewardedAdvancements() {
+    showOnlyRewardedAdvancements = !showOnlyRewardedAdvancements;
   }
 
   @Override
@@ -377,6 +413,9 @@ public class AdvancementsTrackerScreen extends Screen {
 
     // Checkbox for show/hide completed Advancements
     this.renderCompletedCheckbox(poseStack);
+
+    // Checkbox for show/hide rewarded Advancements
+    this.renderOnlyRewardedCheckbox(poseStack);
   }
 
   @Override
@@ -388,9 +427,14 @@ public class AdvancementsTrackerScreen extends Screen {
 
   @Override
   public boolean mouseClicked(double mouseX, double mouseY, int button) {
-    if (button == 0 && mouseX > this.listWidth + 10.0f && mouseX < this.listWidth + 17.0f
+    if (button == 0 && mouseX > this.listWidth + 10.0f && mouseX < this.listWidth + 18.0f
         && mouseY > this.height - 11) {
       toggleShowCompletedAdvancements();
+      reloadChildAdvancements();
+      return false;
+    } else if (button == 0 && mouseX > this.listWidth + 65.0f && mouseX < this.listWidth + 73.0f
+        && mouseY > this.height - 11) {
+      toggleShowOnlyRewardedAdvancements();
       reloadChildAdvancements();
       return false;
     }

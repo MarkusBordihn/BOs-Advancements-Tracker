@@ -121,9 +121,8 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
     if (advancementId.startsWith("minecraft:recipes/")
         || advancementId.startsWith("smallships:recipes")) {
       return false;
-    }
-    if (advancement.getDisplay() == null) {
-      log.debug("[Invalid Advancement] {} with {}", advancement, advancement.getDisplay());
+    } else if (advancement.getDisplay() == null) {
+      log.debug("[Skip Advancement with no display information] {}", advancement);
       return false;
     }
     return true;
