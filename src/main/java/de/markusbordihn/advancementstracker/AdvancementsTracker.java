@@ -29,7 +29,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.network.NetworkConstants;
 
 import de.markusbordihn.advancementstracker.client.gui.ClientGui;
-import de.markusbordihn.advancementstracker.client.keymapping.ModKeyMapping;
 import de.markusbordihn.advancementstracker.utils.StopModReposts;
 
 @Mod(Constants.MOD_ID)
@@ -49,7 +48,6 @@ public class AdvancementsTracker {
 
     DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> {
       modEventBus.addListener(ClientGui::registerClientGui);
-      modEventBus.addListener(ModKeyMapping::registerKeyMapping);
     });
   }
 
