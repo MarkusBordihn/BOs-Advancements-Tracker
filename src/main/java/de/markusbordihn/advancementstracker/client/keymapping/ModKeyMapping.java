@@ -29,13 +29,12 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.ClientRegistry;
 import net.minecraftforge.client.event.InputEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.settings.KeyConflictContext;
 import net.minecraftforge.client.settings.KeyModifier;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
@@ -60,7 +59,7 @@ public class ModKeyMapping {
       InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_L), Constants.KEY_PREFIX + "category");
 
   @SubscribeEvent
-  public static void handleKeyboardKeyPressedEvent(InputEvent.KeyInputEvent event) {
+  public static void handleKeyboardKeyPressedEvent(InputEvent.Key event) {
     if (ModKeyMapping.KEY_SHOW_WIDGET.isDown()) {
       if (Boolean.TRUE.equals(CLIENT.widgetEnabled.get())) {
         log.debug("Show/hide Advancements Widget ...");
@@ -74,12 +73,10 @@ public class ModKeyMapping {
     }
   }
 
-  public static void registerKeyMapping(final FMLClientSetupEvent event) {
+  @SubscribeEvent
+  public static void registerKeyMapping(RegisterKeyMappingsEvent event) {
     log.info("{} Key Mapping ...", Constants.LOG_REGISTER_PREFIX);
-
-    event.enqueueWork(() -> {
-      ClientRegistry.registerKeyBinding(ModKeyMapping.KEY_SHOW_WIDGET);
-      ClientRegistry.registerKeyBinding(ModKeyMapping.KEY_SHOW_OVERVIEW);
-    });
+    event.register(ModKeyMapping.KEY_SHOW_WIDGET);
+    event.register(ModKeyMapping.KEY_SHOW_OVERVIEW);
   }
 }

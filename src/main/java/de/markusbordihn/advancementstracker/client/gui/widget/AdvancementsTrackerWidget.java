@@ -53,7 +53,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -78,6 +78,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private static final int TEXT_COLOR_WHITE = ChatFormatting.WHITE.getColor();
   private static final int TEXT_COLOR_YELLOW = ChatFormatting.YELLOW.getColor();
   private static final int TEXT_COLOR_GRAY = ChatFormatting.GRAY.getColor();
+  private static final int BACKGROUND_COLOR = 0x08000000;
 
   // Pre-defined texts
   private static MutableComponent noAdvancementsText =
@@ -143,10 +144,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   }
 
   @SubscribeEvent()
-  public void renderOverlay(RenderGameOverlayEvent.Pre event) {
-    if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) {
-      return;
-    }
+  public void renderOverlay(RenderGuiOverlayEvent.Pre event) {
 
     // Disable overlay if visibility is disabled or if there is another screen besides chat.
     if (!hudVisible || (this.minecraft != null && this.minecraft.screen != null
@@ -196,7 +194,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private void renderTitle(PoseStack poseStack) {
     poseStack.pushPose();
     fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
-        1325400064);
+        BACKGROUND_COLOR);
     font.draw(poseStack, "Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
     poseStack.popPose();
   }
@@ -205,7 +203,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     int textContentHeight = (this.font.lineHeight + 2) * 9;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
-    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, 1325400064);
+    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
     font.drawWordWrap(noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 10);
     poseStack.popPose();
@@ -215,7 +213,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     int textContentHeight = (this.font.lineHeight + 2) * 9;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
-    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, 1325400064);
+    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
     font.drawWordWrap(noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 10);
     poseStack.popPose();
@@ -250,7 +248,8 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Background
     poseStack.pushPose();
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight, 1325400064);
+    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight,
+        BACKGROUND_COLOR);
     poseStack.popPose();
 
     // Note that not all tracked advancements are visible.
@@ -297,7 +296,8 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Background
     poseStack.pushPose();
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + expectedContentSize, 1325400064);
+    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + expectedContentSize,
+        BACKGROUND_COLOR);
     poseStack.popPose();
 
     // Title (only one line)

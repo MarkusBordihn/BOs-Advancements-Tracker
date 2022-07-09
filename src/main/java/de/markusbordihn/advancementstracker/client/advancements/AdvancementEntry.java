@@ -66,7 +66,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public boolean isDone;
   public int completedCriteriaNumber;
   public int criteriaNumber;
-  public int descriptionColor = 0xFFCCCCCC;
+  public int descriptionColor = 0xFFDDDDDD;
   public int maxCriteraRequired;
   public int remainingCriteriaNumber;
   public int requirementsNumber;

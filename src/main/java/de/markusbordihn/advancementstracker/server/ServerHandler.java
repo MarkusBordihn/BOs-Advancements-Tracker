@@ -32,7 +32,7 @@ import de.markusbordihn.advancementstracker.Constants;
 @EventBusSubscriber(value = Dist.DEDICATED_SERVER)
 public class ServerHandler {
 
-  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   protected ServerHandler() {}
 

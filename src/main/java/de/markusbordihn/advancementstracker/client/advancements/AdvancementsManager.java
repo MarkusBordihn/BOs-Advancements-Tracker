@@ -44,7 +44,7 @@ import de.markusbordihn.advancementstracker.Constants;
 @EventBusSubscriber(Dist.CLIENT)
 public class AdvancementsManager {
 
-  public static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   private static AdvancementEntry selectedAdvancement;
   private static AdvancementEntry selectedRootAdvancement;

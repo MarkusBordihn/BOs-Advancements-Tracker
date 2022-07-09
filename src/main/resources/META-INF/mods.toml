@@ -31,7 +31,7 @@ license="MIT"
 [[dependencies.advancements_tracker]]
   modId="forge"
   mandatory=true
-  versionRange="[41.0.38,)"
+  versionRange="[41.0.64,)"
   ordering="NONE"
   side="BOTH"
 
