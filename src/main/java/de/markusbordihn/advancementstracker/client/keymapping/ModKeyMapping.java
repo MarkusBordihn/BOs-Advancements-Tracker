@@ -73,7 +73,6 @@ public class ModKeyMapping {
     }
   }
 
-  @SubscribeEvent
   public static void registerKeyMapping(RegisterKeyMappingsEvent event) {
     log.info("{} Key Mapping ...", Constants.LOG_REGISTER_PREFIX);
     event.register(ModKeyMapping.KEY_SHOW_WIDGET);
