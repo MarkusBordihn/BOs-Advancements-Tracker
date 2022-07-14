@@ -38,6 +38,8 @@ import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -83,12 +85,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   // Progress
   private String progressString = "";
+  private int progressStringWidth = 0;
   private boolean isDone;
   private int progressTotal = 0;
 
   // Text Components
   private final TextComponent descriptionComponent;
   private final TextComponent titleComponent;
+  private int titleWidth;
   private int descriptionColor = 0xFFCCCCCC;
   private int titleColor = 0xFFFFFFFF;
 
@@ -104,7 +108,16 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   private boolean hasRewardsData = false;
   private boolean hasRewardsLoaded = false;
 
+  // Helper Tools
+  private final Font font;
+  private final Minecraft minecraft;
+
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
+    // General Helper Tools
+    this.minecraft = Minecraft.getInstance();
+    this.font = this.minecraft.font;
+
+    // Advancements Data
     this.advancement = advancement;
     this.displayInfo = advancement.getDisplay();
     this.id = advancement.getId();
@@ -127,6 +140,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       // Title
       this.icon = this.displayInfo.getIcon();
       this.title = this.displayInfo.getTitle().getString();
+      this.titleWidth = this.font.width(this.title);
       if (this.displayInfo.getTitle().getStyle().getColor() != null) {
         this.titleColor = this.displayInfo.getTitle().getStyle().getColor().getValue();
       }
@@ -141,6 +155,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     } else {
       this.background = null;
       this.title = advancement.getId().toString();
+      this.titleWidth = this.font.width(this.title);
     }
 
     // Use background from root advancement if we don't have any itself.
@@ -215,12 +230,20 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.title;
   }
 
+  public int getTitleWidth() {
+    return this.titleWidth;
+  }
+
   public int getTitleColor() {
     return this.titleColor;
   }
 
   public String getProgressString() {
     return this.progressString;
+  }
+
+  public int getProgressStringWidth() {
+    return this.progressStringWidth;
   }
 
   public int getProgressTotal() {
@@ -252,9 +275,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     }
 
     // Number of complete Criteria
-    if (this.remainingCriteriaNumber > 0) {
+    if (this.remainingCriteriaNumber > 0 || this.completedCriteriaNumber > 0) {
       this.progressTotal = this.completedCriteriaNumber + this.remainingCriteriaNumber;
       this.progressString = this.completedCriteriaNumber + "/" + this.progressTotal;
+      this.progressStringWidth = font.width(this.progressString);
     }
 
     this.lastProgressDate = this.getLastProgressDate();

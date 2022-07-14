@@ -117,7 +117,7 @@ public class AdvancementCategoryPanel
       this.iconWidth = 14;
       this.maxFontWidth = listWidth - iconWidth - 4;
       this.titleWidth =
-          font.width(advancementEntry.getTitle()) > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
+          advancementEntry.getTitleWidth() > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
       this.titleParts = Language.getInstance().getVisualOrder(
           FormattedText.composite(font.substrByWidth(advancementEntry.getTitle(), titleWidth)));
       this.descriptionParts = font.split(advancementEntry.getDescription(), maxFontWidth);
@@ -251,6 +251,11 @@ public class AdvancementCategoryPanel
       return false;
     }
 
+  }
+
+  @Override
+  public boolean isMouseOver(double mouseX, double mouseY) {
+    return !parent.showingAdvancementDetail() && super.isMouseOver(mouseX, mouseY);
   }
 
   @Override

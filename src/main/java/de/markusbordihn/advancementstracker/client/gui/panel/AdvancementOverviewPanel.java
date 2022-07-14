@@ -37,11 +37,11 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.TextComponent;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
 import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvancementsManager;
+import de.markusbordihn.advancementstracker.client.gui.components.AdvancementTooltip;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
 public class AdvancementOverviewPanel
@@ -53,11 +53,12 @@ public class AdvancementOverviewPanel
   private final int listWidth;
 
   private AdvancementsTrackerScreen parent;
+  private AdvancementTooltip advancementTooltip;
 
   public AdvancementOverviewPanel(AdvancementsTrackerScreen parent, int listWidth, int top,
       int listLeft, int bottom) {
     super(parent.getMinecraftInstance(), listWidth, parent.height, top, bottom,
-        parent.getFontRenderer().lineHeight * 4 + 8);
+        parent.getFontRenderer().lineHeight * 4 + 12);
     this.parent = parent;
     this.listWidth = listWidth;
     this.listLeft = listLeft;
@@ -77,6 +78,13 @@ public class AdvancementOverviewPanel
     if (getScrollAmount() > 0) {
       setScrollAmount(0);
     }
+
+    // Reset tooltip
+    this.advancementTooltip = null;
+  }
+
+  public void setAdvancementTooltip(AdvancementTooltip advancementTooltip) {
+    this.advancementTooltip = advancementTooltip;
   }
 
   public class ChildAdvancementEntry extends ObjectSelectionList.Entry<ChildAdvancementEntry> {
@@ -88,6 +96,7 @@ public class AdvancementOverviewPanel
 
     private final AdvancementEntry advancementEntry;
     private final AdvancementsTrackerScreen parent;
+    private final AdvancementTooltip advancementTooltip;
     private final Font font;
     private final boolean isDone;
     private final int completedCriteriaNumber;
@@ -98,13 +107,21 @@ public class AdvancementOverviewPanel
 
     private FormattedCharSequence titleParts;
     private List<FormattedCharSequence> descriptionParts;
+    private boolean isMouseOver = false;
+
+    // Cached positions and sizes
     private int maxFontWidth;
+    private int progressPositionLeft;
+    private int progressPositionTop;
+    private int progressWidth = 182;
+    private int progressHeight = 5;
     private int relativeLeftPosition;
     private int relativeTopPosition;
     private int titleWidth;
 
     ChildAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
+      this.advancementTooltip = new AdvancementTooltip(advancementEntry);
       this.completedCriteriaNumber = advancementEntry.completedCriteriaNumber;
       this.descriptionColor = advancementEntry.getDescriptionColor();
       this.font = parent.getFontRenderer();
@@ -189,9 +206,9 @@ public class AdvancementOverviewPanel
     }
 
     private void renderProgress(PoseStack poseStack, int top, int entryWidth, int iconWidth) {
-      int progressPositionLeft = getLeft() + iconWidth + 5;
-      int progressPositionTop = top + 33;
-      int progressWidth = 182;
+      // Update position
+      progressPositionLeft = getLeft() + iconWidth + 5;
+      progressPositionTop = top + 33;
 
       // Render empty bar.
       RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -219,7 +236,7 @@ public class AdvancementOverviewPanel
           float positionScaling = 1.33f;
           poseStack.pushPose();
           poseStack.scale(scaling, scaling, scaling);
-          font.draw(poseStack, new TextComponent(progressDone + "/" + progressTotal),
+          font.draw(poseStack, advancementEntry.getProgressString(),
               (progressPositionLeft + progressWidth + 5) * positionScaling,
               (progressPositionTop) * positionScaling,
               this.remainingCriteriaNumber >= 1 ? ChatFormatting.YELLOW.getColor()
@@ -259,7 +276,7 @@ public class AdvancementOverviewPanel
       RenderSystem.setShaderColor(1, 1, 1, 1);
       RenderSystem.setShaderTexture(0, miscTexture);
       poseStack.pushPose();
-      GuiComponent.blit(poseStack, left + 2, top + 23, iconPosition, 6, 15, 15, 256, 256);
+      GuiComponent.blit(poseStack, left + 2, top + 27, iconPosition, 6, 15, 15, 256, 256);
       poseStack.popPose();
     }
 
@@ -324,6 +341,19 @@ public class AdvancementOverviewPanel
 
       // Checkbox for enabling tracking
       this.renderTrackingCheckbox(poseStack, top, left);
+
+      // Additional Tooltips with mouse over
+      this.isMouseOver = super.isMouseOver(mouseX, mouseY);
+      if (this.isMouseOver) {
+        setAdvancementTooltip(this.advancementTooltip);
+
+        // Progress Tooltip
+        if ((mouseX > progressPositionLeft && mouseX < progressPositionLeft + progressWidth
+            + advancementEntry.getProgressStringWidth())
+            && (mouseY > progressPositionTop - 2
+                && mouseY < progressPositionTop + progressHeight + 2)) {
+        }
+      }
     }
 
     @Override
@@ -332,15 +362,31 @@ public class AdvancementOverviewPanel
       if (button == 0) {
         double relativeX = mouseX - this.relativeLeftPosition;
         double relativeY = mouseY - this.relativeTopPosition;
-        if ((relativeX > 3 && relativeX < 15) && (relativeY > 25 && relativeX < 35)) {
+        if ((relativeX > 3 && relativeX < 15) && (relativeY > 27 && relativeY < 42)) {
           TrackedAdvancementsManager.toggleTrackedAdvancement(this.getAdvancementEntry());
         } else {
           parent.setSelectedChildAdvancement(this);
+          parent.showAdvancementDetail(true);
           setSelected(this);
         }
       }
       return false;
     }
+  }
+
+  @Override
+  public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    super.render(poseStack, mouseX, mouseY, partialTick);
+
+    // Render tool tips separate to make sure they are fully visible.
+    if (this.advancementTooltip != null) {
+      this.advancementTooltip = null;
+    }
+  }
+
+  @Override
+  public boolean isMouseOver(double mouseX, double mouseY) {
+    return !parent.showingAdvancementDetail() && super.isMouseOver(mouseX, mouseY);
   }
 
   @Override

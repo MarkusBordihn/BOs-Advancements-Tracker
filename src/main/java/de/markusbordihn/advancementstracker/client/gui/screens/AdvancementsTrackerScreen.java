@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -118,8 +119,10 @@ public class AdvancementsTrackerScreen extends Screen {
 
   // Cached values
   private static Screen parentScreen = null;
-  private int numberOfRootAdvancements = 0;
+  private AdvancementDetailScreen showAdvancementDetailScreen;
+  private boolean showAdvancementDetail = false;
   private int numberOfCompletedAdvancements = 0;
+  private int numberOfRootAdvancements = 0;
   private int numberOfTotalAdvancements = 0;
 
   public AdvancementsTrackerScreen() {
@@ -138,7 +141,6 @@ public class AdvancementsTrackerScreen extends Screen {
       Minecraft.getInstance().setScreen(parentScreen);
       parentScreen = null;
     }
-
   }
 
   public AdvancementsTrackerScreen(Component component) {
@@ -234,6 +236,16 @@ public class AdvancementsTrackerScreen extends Screen {
     }
     if (this.advancementOverviewPanel != null) {
       this.advancementOverviewPanel.refreshList();
+    }
+  }
+
+  public void showAdvancementDetail(boolean visible) {
+    this.showAdvancementDetail = visible;
+    this.showAdvancementDetailScreen = visible && this.selectedChildAdvancement != null
+        ? new AdvancementDetailScreen(this.selectedChildAdvancement)
+        : null;
+    if (this.showAdvancementDetailScreen != null) {
+      this.showAdvancementDetailScreen.init(this.minecraft, width, height);
     }
   }
 
@@ -346,6 +358,11 @@ public class AdvancementsTrackerScreen extends Screen {
     showOnlyRewardedAdvancements = !showOnlyRewardedAdvancements;
   }
 
+  public boolean showingAdvancementDetail() {
+    return this.showAdvancementDetail && this.selectedChildAdvancement != null
+        && this.showAdvancementDetailScreen != null;
+  }
+
   @Override
   protected void init() {
     super.init();
@@ -416,6 +433,11 @@ public class AdvancementsTrackerScreen extends Screen {
 
     // Checkbox for show/hide rewarded Advancements
     this.renderOnlyRewardedCheckbox(poseStack);
+
+    // Advancement details
+    if (this.showingAdvancementDetail()) {
+      this.showAdvancementDetailScreen.render(poseStack, mouseX, mouseY, partialTick);
+    }
   }
 
   @Override
@@ -427,18 +449,32 @@ public class AdvancementsTrackerScreen extends Screen {
 
   @Override
   public boolean mouseClicked(double mouseX, double mouseY, int button) {
-    if (button == 0 && mouseX > this.listWidth + 10.0f && mouseX < this.listWidth + 18.0f
+    if (button == 0 && this.showingAdvancementDetail()) {
+      // Ignore events, if we are showing the advancement details.
+      this.showAdvancementDetail(false);
+      return false;
+    } else if (button == 0 && mouseX > this.listWidth + 10.0f && mouseX < this.listWidth + 18.0f
         && mouseY > this.height - 11) {
+      // Handle clicks on the show complete advancements checkbox.
       toggleShowCompletedAdvancements();
       reloadChildAdvancements();
       return false;
     } else if (button == 0 && mouseX > this.listWidth + 65.0f && mouseX < this.listWidth + 73.0f
         && mouseY > this.height - 11) {
+      // Handle clicks on the show only rewarded advancements.
       toggleShowOnlyRewardedAdvancements();
       reloadChildAdvancements();
       return false;
     }
     return super.mouseClicked(mouseX, mouseY, button);
+  }
+
+  @Override
+  public boolean mouseScrolled(double mouseX, double mouseY, double scroll) {
+    if (this.showingAdvancementDetail()) {
+      this.showAdvancementDetailScreen.mouseScrolled(mouseX, mouseY, scroll);
+    }
+    return super.mouseScrolled(mouseX, mouseY, scroll);
   }
 
   @Override
@@ -451,4 +487,13 @@ public class AdvancementsTrackerScreen extends Screen {
     }
   }
 
+  @Override
+  public boolean keyPressed(int p_96552_, int p_96553_, int p_96554_) {
+    if (p_96552_ == 256 && this.showingAdvancementDetail()) {
+      this.showAdvancementDetail(false);
+      return false;
+    } else {
+      return super.keyPressed(p_96552_, p_96553_, p_96554_);
+    }
+  }
 }
