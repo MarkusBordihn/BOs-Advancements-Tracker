@@ -20,6 +20,7 @@
 package de.markusbordihn.advancementstracker.client.gui.panel;
 
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -31,7 +32,6 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.locale.Language;
@@ -59,13 +59,8 @@ public class AdvancementCategoryPanel
     this.listWidth = listWidth;
     this.listLeft = listLeft;
     this.setLeftPos(listLeft);
-    this.refreshList();
     this.setRenderBackground(false);
     this.setRenderSelection(false);
-  }
-
-  private static String stripControlCodes(String value) {
-    return net.minecraft.util.StringUtil.stripColor(value);
   }
 
   public void refreshList() {
@@ -76,11 +71,19 @@ public class AdvancementCategoryPanel
         mod -> new RootAdvancementEntry(mod, this.parent));
 
     // Pre-select first entry if we have nothing selected.
+    if (this.getSelected() == null && parent.getSelectedRootAdvancement() != null) {
+      this.refreshSelection();
+      for (int i = 0; i < getItemCount(); i++) {
+        if (getEntry(i) != null && getEntry(i).advancementEntry != null
+            && getEntry(i).advancementEntry == parent.getSelectedRootAdvancement()) {
+          this.setSelected(getEntry(i));
+        }
+      }
+    }
     if (this.getSelected() == null && getItemCount() > 0 && getEntry(0) != null) {
       this.refreshSelection();
       RootAdvancementEntry rootAdvancementEntry = getEntry(0);
       parent.setSelectedRootAdvancement(rootAdvancementEntry);
-      this.setSelected(rootAdvancementEntry);
     }
   }
 
@@ -92,23 +95,31 @@ public class AdvancementCategoryPanel
     private final AdvancementEntry advancementEntry;
     private final AdvancementsTrackerScreen parent;
     private final Font font;
-    private final ItemStack icon;
-    private final ResourceLocation background;
-    private final Component description;
-    private final Component title;
     private final int descriptionColor;
+    private final int iconWidth;
+    private final int titleColor;
 
+    private FormattedCharSequence titleParts;
+    private List<FormattedCharSequence> descriptionParts;
     private boolean isSelected = false;
+    private int maxFontWidth;
+    private int titleWidth;
 
     RootAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
-      this.background = advancementEntry.background;
-      this.description = Component.literal(stripControlCodes(advancementEntry.description));
-      this.descriptionColor = advancementEntry.descriptionColor;
+      this.descriptionColor = advancementEntry.getDescriptionColor();
       this.font = parent.getFontRenderer();
-      this.icon = advancementEntry.icon;
       this.parent = parent;
-      this.title = Component.literal(stripControlCodes(advancementEntry.title));
+      this.titleColor = advancementEntry.getTitleColor();
+
+      // Do expensive pre-calculation for the render
+      this.iconWidth = 14;
+      this.maxFontWidth = listWidth - iconWidth - 4;
+      this.titleWidth =
+          advancementEntry.getTitleWidth() > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
+      this.titleParts = Language.getInstance().getVisualOrder(
+          FormattedText.composite(font.substrByWidth(advancementEntry.getTitle(), titleWidth)));
+      this.descriptionParts = font.split(advancementEntry.getDescription(), maxFontWidth);
     }
 
     public AdvancementEntry getAdvancementEntry() {
@@ -116,7 +127,7 @@ public class AdvancementCategoryPanel
     }
 
     private void renderBackground(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
-      if (this.background == null) {
+      if (this.advancementEntry.getBackground() == null) {
         return;
       }
       if (isSelected) {
@@ -124,7 +135,7 @@ public class AdvancementCategoryPanel
       } else {
         RenderSystem.setShaderColor(0.4f, 0.4f, 0.4f, 1);
       }
-      RenderSystem.setShaderTexture(0, this.background);
+      RenderSystem.setShaderTexture(0, this.advancementEntry.getBackground());
       poseStack.pushPose();
       GuiComponent.blit(poseStack, getLeft() + 1, top - 1, 0, 0, entryWidth - 2, entryHeight + 2,
           16, 16);
@@ -132,15 +143,16 @@ public class AdvancementCategoryPanel
     }
 
     private void renderIcon(int top) {
-      if (this.icon == null) {
+      if (this.advancementEntry.getIcon() == null) {
         return;
       }
-      minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 1, top + 6);
+      minecraft.getItemRenderer().renderGuiItem(this.advancementEntry.getIcon(), getLeft() + 1,
+          top + 6);
     }
 
     private void renderTrackedAdvancementsStatus(PoseStack poseStack, int top, int left,
         int entryWidth) {
-      if (TrackedAdvancementsManager.hasTrackedAdvancement(advancementEntry)) {
+      if (TrackedAdvancementsManager.hasTrackedAdvancement(this.advancementEntry)) {
         RenderSystem.setShaderColor(1, 1, 1, 1);
         RenderSystem.setShaderTexture(0, miscTexture);
         poseStack.pushPose();
@@ -173,7 +185,7 @@ public class AdvancementCategoryPanel
 
     @Override
     public Component getNarration() {
-      return Component.translatable("narrator.select", advancementEntry.title);
+      return Component.translatable("narrator.select", advancementEntry.getTitleString());
     }
 
     @Override
@@ -184,8 +196,6 @@ public class AdvancementCategoryPanel
       this.isSelected = isSelectedItem(entryIdx);
 
       // Positions
-      int iconWidth = 14;
-      int maxFontWidth = listWidth - iconWidth - 4;
       float textPositionLeft = (float) left + iconWidth;
 
       // Background
@@ -198,31 +208,25 @@ public class AdvancementCategoryPanel
       this.renderTrackedAdvancementsStatus(poseStack, top, left, entryWidth);
 
       // Title (only one line)
-      int titleColor = isSelected ? 0xFFFF00 : 0xFFFFFF;
-      int titleWidth = font.width(title) > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
-      font.drawShadow(poseStack,
-          Language.getInstance()
-              .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          textPositionLeft + 3, top + (float) 1, titleColor);
-      font.draw(poseStack,
-          Language.getInstance()
-              .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          textPositionLeft + 3, top + (float) 1, titleColor);
+      int currentTitleColor = isSelected ? 0xFFFF00 : this.titleColor;
+      font.drawShadow(poseStack, this.titleParts, textPositionLeft + 3, top + (float) 1,
+          currentTitleColor);
+      font.draw(poseStack, this.titleParts, textPositionLeft + 3, top + (float) 1,
+          currentTitleColor);
       if (titleWidth != maxFontWidth) {
         font.draw(poseStack, Constants.ELLIPSIS, textPositionLeft + titleWidth, top + 1.0f,
-            titleColor);
+            currentTitleColor);
       }
 
       // Description (two lines)
-      List<FormattedCharSequence> descriptionParts = font.split(description, maxFontWidth);
       int descriptionLines = 1;
-      for (FormattedCharSequence descriptionPart : descriptionParts) {
+      for (FormattedCharSequence descriptionPart : this.descriptionParts) {
         float descriptionTopPosition = top + (float) (2 + font.lineHeight) * descriptionLines;
         font.drawShadow(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
         font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
-        if (descriptionParts.size() == 3 && descriptionLines == 2) {
+        if (this.descriptionParts.size() == 3 && descriptionLines == 2) {
           font.draw(poseStack, Constants.ELLIPSIS,
               textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
                   ? font.width(descriptionPart) + 6
@@ -246,6 +250,11 @@ public class AdvancementCategoryPanel
       return false;
     }
 
+  }
+
+  @Override
+  public boolean isMouseOver(double mouseX, double mouseY) {
+    return !parent.showingAdvancementDetail() && super.isMouseOver(mouseX, mouseY);
   }
 
   @Override

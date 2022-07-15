@@ -75,6 +75,7 @@ public class ModKeyMapping {
 
   public static void registerKeyMapping(RegisterKeyMappingsEvent event) {
     log.info("{} Key Mapping ...", Constants.LOG_REGISTER_PREFIX);
+
     event.register(ModKeyMapping.KEY_SHOW_WIDGET);
     event.register(ModKeyMapping.KEY_SHOW_OVERVIEW);
   }

@@ -20,9 +20,9 @@
 package de.markusbordihn.advancementstracker.client.advancements;
 
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -32,71 +32,85 @@ import com.google.gson.JsonParseException;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 
+import net.minecraftforge.fml.loading.StringUtils;
+
+import de.markusbordihn.advancementstracker.Constants;
+
 public class AdvancementEntry implements Comparator<AdvancementEntry> {
+
+  protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
   Advancement advancement;
   Advancement rootAdvancement;
-  AdvancementProgress advancementProgress;
+
   DisplayInfo displayInfo;
-  Float progress;
   ResourceLocation rootId;
-  String progressText;
+
   String[][] requirements;
   int rootLevel = 0;
-  Map<String, CriterionProgress> criteriaMap = new HashMap<>();
-  public Date firstProgressDate;
-  public Date lastProgressDate;
-  public FrameType frameType;
-  public ItemStack icon;
-  public Iterable<String> completedCriteria;
-  public Iterable<String> remainingCriteria;
-  public ResourceLocation background;
-  public ResourceLocation id;
-  public String description;
-  public String idString;
-  public String title;
-  public boolean isDone;
-  public int completedCriteriaNumber;
-  public int criteriaNumber;
-  public int descriptionColor = 0xFFDDDDDD;
-  public int maxCriteraRequired;
-  public int remainingCriteriaNumber;
-  public int requirementsNumber;
 
-  // Progress
-  private String progressString = "";
-  private int progressTotal = 0;
+  // General
+  private final ResourceLocation id;
+  private final String idString;
+
+  // Display Information
+  private ItemStack icon;
+  private ResourceLocation background;
+  private String description;
+  private String title;
+  private FrameType frameType;
 
   // Text Components
   private final Component descriptionComponent;
   private final Component titleComponent;
+  private int titleWidth;
+  private int descriptionColor = 0xFFCCCCCC;
+  private int titleColor = 0xFFFFFFFF;
 
   // Rewards
   private AdvancementRewards rewards = null;
   private ResourceLocation[] rewardsLoot = null;
   private ResourceLocation[] rewardsRecipes = null;
+  private Integer rewardsExperience = null;
+  private boolean hasExperienceReward = false;
+  private boolean hasLootReward = false;
+  private boolean hasRecipesReward = false;
   private boolean hasRewards = false;
   private boolean hasRewardsData = false;
-  private Integer rewardsExperience = null;
+  private boolean hasRewardsLoaded = false;
+
+  // Progress
+  private AdvancementEntryProgress advancementProgress;
+
+  // Helper Tools
+  private final Font font;
+  private final Minecraft minecraft;
 
   AdvancementEntry(Advancement advancement, AdvancementProgress advancementProgress) {
+    // General Helper Tools
+    this.minecraft = Minecraft.getInstance();
+    this.font = this.minecraft.font;
+
+    // Advancement Progress
+    this.advancementProgress = new AdvancementEntryProgress(advancement, advancementProgress);
+
+    // Advancements Data
     this.advancement = advancement;
     this.displayInfo = advancement.getDisplay();
     this.id = advancement.getId();
     this.idString = advancement.getId().toString();
     this.rootAdvancement = advancement.getParent();
     this.requirements = advancement.getRequirements();
-    this.maxCriteraRequired = advancement.getMaxCriteraRequired();
-    this.rewards = advancement.getRewards();
-    this.hasRewards = this.rewards != null;
+
     if (this.rootAdvancement != null) {
       while (this.rootAdvancement.getParent() != null) {
         this.rootAdvancement = this.rootAdvancement.getParent();
@@ -108,16 +122,26 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     // Handle display information like background, colors and description.
     if (this.displayInfo != null) {
       this.background = this.displayInfo.getBackground();
+
+      // Title
+      this.icon = this.displayInfo.getIcon();
+      this.title = this.displayInfo.getTitle().getString();
+      this.titleWidth = this.font.width(this.title);
+      if (this.displayInfo.getTitle().getStyle().getColor() != null) {
+        this.titleColor = this.displayInfo.getTitle().getStyle().getColor().getValue();
+      }
+
+      // Description
       this.description = this.displayInfo.getDescription().getString();
       if (this.displayInfo.getDescription().getStyle().getColor() != null) {
         this.descriptionColor = this.displayInfo.getDescription().getStyle().getColor().getValue();
       }
-      this.icon = this.displayInfo.getIcon();
-      this.title = this.displayInfo.getTitle().getString();
+
       this.frameType = this.displayInfo.getFrame();
     } else {
       this.background = null;
       this.title = advancement.getId().toString();
+      this.titleWidth = this.font.width(this.title);
     }
 
     // Use background from root advancement if we don't have any itself.
@@ -127,21 +151,36 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       this.background = this.rootAdvancement.getDisplay().getBackground();
     }
 
-    // Create final references
+    // Stripped version for ui renderer.
     this.descriptionComponent = Component.literal(stripControlCodes(this.description));
     this.titleComponent = Component.literal(stripControlCodes(this.title));
 
-    if (advancementProgress != null) {
-      this.addAdvancementProgress(advancementProgress);
-    }
+    // Handle Rewards like experience, loot and recipes.
+    this.rewards = advancement.getRewards();
   }
 
   public boolean isTracked() {
     return TrackedAdvancementsManager.isTrackedAdvancement(advancement);
   }
 
+  public AdvancementEntryProgress getProgress() {
+    return this.advancementProgress;
+  }
+
   public ResourceLocation getId() {
     return this.id;
+  }
+
+  public String getIdString() {
+    return this.idString;
+  }
+
+  public ResourceLocation getBackground() {
+    return this.background;
+  }
+
+  public ItemStack getIcon() {
+    return this.icon;
   }
 
   public Advancement getAdvancement() {
@@ -152,69 +191,46 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.descriptionComponent;
   }
 
+  public String getDescriptionString() {
+    return this.description;
+  }
+
+  public int getDescriptionColor() {
+    return this.descriptionColor;
+  }
+
+  public String getSortName() {
+    return StringUtils.toLowerCase(stripControlCodes(this.title));
+  }
+
   public Component getTitle() {
     return this.titleComponent;
   }
 
-  public String getProgressString() {
-    return this.progressString;
+  public String getTitleString() {
+    return this.title;
   }
 
-  public int getProgressTotal() {
-    return this.progressTotal;
+  public int getTitleWidth() {
+    return this.titleWidth;
   }
 
-  public void addAdvancementProgress(AdvancementProgress advancementProgress) {
-    if (advancementProgress == null) {
-      return;
-    }
-    this.advancementProgress = advancementProgress;
-    this.isDone = advancementProgress.isDone();
-    this.firstProgressDate = advancementProgress.getFirstProgressDate();
-    this.progress = advancementProgress.getPercent();
-    this.progressText = advancementProgress.getProgressText();
-
-    // Handle completed Criteria
-    this.completedCriteria = advancementProgress.getCompletedCriteria();
-    this.completedCriteriaNumber = (int) this.completedCriteria.spliterator().getExactSizeIfKnown();
-    for (String criteriaId : this.completedCriteria) {
-      criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
-    }
-
-    // Handle remaining Criteria
-    this.remainingCriteria = advancementProgress.getRemainingCriteria();
-    this.remainingCriteriaNumber = (int) this.remainingCriteria.spliterator().getExactSizeIfKnown();
-    for (String criteriaId : this.remainingCriteria) {
-      criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
-    }
-
-    // Number of complete Criteria
-    if (this.remainingCriteriaNumber > 0) {
-      this.progressTotal = this.completedCriteriaNumber + this.remainingCriteriaNumber;
-      this.progressString = this.completedCriteriaNumber + "/" + this.progressTotal;
-    }
-
-    this.lastProgressDate = this.getLastProgressDate();
+  public int getTitleColor() {
+    return this.titleColor;
   }
 
-  private Date getLastProgressDate() {
-    Date date = null;
-    for (CriterionProgress criterionProgress : this.criteriaMap.values()) {
-      if (criterionProgress.isDone()
-          && (date == null || criterionProgress.getObtained().after(date))) {
-        date = criterionProgress.getObtained();
-      }
-    }
-    return date;
+  public void updateAdvancementProgress(AdvancementProgress advancementProgress) {
+    this.advancementProgress.update(advancementProgress);
   }
 
   public Integer getRewardsExperience() {
-    if (this.hasRewards && this.rewardsExperience == null) {
+    if (this.rewardsExperience == null) {
       JsonObject rewardsData = getRewardsData();
       if (rewardsData != null) {
         // Getting rewards experience
         this.rewardsExperience = GsonHelper.getAsInt(rewardsData, "experience", 0);
         if (this.rewardsExperience > 0) {
+          this.hasExperienceReward = true;
           this.hasRewardsData = true;
         }
       }
@@ -223,7 +239,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public ResourceLocation[] getRewardsLoot() {
-    if (this.hasRewards && this.rewardsLoot == null) {
+    if (this.rewardsLoot == null) {
       JsonObject rewardsData = getRewardsData();
       if (rewardsData != null) {
         // Getting Loot entries
@@ -232,6 +248,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
         for (int j = 0; j < this.rewardsLoot.length; ++j) {
           this.rewardsLoot[j] =
               new ResourceLocation(GsonHelper.convertToString(lootArray.get(j), "loot[" + j + "]"));
+          this.hasLootReward = true;
           this.hasRewardsData = true;
         }
       }
@@ -240,7 +257,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public ResourceLocation[] getRewardsRecipes() {
-    if (this.hasRewards && this.rewardsRecipes == null) {
+    if (this.rewardsRecipes == null) {
       JsonObject rewardsData = getRewardsData();
       if (rewardsData != null) {
         // Getting recipes entries
@@ -249,6 +266,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
         for (int k = 0; k < this.rewardsRecipes.length; ++k) {
           this.rewardsRecipes[k] = new ResourceLocation(
               GsonHelper.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
+          this.hasRecipesReward = true;
           this.hasRewardsData = true;
         }
       }
@@ -275,29 +293,46 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   public boolean hasRewards() {
+    if (!this.hasRewardsLoaded && this.rewards != null) {
+      this.hasRewards =
+          getRewardsExperience() != null || getRewardsLoot() != null || getRewardsRecipes() != null;
+      this.hasRewardsLoaded = true;
+    }
     return this.hasRewards;
   }
 
   public boolean hasRewardsData() {
-    return this.hasRewards && this.hasRewardsData;
+    return this.hasRewards() && this.hasRewardsData;
+  }
+
+  public boolean hasExperienceReward() {
+    return this.hasExperienceReward;
+  }
+
+  public boolean hasLootReward() {
+    return this.hasLootReward;
+  }
+
+  public boolean hasRecipesReward() {
+    return this.hasRecipesReward;
   }
 
   private static String stripControlCodes(String value) {
-    return net.minecraft.util.StringUtil.stripColor(value);
+    return value == null ? "" : net.minecraft.util.StringUtil.stripColor(value);
   }
 
   @Override
-  public boolean equals(Object obj) {
-    if (obj == null) {
+  public boolean equals(Object object) {
+    if (object == null) {
       return false;
     }
-    if (!(obj instanceof AdvancementEntry)) {
+    if (!(object instanceof AdvancementEntry)) {
       return false;
     }
-    if (obj == this) {
+    if (object == this) {
       return true;
     }
-    return this.id == ((AdvancementEntry) obj).id;
+    return this.id == ((AdvancementEntry) object).id;
   }
 
   @Override
@@ -319,7 +354,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   public static Comparator<AdvancementEntry> sortByStatus() {
     return (AdvancementEntry firstAdvancementEntry, AdvancementEntry secondAdvancementEntry) -> {
-      int result = Boolean.compare(firstAdvancementEntry.isDone, secondAdvancementEntry.isDone);
+      int result = Boolean.compare(firstAdvancementEntry.getProgress().isDone(),
+          secondAdvancementEntry.getProgress().isDone());
       if (result == 0) {
         result = firstAdvancementEntry.title.compareTo(secondAdvancementEntry.title);
       }
@@ -331,10 +367,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public String toString() {
     if (this.rootAdvancement == null) {
       return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title,
-          this.progress);
+          this.advancementProgress.getProgress());
     }
     return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType,
-        this.rootId, this.id, this.title, this.progress);
+        this.rootId, this.id, this.title, this.advancementProgress.getProgress());
   }
 
 }

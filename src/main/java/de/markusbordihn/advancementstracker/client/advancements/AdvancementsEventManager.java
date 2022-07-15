@@ -27,7 +27,7 @@ import net.minecraft.client.Minecraft;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -42,8 +42,8 @@ public class AdvancementsEventManager {
   protected AdvancementsEventManager() {}
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(WorldEvent.Load event) {
-    if (!event.getWorld().isClientSide()) {
+  public static void handleWorldEventLoad(LevelEvent.Load event) {
+    if (!event.getLevel().isClientSide()) {
       return;
     }
     reset();

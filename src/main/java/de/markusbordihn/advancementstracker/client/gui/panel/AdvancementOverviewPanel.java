@@ -33,7 +33,6 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.locale.Language;
@@ -41,6 +40,7 @@ import net.minecraft.locale.Language;
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
 import de.markusbordihn.advancementstracker.client.advancements.TrackedAdvancementsManager;
+import de.markusbordihn.advancementstracker.client.gui.components.AdvancementTooltip;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
 public class AdvancementOverviewPanel
@@ -52,16 +52,16 @@ public class AdvancementOverviewPanel
   private final int listWidth;
 
   private AdvancementsTrackerScreen parent;
+  private AdvancementTooltip advancementTooltip;
 
   public AdvancementOverviewPanel(AdvancementsTrackerScreen parent, int listWidth, int top,
       int listLeft, int bottom) {
     super(parent.getMinecraftInstance(), listWidth, parent.height, top, bottom,
-        parent.getFontRenderer().lineHeight * 4 + 8);
+        parent.getFontRenderer().lineHeight * 4 + 12);
     this.parent = parent;
     this.listWidth = listWidth;
     this.listLeft = listLeft;
     this.setLeftPos(listLeft + 1);
-    this.refreshList();
     this.setRenderBackground(false);
     this.setRenderSelection(false);
   }
@@ -77,6 +77,13 @@ public class AdvancementOverviewPanel
     if (getScrollAmount() > 0) {
       setScrollAmount(0);
     }
+
+    // Reset tooltip
+    this.advancementTooltip = null;
+  }
+
+  public void setAdvancementTooltip(AdvancementTooltip advancementTooltip) {
+    this.advancementTooltip = advancementTooltip;
   }
 
   public class ChildAdvancementEntry extends ObjectSelectionList.Entry<ChildAdvancementEntry> {
@@ -88,31 +95,45 @@ public class AdvancementOverviewPanel
 
     private final AdvancementEntry advancementEntry;
     private final AdvancementsTrackerScreen parent;
+    private final AdvancementTooltip advancementTooltip;
     private final Font font;
-    private final ItemStack icon;
-    private final ResourceLocation background;
-    private final Component description;
-    private final Component title;
     private final boolean isDone;
     private final int completedCriteriaNumber;
     private final int descriptionColor;
+    private final int iconWidth;
     private final int remainingCriteriaNumber;
+    private final int titleColor;
 
+    private FormattedCharSequence titleParts;
+    private List<FormattedCharSequence> descriptionParts;
+
+    // Cached positions and sizes
+    private int maxFontWidth;
+    private int progressWidth = 182;
     private int relativeLeftPosition;
     private int relativeTopPosition;
+    private int titleWidth;
 
     ChildAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
-      this.background = advancementEntry.background;
-      this.completedCriteriaNumber = advancementEntry.completedCriteriaNumber;
-      this.description = advancementEntry.getDescription();
-      this.descriptionColor = advancementEntry.descriptionColor;
+      this.advancementTooltip = new AdvancementTooltip(advancementEntry);
+      this.completedCriteriaNumber = advancementEntry.getProgress().getCompletedCriteriaNumber();
+      this.descriptionColor = advancementEntry.getDescriptionColor();
       this.font = parent.getFontRenderer();
-      this.icon = advancementEntry.icon;
-      this.isDone = advancementEntry.isDone;
+      this.isDone = advancementEntry.getProgress().isDone();
       this.parent = parent;
-      this.remainingCriteriaNumber = advancementEntry.remainingCriteriaNumber;
-      this.title = advancementEntry.getTitle();
+      this.remainingCriteriaNumber = advancementEntry.getProgress().getRemainingCriteriaNumber();
+      this.titleColor = advancementEntry.getTitleColor();
+
+      // Do expensive pre-calculation for the render
+      this.iconWidth = 18;
+      this.maxFontWidth = listWidth - this.iconWidth - 4;
+      this.titleWidth =
+          font.width(advancementEntry.getTitle()) > this.maxFontWidth ? this.maxFontWidth - 6
+              : this.maxFontWidth;
+      this.titleParts = Language.getInstance().getVisualOrder(
+          FormattedText.composite(font.substrByWidth(advancementEntry.getTitle(), titleWidth)));
+      this.descriptionParts = font.split(advancementEntry.getDescription(), this.maxFontWidth);
     }
 
     public AdvancementEntry getAdvancementEntry() {
@@ -120,11 +141,11 @@ public class AdvancementOverviewPanel
     }
 
     private void renderBackground(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
-      if (this.background == null) {
+      if (this.advancementEntry.getBackground() == null) {
         return;
       }
       RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 0.25f);
-      RenderSystem.setShaderTexture(0, this.background);
+      RenderSystem.setShaderTexture(0, this.advancementEntry.getBackground());
       poseStack.pushPose();
       GuiComponent.blit(poseStack, getLeft() + 1, top - 1, 0, 0, entryWidth - 2, entryHeight + 1,
           16, 16);
@@ -132,16 +153,56 @@ public class AdvancementOverviewPanel
     }
 
     private void renderIcon(int top) {
-      if (this.icon == null) {
+      if (this.advancementEntry.getIcon() == null) {
         return;
       }
-      minecraft.getItemRenderer().renderGuiItem(this.icon, getLeft() + 3, top + 2);
+      minecraft.getItemRenderer().renderGuiItem(this.advancementEntry.getIcon(), getLeft() + 3,
+          top + 2);
+    }
+
+    private void renderRewards(PoseStack poseStack, int top, int left, int entryWidth) {
+      if (!this.advancementEntry.hasRewards()) {
+        return;
+      }
+
+      float scaling = 0.70f;
+      int positionLeft = Math.round((left + entryWidth - 14) / scaling);
+      int positionTop = Math.round((top - 1) / scaling);
+
+      RenderSystem.setShaderColor(1, 1, 1, 1);
+      RenderSystem.setShaderTexture(0, miscTexture);
+
+      // Experience Reward
+      if (this.advancementEntry.hasExperienceReward()) {
+        poseStack.pushPose();
+        poseStack.scale(scaling, scaling, scaling);
+        GuiComponent.blit(poseStack, positionLeft, positionTop, 102, 7, 12, 15, 256, 256);
+        poseStack.popPose();
+        positionLeft -= 16;
+      }
+
+      // Loot Reward
+      if (this.advancementEntry.hasLootReward()) {
+        poseStack.pushPose();
+        poseStack.scale(scaling, scaling, scaling);
+        GuiComponent.blit(poseStack, positionLeft, positionTop, 137, 6, 14, 16, 256, 256);
+        poseStack.popPose();
+        positionLeft -= 16;
+      }
+
+      // Recipe Reward
+      if (this.advancementEntry.hasRecipesReward()) {
+        poseStack.pushPose();
+        poseStack.scale(scaling, scaling, scaling);
+        GuiComponent.blit(poseStack, positionLeft, positionTop, 118, 6, 14, 16, 256, 256);
+        poseStack.popPose();
+        positionLeft -= 16;
+      }
     }
 
     private void renderProgress(PoseStack poseStack, int top, int entryWidth, int iconWidth) {
       int progressPositionLeft = getLeft() + iconWidth + 5;
       int progressPositionTop = top + 33;
-      int progressWidth = 182;
 
       // Render empty bar.
       RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -159,7 +220,8 @@ public class AdvancementOverviewPanel
         RenderSystem.setShaderTexture(0, icons);
         poseStack.pushPose();
         GuiComponent.blit(poseStack, progressPositionLeft, progressPositionTop, 0, 69,
-            isDone ? progressWidth : (progressWidth / progressTotal * progressDone), 5, 256, 256);
+            this.isDone ? progressWidth : (progressWidth / progressTotal * progressDone), 5, 256,
+            256);
         poseStack.popPose();
 
         // Only render numbers if we have enough space.
@@ -168,7 +230,7 @@ public class AdvancementOverviewPanel
           float positionScaling = 1.33f;
           poseStack.pushPose();
           poseStack.scale(scaling, scaling, scaling);
-          font.draw(poseStack, Component.literal(progressDone + "/" + progressTotal),
+          font.draw(poseStack, advancementEntry.getProgress().getProgressString(),
               (progressPositionLeft + progressWidth + 5) * positionScaling,
               (progressPositionTop) * positionScaling,
               this.remainingCriteriaNumber >= 1 ? ChatFormatting.YELLOW.getColor()
@@ -208,13 +270,13 @@ public class AdvancementOverviewPanel
       RenderSystem.setShaderColor(1, 1, 1, 1);
       RenderSystem.setShaderTexture(0, miscTexture);
       poseStack.pushPose();
-      GuiComponent.blit(poseStack, left + 2, top + 23, iconPosition, 6, 15, 15, 256, 256);
+      GuiComponent.blit(poseStack, left + 2, top + 27, iconPosition, 6, 15, 15, 256, 256);
       poseStack.popPose();
     }
 
     @Override
     public Component getNarration() {
-      return Component.translatable("narrator.select", advancementEntry.title);
+      return Component.translatable("narrator.select", advancementEntry.getTitleString());
     }
 
     @Override
@@ -222,8 +284,6 @@ public class AdvancementOverviewPanel
         int entryHeight, int mouseX, int mouseY, boolean isFocused, float partialTick) {
 
       // Positions
-      int iconWidth = 18;
-      int maxFontWidth = listWidth - iconWidth - 4;
       float textPositionLeft = (float) left + iconWidth;
 
       // Update relative position for other calculations like mouse clicks.
@@ -237,39 +297,35 @@ public class AdvancementOverviewPanel
       this.renderIcon(top);
 
       // Title (only one line)
-      int titleWidth = font.width(title) > maxFontWidth ? maxFontWidth - 6 : maxFontWidth;
-      font.drawShadow(poseStack,
-          Language.getInstance()
-              .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
-      font.draw(poseStack,
-          Language.getInstance()
-              .getVisualOrder(FormattedText.composite(font.substrByWidth(title, titleWidth))),
-          textPositionLeft + 3, top + (float) 1, 0xFFFFFF);
-      if (titleWidth != maxFontWidth) {
-        font.draw(poseStack, Constants.ELLIPSIS, textPositionLeft + titleWidth, top + (float) 1,
-            0xFFFFFF);
+      font.drawShadow(poseStack, this.titleParts, textPositionLeft + 3, top + (float) 1,
+          this.titleColor);
+      font.draw(poseStack, titleParts, textPositionLeft + 3, top + (float) 1, this.titleColor);
+      if (this.titleWidth != maxFontWidth) {
+        font.draw(poseStack, Constants.ELLIPSIS, textPositionLeft + this.titleWidth, top + 1.0f,
+            this.titleColor);
       }
 
-      // Description (two lines)
-      List<FormattedCharSequence> descriptionParts = font.split(description, maxFontWidth);
+      // Description (max. two lines)
       int descriptionLines = 1;
-      for (FormattedCharSequence descriptionPart : descriptionParts) {
+      for (FormattedCharSequence descriptionPart : this.descriptionParts) {
         float descriptionTopPosition = top + (float) (2 + font.lineHeight) * descriptionLines;
         font.drawShadow(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
         font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
             this.descriptionColor);
-        if (descriptionParts.size() >= 3 && descriptionLines == 2) {
+        if (this.descriptionParts.size() >= 3 && descriptionLines == 2) {
           font.draw(poseStack, Constants.ELLIPSIS,
               textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
                   ? font.width(descriptionPart) + 6
                   : maxFontWidth - 6),
-              descriptionTopPosition, 0xFFFFFF);
+              descriptionTopPosition, this.descriptionColor);
           break;
         }
         descriptionLines++;
       }
+
+      // Rewards
+      this.renderRewards(poseStack, top, left, entryWidth);
 
       // Progress
       this.renderProgress(poseStack, top, entryWidth, iconWidth);
@@ -279,6 +335,11 @@ public class AdvancementOverviewPanel
 
       // Checkbox for enabling tracking
       this.renderTrackingCheckbox(poseStack, top, left);
+
+      // Additional Tooltips with mouse over
+      if (super.isMouseOver(mouseX, mouseY)) {
+        setAdvancementTooltip(this.advancementTooltip);
+      }
     }
 
     @Override
@@ -287,15 +348,31 @@ public class AdvancementOverviewPanel
       if (button == 0) {
         double relativeX = mouseX - this.relativeLeftPosition;
         double relativeY = mouseY - this.relativeTopPosition;
-        if ((relativeX > 3 && relativeX < 15) && (relativeY > 25 && relativeX < 35)) {
+        if ((relativeX > 3 && relativeX < 15) && (relativeY > 27 && relativeY < 42)) {
           TrackedAdvancementsManager.toggleTrackedAdvancement(this.getAdvancementEntry());
         } else {
           parent.setSelectedChildAdvancement(this);
+          parent.showAdvancementDetail(true);
           setSelected(this);
         }
       }
       return false;
     }
+  }
+
+  @Override
+  public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    super.render(poseStack, mouseX, mouseY, partialTick);
+
+    // Render tool tips separate to make sure they are fully visible.
+    if (this.advancementTooltip != null) {
+      this.advancementTooltip = null;
+    }
+  }
+
+  @Override
+  public boolean isMouseOver(double mouseX, double mouseY) {
+    return !parent.showingAdvancementDetail() && super.isMouseOver(mouseX, mouseY);
   }
 
   @Override

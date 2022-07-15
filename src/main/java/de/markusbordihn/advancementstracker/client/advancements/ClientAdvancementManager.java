@@ -31,7 +31,7 @@ import net.minecraft.client.multiplayer.ClientAdvancements;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -54,8 +54,8 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
   protected ClientAdvancementManager() {}
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(WorldEvent.Load event) {
-    if (!event.getWorld().isClientSide()) {
+  public static void handleWorldEventLoad(LevelEvent.Load event) {
+    if (!event.getLevel().isClientSide()) {
       return;
     }
     reset();
@@ -121,9 +121,8 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
     if (advancementId.startsWith("minecraft:recipes/")
         || advancementId.startsWith("smallships:recipes")) {
       return false;
-    }
-    if (advancement.getDisplay() == null) {
-      log.debug("[Invalid Advancement] {} with {}", advancement, advancement.getDisplay());
+    } else if (advancement.getDisplay() == null) {
+      log.debug("[Skip Advancement with no display information] {}", advancement);
       return false;
     }
     return true;

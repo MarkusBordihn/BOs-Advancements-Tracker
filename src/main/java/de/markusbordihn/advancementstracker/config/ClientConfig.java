@@ -103,8 +103,10 @@ public class ClientConfig {
           .defineInRange("widgetHeight", 0, 0, 600);
       widgetWidth = builder.comment("Defines the max.width of the widget.")
           .defineInRange("widgetWidth", 120, 120, 600);
-      widgetTop = builder.comment("Defines the top position relative to the widget position.").defineInRange("widgetTop", 0, -400, 400);
-      widgetLeft = builder.comment("Defines the left position relative to the widget position.").defineInRange("widgetLeft", 0, -400, 400);
+      widgetTop = builder.comment("Defines the top position relative to the widget position.")
+          .defineInRange("widgetTop", 0, -400, 400);
+      widgetLeft = builder.comment("Defines the left position relative to the widget position.")
+          .defineInRange("widgetLeft", 0, -400, 400);
       builder.pop();
 
       builder.push("Debug");
@@ -123,7 +125,7 @@ public class ClientConfig {
 
   @SubscribeEvent
   public static void onConfigReloading(final ModConfigEvent.Reloading configEvent) {
-    if(configEvent.getConfig().getSpec() == ClientConfig.clientSpec) {
+    if (configEvent.getConfig().getSpec() == ClientConfig.clientSpec) {
       AdvancementsTrackerWidget.reloadConfig();
     }
   }

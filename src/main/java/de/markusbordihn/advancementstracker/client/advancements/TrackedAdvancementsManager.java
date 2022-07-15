@@ -32,9 +32,8 @@ import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.resources.ResourceLocation;
-
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -56,15 +55,15 @@ public class TrackedAdvancementsManager {
   protected TrackedAdvancementsManager() {}
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(WorldEvent.Load event) {
-    if (!event.getWorld().isClientSide()) {
+  public static void handleWorldEventLoad(LevelEvent.Load event) {
+    if (!event.getLevel().isClientSide()) {
       return;
     }
     Minecraft minecraft = Minecraft.getInstance();
     ServerData serverData = minecraft != null ? minecraft.getCurrentServer() : null;
     if (serverData != null) {
-      serverId = String.format("%s:%s::", serverData.name.replaceAll("[^a-zA-Z0-9_]", "_"),
-          serverData.protocol);
+      serverId =
+          String.format("%s:%s::", serverData.name.replaceAll("\\W", "_"), serverData.protocol);
     } else {
       serverId = null;
     }
@@ -96,7 +95,7 @@ public class TrackedAdvancementsManager {
 
   public static void checkForTrackedAdvancement(AdvancementEntry advancement) {
     // Ignore advancements which are done.
-    if (advancement.isDone) {
+    if (advancement.getProgress().isDone()) {
       return;
     }
     AdvancementEntry trackedAdvancement = null;
@@ -104,7 +103,7 @@ public class TrackedAdvancementsManager {
     // Check first for default tracked advancement
     if (!trackedAdvancementsDefault.isEmpty()) {
       for (String trackedAdvancementDefault : trackedAdvancementsDefault) {
-        if (advancement.idString.equals(trackedAdvancementDefault)) {
+        if (advancement.getIdString().equals(trackedAdvancementDefault)) {
           log.debug("Adding default tracked advancement {}", advancement);
           trackedAdvancement = advancement;
           break;
@@ -117,7 +116,7 @@ public class TrackedAdvancementsManager {
       for (String cachedAdvancementEntry : trackedAdvancementsRemote) {
         if (!cachedAdvancementEntry.isEmpty() && !"".equals(cachedAdvancementEntry)
             && cachedAdvancementEntry.startsWith(serverId)
-            && advancement.idString.equals(cachedAdvancementEntry.split("::", 2)[1])) {
+            && advancement.getIdString().equals(cachedAdvancementEntry.split("::", 2)[1])) {
           log.debug("Adding remote tracked advancement {}", advancement);
           trackedAdvancement = advancement;
           break;
@@ -128,7 +127,7 @@ public class TrackedAdvancementsManager {
     // Check for local tracked advancement
     if (!trackedAdvancementsLocal.isEmpty() && serverId == null) {
       for (String cachedAdvancementEntry : trackedAdvancementsLocal) {
-        if (advancement.idString.equals(cachedAdvancementEntry)) {
+        if (advancement.getIdString().equals(cachedAdvancementEntry)) {
           log.debug("Adding local tracked advancement {}", advancement);
           trackedAdvancement = advancement;
           break;
@@ -143,7 +142,7 @@ public class TrackedAdvancementsManager {
   }
 
   public static void toggleTrackedAdvancement(AdvancementEntry advancement) {
-    if (advancement.isDone) {
+    if (advancement.getProgress().isDone()) {
       return;
     }
     if (isTrackedAdvancement(advancement)) {
@@ -158,12 +157,12 @@ public class TrackedAdvancementsManager {
   }
 
   public static void trackAdvancement(AdvancementEntry advancement, boolean autosave) {
-    if (advancement.isDone) {
+    if (advancement.getProgress().isDone()) {
       log.warn("Advancement {} is already done, no need to track it.", advancement);
       return;
     }
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      if (trackedAdvancementEntry.id == advancement.id) {
+      if (trackedAdvancementEntry.getId() == advancement.getId()) {
         log.warn("Advancement {} is already tracked.", advancement);
         return;
       }
@@ -195,7 +194,7 @@ public class TrackedAdvancementsManager {
     }
     // Adding entries for current server.
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      trackedAdvancementsToSave.add(serverId + trackedAdvancementEntry.id.toString());
+      trackedAdvancementsToSave.add(serverId + trackedAdvancementEntry.getIdString());
     }
     ClientConfig.CLIENT.trackedAdvancementsRemote
         .set(trackedAdvancementsToSave.stream().distinct().collect(Collectors.toList()));
@@ -209,7 +208,7 @@ public class TrackedAdvancementsManager {
     }
     List<String> trackedAdvancementsToSave = new ArrayList<>();
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      trackedAdvancementsToSave.add(trackedAdvancementEntry.id.toString());
+      trackedAdvancementsToSave.add(trackedAdvancementEntry.getIdString());
     }
     ClientConfig.CLIENT.trackedAdvancementsLocal
         .set(trackedAdvancementsToSave.stream().distinct().collect(Collectors.toList()));
@@ -228,7 +227,7 @@ public class TrackedAdvancementsManager {
   public static void untrackAdvancement(ResourceLocation advancementId) {
     AdvancementEntry existingAdvancementEntry = null;
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      if (trackedAdvancementEntry.id == advancementId) {
+      if (trackedAdvancementEntry.getId() == advancementId) {
         existingAdvancementEntry = trackedAdvancementEntry;
         break;
       }
@@ -247,7 +246,8 @@ public class TrackedAdvancementsManager {
   public static boolean hasTrackedAdvancement(AdvancementEntry advancementEntry) {
     ResourceLocation rootAdvancementId = advancementEntry.getId();
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      if (trackedAdvancementEntry.rootAdvancement != null && trackedAdvancementEntry.rootAdvancement.getId() == rootAdvancementId) {
+      if (trackedAdvancementEntry.rootAdvancement != null
+          && trackedAdvancementEntry.rootAdvancement.getId() == rootAdvancementId) {
         return true;
       }
     }
@@ -264,7 +264,7 @@ public class TrackedAdvancementsManager {
 
   public static boolean isTrackedAdvancement(Advancement advancement) {
     for (AdvancementEntry trackedAdvancementEntry : trackedAdvancements) {
-      if (trackedAdvancementEntry.id == advancement.getId()) {
+      if (trackedAdvancementEntry.getId() == advancement.getId()) {
         return true;
       }
     }

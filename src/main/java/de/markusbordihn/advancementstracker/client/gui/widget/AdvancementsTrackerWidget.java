@@ -54,7 +54,7 @@ import net.minecraft.world.level.Level;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.event.world.WorldEvent;
+import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
@@ -117,7 +117,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   }
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(WorldEvent.Load event) {
+  public static void handleWorldEventLoad(LevelEvent.Load event) {
     updatePredefinedText();
     hudVisible = CLIENT.widgetEnabled.get() && CLIENT.widgetVisible.get();
     if (hudVisible) {
@@ -275,9 +275,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     // Pre-calculations
     float titleScale = 0.75f;
     int titlePaddingLeft = 10;
-    int titlePaddingRight = advancementEntry.getProgressTotal() > 1 ? 20 : 0;
-    int titleWidth = font.width(advancementEntry.getTitle()) * titleScale > maxFontWidth
-        - titlePaddingLeft - titlePaddingRight
+    int titlePaddingRight = advancementEntry.getProgress().getProgressTotal() > 1 ? 20 : 0;
+    int titleWidth = advancementEntry.getTitleWidth() * titleScale > maxFontWidth - titlePaddingLeft
+        - titlePaddingRight
             ? maxFontWidth - titlePaddingLeft - titlePaddingRight - Math.round(7 * titleScale)
             : maxFontWidth - titlePaddingLeft - titlePaddingRight;
     int titleWidthScaled = Math.round(titleWidth / titleScale);
@@ -317,15 +317,16 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.popPose();
 
     // Show Progress, if we have more than one requirements.
-    if (advancementEntry.getProgressTotal() > 1) {
+    if (advancementEntry.getProgress().getProgressTotal() > 1) {
       float progressScale = 0.6f;
-      int progressPositionLeft = referenceLeftPosition + maxFontWidth - titlePaddingRight + 1;
+      int progressPositionLeft = referenceLeftPosition + maxFontWidth
+          - Math.round(advancementEntry.getProgress().getProgressStringWidth() * progressScale) - 2;
       poseStack.pushPose();
       poseStack.scale(progressScale, progressScale, progressScale);
-      font.drawShadow(poseStack, advancementEntry.getProgressString(),
+      font.drawShadow(poseStack, advancementEntry.getProgress().getProgressString(),
           progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
           TEXT_COLOR_YELLOW);
-      font.draw(poseStack, advancementEntry.getProgressString(),
+      font.draw(poseStack, advancementEntry.getProgress().getProgressString(),
           progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
           TEXT_COLOR_YELLOW);
       poseStack.popPose();
@@ -333,9 +334,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     referenceTopPosition += font.lineHeight * titleScale + 3;
 
     // Icon
-    if (advancementEntry.icon != null) {
+    if (advancementEntry.getIcon() != null) {
       poseStack.pushPose();
-      renderGuiItem(advancementEntry.icon, multiBufferSource, referenceLeftPosition - 4,
+      renderGuiItem(advancementEntry.getIcon(), multiBufferSource, referenceLeftPosition - 4,
           referenceTopPosition - 14, 0.65f);
       poseStack.popPose();
     }
@@ -346,9 +347,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     for (FormattedCharSequence descriptionPart : descriptionParts) {
       boolean shouldEnd = false;
       font.drawShadow(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
-          referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
+          referenceTopPosition / descriptionScale, advancementEntry.getDescriptionColor());
       font.draw(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
-          referenceTopPosition / descriptionScale, advancementEntry.descriptionColor);
+          referenceTopPosition / descriptionScale, advancementEntry.getDescriptionColor());
       if ((descriptionParts.size() >= 3 && descriptionLines == 3)) {
         font.draw(poseStack, Constants.ELLIPSIS, (referenceLeftPosition / descriptionScale)
             + ((font.width(descriptionPart) / descriptionScale) < maxFontWidth / descriptionScale
@@ -385,6 +386,10 @@ public class AdvancementsTrackerWidget extends GuiComponent {
             .withStyle(ChatFormatting.WHITE);
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated
   private void renderGuiItem(ItemStack itemStack, MultiBufferSource.BufferSource multiBufferSource,
       int x, int y, float scale) {
     this.renderGuiItem(itemStack, multiBufferSource, x, y, scale,
