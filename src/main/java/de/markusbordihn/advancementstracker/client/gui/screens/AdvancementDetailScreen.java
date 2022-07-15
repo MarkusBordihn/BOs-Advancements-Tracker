@@ -38,6 +38,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
+import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntryProgress;
 import de.markusbordihn.advancementstracker.client.gui.panel.AdvancementInfoPanel;
 
 @OnlyIn(Dist.CLIENT)
@@ -49,6 +50,7 @@ public class AdvancementDetailScreen extends Screen {
       new ResourceLocation("textures/gui/advancements/window.png");
 
   private AdvancementEntry advancementEntry;
+  private AdvancementEntryProgress progress;
   private AdvancementInfoPanel advancementInfoPanel;
 
   private int maxWidth;
@@ -59,31 +61,32 @@ public class AdvancementDetailScreen extends Screen {
   public AdvancementDetailScreen(AdvancementEntry advancementEntry) {
     this(advancementEntry.getTitle());
     this.advancementEntry = advancementEntry;
+    this.progress = advancementEntry.getProgress();
   }
 
   protected AdvancementDetailScreen(Component component) {
     super(component);
   }
 
-  private List<String> decorateInfoContent() {
+  private List<String> prepareInfoContent() {
     List<String> info = new ArrayList<>();
 
     // Display description.
     info.add(advancementEntry.getDescriptionString());
 
     // Display criteria information.
-    if (advancementEntry.remainingCriteriaNumber > 0
-        || advancementEntry.completedCriteriaNumber > 0) {
+    if (this.progress.getRemainingCriteriaNumber() > 0
+        || this.progress.getCompletedCriteriaNumber() > 0) {
       info.add(" ");
       info.add("Criteria:");
-      if (advancementEntry.remainingCriteriaNumber > 0) {
-        for (String remainingCriteria : advancementEntry.remainingCriteria) {
+      if (this.progress.getRemainingCriteriaNumber() > 0) {
+        for (String remainingCriteria : this.progress.getRemainingCriteriaHumanReadable()) {
           info.add("❌ " + remainingCriteria);
         }
       }
 
-      if (advancementEntry.completedCriteriaNumber > 0) {
-        for (String completedCriteria : advancementEntry.completedCriteria) {
+      if (this.progress.getCompletedCriteriaNumber() > 0) {
+        for (String completedCriteria : this.progress.getCompletedCriteriaHumanReadable()) {
           info.add("✔ " + completedCriteria);
         }
       }
@@ -123,7 +126,7 @@ public class AdvancementDetailScreen extends Screen {
     top = (height - maxHeight) / 2;
     this.advancementInfoPanel =
         new AdvancementInfoPanel(minecraft, 252 - 18, maxHeight - 38, top + 18, left + 3);
-    this.advancementInfoPanel.setInfo(decorateInfoContent());
+    this.advancementInfoPanel.setInfo(prepareInfoContent());
     this.addRenderableWidget(this.advancementInfoPanel);
   }
 

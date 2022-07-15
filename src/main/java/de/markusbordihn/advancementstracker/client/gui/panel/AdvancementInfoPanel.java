@@ -72,12 +72,17 @@ public class AdvancementInfoPanel extends ScrollPanel {
         result.add(null);
         continue;
       }
-
       Component chat = ForgeHooks.newChatWithLinks(line, false);
       int maxTextLength = this.width - 12;
       if (maxTextLength >= 0) {
+        Style textStyle = Style.EMPTY;
+        if (line.startsWith("✔")) {
+          textStyle = Style.EMPTY.withColor(0x00FF00);
+        } else if (line.startsWith("❌")) {
+          textStyle = Style.EMPTY.withColor(0xFF0000);
+        }
         result.addAll(Language.getInstance()
-            .getVisualOrder(font.getSplitter().splitLines(chat, maxTextLength, Style.EMPTY)));
+            .getVisualOrder(font.getSplitter().splitLines(chat, maxTextLength, textStyle)));
       }
     }
     return result;
@@ -89,7 +94,9 @@ public class AdvancementInfoPanel extends ScrollPanel {
   }
 
   @Override
-  public void updateNarration(NarrationElementOutput narrationElementOutput) {}
+  public void updateNarration(NarrationElementOutput narrationElementOutput) {
+    // Not needed.
+  }
 
   @Override
   protected int getContentHeight() {
@@ -113,14 +120,7 @@ public class AdvancementInfoPanel extends ScrollPanel {
     for (FormattedCharSequence line : lines) {
       if (line != null) {
         RenderSystem.enableBlend();
-        int textColor = 0xFFFFFF;
-        String text = String.valueOf(line);
-        if (text.startsWith("✔")) {
-          textColor = 0x00FF00;
-        } else if (text.startsWith("❌")) {
-          textColor = 0xFF0000;
-        }
-        this.font.drawShadow(poseStack, line, left + PADDING, relativeY, textColor);
+        this.font.drawShadow(poseStack, line, left + (float) PADDING, relativeY, 0xFFFFFF);
         RenderSystem.disableBlend();
       }
       relativeY += font.lineHeight;

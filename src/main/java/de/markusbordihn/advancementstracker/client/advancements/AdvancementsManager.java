@@ -178,7 +178,7 @@ public class AdvancementsManager {
     int completedAdvancements = 0;
     Set<AdvancementEntry> advancements = getAdvancements(rootAdvancement);
     for (AdvancementEntry advancementEntry : advancements) {
-      if (advancementEntry.isDone()) {
+      if (advancementEntry.getProgress().isDone()) {
         completedAdvancements++;
       }
     }
@@ -240,7 +240,7 @@ public class AdvancementsManager {
         return;
       }
     }
-    advancementEntry.addAdvancementProgress(advancementProgress);
+    advancementEntry.updateAdvancementProgress(advancementProgress);
     if (advancementProgress.isDone()) {
       TrackedAdvancementsManager.untrackAdvancement(advancement);
     }

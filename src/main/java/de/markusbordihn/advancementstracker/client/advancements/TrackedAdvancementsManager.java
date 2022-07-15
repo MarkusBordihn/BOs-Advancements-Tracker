@@ -63,7 +63,7 @@ public class TrackedAdvancementsManager {
     Minecraft minecraft = Minecraft.getInstance();
     ServerData serverData = minecraft != null ? minecraft.getCurrentServer() : null;
     if (serverData != null) {
-      serverId = String.format("%s:%s::", serverData.name.replaceAll("[^a-zA-Z0-9_]", "_"),
+      serverId = String.format("%s:%s::", serverData.name.replaceAll("\\W", "_"),
           serverData.protocol);
     } else {
       serverId = null;
@@ -96,7 +96,7 @@ public class TrackedAdvancementsManager {
 
   public static void checkForTrackedAdvancement(AdvancementEntry advancement) {
     // Ignore advancements which are done.
-    if (advancement.isDone()) {
+    if (advancement.getProgress().isDone()) {
       return;
     }
     AdvancementEntry trackedAdvancement = null;
@@ -143,7 +143,7 @@ public class TrackedAdvancementsManager {
   }
 
   public static void toggleTrackedAdvancement(AdvancementEntry advancement) {
-    if (advancement.isDone()) {
+    if (advancement.getProgress().isDone()) {
       return;
     }
     if (isTrackedAdvancement(advancement)) {
@@ -158,7 +158,7 @@ public class TrackedAdvancementsManager {
   }
 
   public static void trackAdvancement(AdvancementEntry advancement, boolean autosave) {
-    if (advancement.isDone()) {
+    if (advancement.getProgress().isDone()) {
       log.warn("Advancement {} is already done, no need to track it.", advancement);
       return;
     }

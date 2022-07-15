@@ -279,7 +279,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     // Pre-calculations
     float titleScale = 0.75f;
     int titlePaddingLeft = 10;
-    int titlePaddingRight = advancementEntry.getProgressTotal() > 1 ? 20 : 0;
+    int titlePaddingRight = advancementEntry.getProgress().getProgressTotal() > 1 ? 20 : 0;
     int titleWidth = advancementEntry.getTitleWidth() * titleScale > maxFontWidth - titlePaddingLeft
         - titlePaddingRight
             ? maxFontWidth - titlePaddingLeft - titlePaddingRight - Math.round(7 * titleScale)
@@ -321,16 +321,16 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.popPose();
 
     // Show Progress, if we have more than one requirements.
-    if (advancementEntry.getProgressTotal() > 1) {
+    if (advancementEntry.getProgress().getProgressTotal() > 1) {
       float progressScale = 0.6f;
       int progressPositionLeft = referenceLeftPosition + maxFontWidth
-          - Math.round(advancementEntry.getProgressStringWidth() * progressScale) - 2;
+          - Math.round(advancementEntry.getProgress().getProgressStringWidth() * progressScale) - 2;
       poseStack.pushPose();
       poseStack.scale(progressScale, progressScale, progressScale);
-      font.drawShadow(poseStack, advancementEntry.getProgressString(),
+      font.drawShadow(poseStack, advancementEntry.getProgress().getProgressString(),
           progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
           TEXT_COLOR_YELLOW);
-      font.draw(poseStack, advancementEntry.getProgressString(),
+      font.draw(poseStack, advancementEntry.getProgress().getProgressString(),
           progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
           TEXT_COLOR_YELLOW);
       poseStack.popPose();
@@ -390,6 +390,10 @@ public class AdvancementsTrackerWidget extends GuiComponent {
             .withStyle(ChatFormatting.WHITE);
   }
 
+  /**
+   * @deprecated
+   */
+  @Deprecated
   private void renderGuiItem(ItemStack itemStack, MultiBufferSource.BufferSource multiBufferSource,
       int x, int y, float scale) {
     this.renderGuiItem(itemStack, multiBufferSource, x, y, scale,

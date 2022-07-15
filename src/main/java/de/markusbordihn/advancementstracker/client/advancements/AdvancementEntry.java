@@ -20,9 +20,6 @@
 package de.markusbordihn.advancementstracker.client.advancements;
 
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,7 +32,6 @@ import com.google.gson.JsonParseException;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.client.Minecraft;
@@ -54,24 +50,12 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   Advancement advancement;
   Advancement rootAdvancement;
-  AdvancementProgress advancementProgress;
+
   DisplayInfo displayInfo;
-  Float progress;
   ResourceLocation rootId;
-  String progressText;
+
   String[][] requirements;
   int rootLevel = 0;
-  Map<String, CriterionProgress> criteriaMap = new HashMap<>();
-  public Date firstProgressDate;
-  public Date lastProgressDate;
-  public FrameType frameType;
-  public Iterable<String> completedCriteria;
-  public Iterable<String> remainingCriteria;
-  public int completedCriteriaNumber;
-  public int criteriaNumber;
-  public int maxCriteraRequired;
-  public int remainingCriteriaNumber;
-  public int requirementsNumber;
 
   // General
   private final ResourceLocation id;
@@ -82,12 +66,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   private ResourceLocation background;
   private String description;
   private String title;
-
-  // Progress
-  private String progressString = "";
-  private int progressStringWidth = 0;
-  private boolean isDone;
-  private int progressTotal = 0;
+  private FrameType frameType;
 
   // Text Components
   private final TextComponent descriptionComponent;
@@ -108,6 +87,9 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   private boolean hasRewardsData = false;
   private boolean hasRewardsLoaded = false;
 
+  // Progress
+  private AdvancementEntryProgress advancementProgress;
+
   // Helper Tools
   private final Font font;
   private final Minecraft minecraft;
@@ -117,6 +99,9 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     this.minecraft = Minecraft.getInstance();
     this.font = this.minecraft.font;
 
+    // Advancement Progress
+    this.advancementProgress = new AdvancementEntryProgress(advancement, advancementProgress);
+
     // Advancements Data
     this.advancement = advancement;
     this.displayInfo = advancement.getDisplay();
@@ -124,7 +109,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     this.idString = advancement.getId().toString();
     this.rootAdvancement = advancement.getParent();
     this.requirements = advancement.getRequirements();
-    this.maxCriteraRequired = advancement.getMaxCriteraRequired();
+
     if (this.rootAdvancement != null) {
       while (this.rootAdvancement.getParent() != null) {
         this.rootAdvancement = this.rootAdvancement.getParent();
@@ -171,19 +156,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
     // Handle Rewards like experience, loot and recipes.
     this.rewards = advancement.getRewards();
-
-    // Process advancement progress, if needed.
-    if (advancementProgress != null) {
-      this.addAdvancementProgress(advancementProgress);
-    }
   }
 
   public boolean isTracked() {
     return TrackedAdvancementsManager.isTrackedAdvancement(advancement);
   }
 
-  public boolean isDone() {
-    return this.isDone;
+  public AdvancementEntryProgress getProgress() {
+    return this.advancementProgress;
   }
 
   public ResourceLocation getId() {
@@ -238,61 +218,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     return this.titleColor;
   }
 
-  public String getProgressString() {
-    return this.progressString;
-  }
-
-  public int getProgressStringWidth() {
-    return this.progressStringWidth;
-  }
-
-  public int getProgressTotal() {
-    return this.progressTotal;
-  }
-
-  public void addAdvancementProgress(AdvancementProgress advancementProgress) {
-    if (advancementProgress == null) {
-      return;
-    }
-    this.advancementProgress = advancementProgress;
-    this.isDone = advancementProgress.isDone();
-    this.firstProgressDate = advancementProgress.getFirstProgressDate();
-    this.progress = advancementProgress.getPercent();
-    this.progressText = advancementProgress.getProgressText();
-
-    // Handle completed Criteria
-    this.completedCriteria = advancementProgress.getCompletedCriteria();
-    this.completedCriteriaNumber = (int) this.completedCriteria.spliterator().getExactSizeIfKnown();
-    for (String criteriaId : this.completedCriteria) {
-      criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
-    }
-
-    // Handle remaining Criteria
-    this.remainingCriteria = advancementProgress.getRemainingCriteria();
-    this.remainingCriteriaNumber = (int) this.remainingCriteria.spliterator().getExactSizeIfKnown();
-    for (String criteriaId : this.remainingCriteria) {
-      criteriaMap.put(criteriaId, advancementProgress.getCriterion(criteriaId));
-    }
-
-    // Number of complete Criteria
-    if (this.remainingCriteriaNumber > 0 || this.completedCriteriaNumber > 0) {
-      this.progressTotal = this.completedCriteriaNumber + this.remainingCriteriaNumber;
-      this.progressString = this.completedCriteriaNumber + "/" + this.progressTotal;
-      this.progressStringWidth = font.width(this.progressString);
-    }
-
-    this.lastProgressDate = this.getLastProgressDate();
-  }
-
-  private Date getLastProgressDate() {
-    Date date = null;
-    for (CriterionProgress criterionProgress : this.criteriaMap.values()) {
-      if (criterionProgress.isDone()
-          && (date == null || criterionProgress.getObtained().after(date))) {
-        date = criterionProgress.getObtained();
-      }
-    }
-    return date;
+  public void updateAdvancementProgress(AdvancementProgress advancementProgress) {
+    this.advancementProgress.update(advancementProgress);
   }
 
   public Integer getRewardsExperience() {
@@ -390,7 +317,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   }
 
   private static String stripControlCodes(String value) {
-    return net.minecraft.util.StringUtil.stripColor(value);
+    return value == null ? "" : net.minecraft.util.StringUtil.stripColor(value);
   }
 
   @Override
@@ -426,7 +353,8 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
 
   public static Comparator<AdvancementEntry> sortByStatus() {
     return (AdvancementEntry firstAdvancementEntry, AdvancementEntry secondAdvancementEntry) -> {
-      int result = Boolean.compare(firstAdvancementEntry.isDone, secondAdvancementEntry.isDone);
+      int result = Boolean.compare(firstAdvancementEntry.getProgress().isDone(),
+          secondAdvancementEntry.getProgress().isDone());
       if (result == 0) {
         result = firstAdvancementEntry.title.compareTo(secondAdvancementEntry.title);
       }
@@ -438,10 +366,10 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   public String toString() {
     if (this.rootAdvancement == null) {
       return String.format("[Root Advancement] (%s) %s: %s %s", this.frameType, this.id, this.title,
-          this.progress);
+          this.advancementProgress.getProgress());
     }
     return String.format("[Advancement %s] (%s) %s => %s: %s %s", this.rootLevel, this.frameType,
-        this.rootId, this.id, this.title, this.progress);
+        this.rootId, this.id, this.title, this.advancementProgress.getProgress());
   }
 
 }

@@ -27,6 +27,8 @@ import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -213,7 +215,7 @@ public class AdvancementsTrackerScreen extends Screen {
       return;
     }
     this.childAdvancements.forEach(advancementEntry -> {
-      if ((showCompletedAdvancements || !advancementEntry.isDone())
+      if ((showCompletedAdvancements || !advancementEntry.getProgress().isDone())
           && (!showOnlyRewardedAdvancements || advancementEntry.hasRewards())) {
         listViewConsumer.accept(newEntry.apply(advancementEntry));
       }
@@ -488,12 +490,12 @@ public class AdvancementsTrackerScreen extends Screen {
   }
 
   @Override
-  public boolean keyPressed(int p_96552_, int p_96553_, int p_96554_) {
-    if (p_96552_ == 256 && this.showingAdvancementDetail()) {
+  public boolean keyPressed(int key1, int key2, int key3) {
+    if (key1 == GLFW.GLFW_KEY_ESCAPE && this.showingAdvancementDetail()) {
       this.showAdvancementDetail(false);
       return false;
     } else {
-      return super.keyPressed(p_96552_, p_96553_, p_96554_);
+      return super.keyPressed(key1, key2, key3);
     }
   }
 }

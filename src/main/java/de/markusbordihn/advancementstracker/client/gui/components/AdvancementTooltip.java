@@ -45,42 +45,16 @@ public class AdvancementTooltip extends GuiComponent {
   private static int tooltipWith = 200;
   private static int tooltipHeight = 200;
 
-  private static int criteriaTooltipWith = 90;
-  private static int criteriaTooltipHeight = 150;
-
   public AdvancementTooltip(AdvancementEntry advancementEntry) {
     this.advancementEntry = advancementEntry;
     this.minecraft = Minecraft.getInstance();
     this.font = minecraft.font;
   }
 
-  public void renderTooltip(PoseStack poseStack, int top, int left, int mouseX, int mouseY) {
+  public void renderTooltip(PoseStack poseStack, int mouseX, int mouseY) {
     poseStack.pushPose();
     font.draw(poseStack, advancementEntry.getTitle(), mouseX, mouseY, 0xFFFFFFFF);
-    fill(poseStack, mouseX, mouseY, mouseX + this.tooltipWith, mouseY + this.tooltipHeight,
-        0x80000000);
-    poseStack.popPose();
-  }
-
-  public void renderCriteriaTooltip(PoseStack poseStack, int top, int left, int mouseX,
-      int mouseY) {
-    poseStack.pushPose();
-    fill(poseStack, mouseX, mouseY, mouseX + criteriaTooltipWith,
-        mouseY + criteriaTooltipHeight, 0xAA000000);
-    poseStack.translate(0, 0, 100);
-    font.draw(poseStack, "Criteria ...", mouseX, mouseY, 0xFFFFFFFF);
-    font.draw(poseStack, "Completed:" + advancementEntry.completedCriteria, mouseX, mouseY + 10,
-        0xFFFFFFFF);
-    font.draw(poseStack, "Remaining:" + advancementEntry.remainingCriteria, mouseX, mouseY + 20,
-        0xFFFFFFFF);
-    poseStack.popPose();
-  }
-
-  public void renderExperienceRewardTooltip(PoseStack poseStack, int top, int left, int mouseX,
-      int mouseY) {
-    poseStack.pushPose();
-    font.draw(poseStack, advancementEntry.getTitle(), mouseX, mouseY, 0xFFFFFFFF);
-    fill(poseStack, mouseX, mouseY, mouseX + this.tooltipWith, mouseY + this.tooltipHeight,
+    fill(poseStack, mouseX, mouseY, mouseX + tooltipWith, mouseY + tooltipHeight,
         0x80000000);
     poseStack.popPose();
   }

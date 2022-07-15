@@ -9,15 +9,23 @@ This mod will make achieving the advancements more easier, interesting and meani
 
 ## 🚀Features
 
-- Client side only, works with multiplayer server
-- Easy overview of advancements with sorting and filter
-- Easy way to track specific advancements and their process
+- Client side only, but works with multiplayer servers.
+- List Overview of advancements with sorting and filter.
+- Displaying of completed and missing criteria to make it easier to complete an advancement.
+- Easy way to track specific advancements and their process.
+- Most criteria will be translated to more meaningful names.
 
 ### 📜Advancements Overview
 
 The overview could be open with **CTRL + L** and displays all current advancements and allow the tracking of single advancements.
 
 ![Advancement Overview][overview_example]
+
+### 🔎 Advancement Details
+
+By clicking on the advancements inside the overview you will see the details about the completed and missing criteria and a list of rewards, if any.
+
+![Advancement Details][advancement_criteria]
 
 ### 🎯Advancements Widget
 
@@ -40,13 +48,13 @@ You could also adjust the position and size of the widget overlay.
 
 You could define tracked advancements over the settings file which should be displayed by default in a specific order.
 This is helpful for mod packs so that the user gets first an tutorial advancement / tasks and later other pre-defined tasks.
-If you are defining a pre-defined order you should disable the overview screen to make sure that the user is not un-tracking them by mistake.
+If you are defining a pre-defined order you could disable the overview screen to make sure that the user is not un-tracking them by mistake.
 
 ## 🙋FAQ
 
 ### Is this a server side / client side mod❓
 
-Its a pure client mode, but should not harm if it is installed on the server.
+Its a pure client side mode, but will not harm if it is installed on the server.
 
 ### Does it work with data packs❓
 
@@ -74,4 +82,5 @@ This mod works great together with Better Advancements mod, but let me know if y
 [platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
 [logo]: logo.gif
 [overview_example]: example/overview_example.png
+[advancement_criteria]: example/advancement_criteria.png
 [widget_example]: example/widget_example.png

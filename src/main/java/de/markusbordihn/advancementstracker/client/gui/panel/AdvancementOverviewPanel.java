@@ -107,14 +107,10 @@ public class AdvancementOverviewPanel
 
     private FormattedCharSequence titleParts;
     private List<FormattedCharSequence> descriptionParts;
-    private boolean isMouseOver = false;
 
     // Cached positions and sizes
     private int maxFontWidth;
-    private int progressPositionLeft;
-    private int progressPositionTop;
     private int progressWidth = 182;
-    private int progressHeight = 5;
     private int relativeLeftPosition;
     private int relativeTopPosition;
     private int titleWidth;
@@ -122,12 +118,12 @@ public class AdvancementOverviewPanel
     ChildAdvancementEntry(AdvancementEntry advancementEntry, AdvancementsTrackerScreen parent) {
       this.advancementEntry = advancementEntry;
       this.advancementTooltip = new AdvancementTooltip(advancementEntry);
-      this.completedCriteriaNumber = advancementEntry.completedCriteriaNumber;
+      this.completedCriteriaNumber = advancementEntry.getProgress().getCompletedCriteriaNumber();
       this.descriptionColor = advancementEntry.getDescriptionColor();
       this.font = parent.getFontRenderer();
-      this.isDone = advancementEntry.isDone();
+      this.isDone = advancementEntry.getProgress().isDone();
       this.parent = parent;
-      this.remainingCriteriaNumber = advancementEntry.remainingCriteriaNumber;
+      this.remainingCriteriaNumber = advancementEntry.getProgress().getRemainingCriteriaNumber();
       this.titleColor = advancementEntry.getTitleColor();
 
       // Do expensive pre-calculation for the render
@@ -206,9 +202,8 @@ public class AdvancementOverviewPanel
     }
 
     private void renderProgress(PoseStack poseStack, int top, int entryWidth, int iconWidth) {
-      // Update position
-      progressPositionLeft = getLeft() + iconWidth + 5;
-      progressPositionTop = top + 33;
+      int progressPositionLeft = getLeft() + iconWidth + 5;
+      int progressPositionTop = top + 33;
 
       // Render empty bar.
       RenderSystem.setShaderColor(1, 1, 1, 1);
@@ -236,7 +231,7 @@ public class AdvancementOverviewPanel
           float positionScaling = 1.33f;
           poseStack.pushPose();
           poseStack.scale(scaling, scaling, scaling);
-          font.draw(poseStack, advancementEntry.getProgressString(),
+          font.draw(poseStack, advancementEntry.getProgress().getProgressString(),
               (progressPositionLeft + progressWidth + 5) * positionScaling,
               (progressPositionTop) * positionScaling,
               this.remainingCriteriaNumber >= 1 ? ChatFormatting.YELLOW.getColor()
@@ -343,16 +338,8 @@ public class AdvancementOverviewPanel
       this.renderTrackingCheckbox(poseStack, top, left);
 
       // Additional Tooltips with mouse over
-      this.isMouseOver = super.isMouseOver(mouseX, mouseY);
-      if (this.isMouseOver) {
+      if (super.isMouseOver(mouseX, mouseY)) {
         setAdvancementTooltip(this.advancementTooltip);
-
-        // Progress Tooltip
-        if ((mouseX > progressPositionLeft && mouseX < progressPositionLeft + progressWidth
-            + advancementEntry.getProgressStringWidth())
-            && (mouseY > progressPositionTop - 2
-                && mouseY < progressPositionTop + progressHeight + 2)) {
-        }
       }
     }
 
