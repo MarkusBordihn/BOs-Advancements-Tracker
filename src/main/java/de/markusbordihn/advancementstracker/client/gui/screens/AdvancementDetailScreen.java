@@ -122,10 +122,10 @@ public class AdvancementDetailScreen extends Screen {
   public void init() {
     maxHeight = Math.min(height - 30, 260);
     maxWidth = 252;
-    left = (width - 252) / 2;
+    left = (width - maxWidth) / 2;
     top = (height - maxHeight) / 2;
     this.advancementInfoPanel =
-        new AdvancementInfoPanel(minecraft, 252 - 18, maxHeight - 38, top + 18, left + 3);
+        new AdvancementInfoPanel(minecraft, maxWidth - 18, maxHeight - 38, top + 18, left + 3);
     this.advancementInfoPanel.setInfo(prepareInfoContent());
     this.addRenderableWidget(this.advancementInfoPanel);
   }
@@ -137,7 +137,9 @@ public class AdvancementDetailScreen extends Screen {
 
     super.render(poseStack, mouseX, mouseY, partialTick);
 
-    this.advancementInfoPanel.render(poseStack, mouseX, mouseY, partialTick);
+    if (this.advancementInfoPanel != null) {
+      this.advancementInfoPanel.render(poseStack, mouseX, mouseY, partialTick);
+    }
   }
 
   @Override
@@ -173,6 +175,12 @@ public class AdvancementDetailScreen extends Screen {
     }
 
     poseStack.popPose();
+  }
+
+  @Override
+  public boolean isMouseOver(double mouseX, double mouseY) {
+    return mouseY >= this.top && mouseY <= this.top + this.maxHeight && mouseX >= this.left
+        && mouseX <= this.left + this.maxWidth;
   }
 
 }

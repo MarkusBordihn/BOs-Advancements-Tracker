@@ -356,7 +356,7 @@ public class AdvancementOverviewPanel
           setSelected(this);
         }
       }
-      return false;
+      return super.mouseClicked(mouseX, mouseY, button);
     }
   }
 
@@ -372,7 +372,8 @@ public class AdvancementOverviewPanel
 
   @Override
   public boolean isMouseOver(double mouseX, double mouseY) {
-    return !parent.showingAdvancementDetail() && super.isMouseOver(mouseX, mouseY);
+    return !parent.showingAdvancementDetail() && mouseY >= this.y0 && mouseY <= this.y1
+        && mouseX >= this.x0 && mouseX <= this.x1 + 5;
   }
 
   @Override
