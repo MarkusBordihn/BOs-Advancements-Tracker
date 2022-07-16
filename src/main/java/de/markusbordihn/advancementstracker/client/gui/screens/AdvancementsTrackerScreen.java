@@ -452,8 +452,12 @@ public class AdvancementsTrackerScreen extends Screen {
   @Override
   public boolean mouseClicked(double mouseX, double mouseY, int button) {
     if (button == 0 && this.showingAdvancementDetail()) {
-      // Ignore events, if we are showing the advancement details.
-      this.showAdvancementDetail(false);
+      if (this.showAdvancementDetailScreen.isMouseOver(mouseX, mouseY)) {
+        this.showAdvancementDetailScreen.mouseClicked(mouseX, mouseY, button);
+      } else {
+        // Ignore events, if we are showing the advancement details.
+        this.showAdvancementDetail(false);
+      }
       return false;
     } else if (button == 0 && mouseX > this.listWidth + 10.0f && mouseX < this.listWidth + 18.0f
         && mouseY > this.height - 11) {
@@ -477,6 +481,16 @@ public class AdvancementsTrackerScreen extends Screen {
       this.showAdvancementDetailScreen.mouseScrolled(mouseX, mouseY, scroll);
     }
     return super.mouseScrolled(mouseX, mouseY, scroll);
+  }
+
+  @Override
+  public boolean mouseDragged(double p_94699_, double p_94700_, int p_94701_, double p_94702_,
+      double p_94703_) {
+    if (this.showingAdvancementDetail()) {
+      this.showAdvancementDetailScreen.mouseDragged(p_94699_, p_94700_, p_94701_, p_94702_,
+          p_94703_);
+    }
+    return super.mouseDragged(p_94699_, p_94700_, p_94701_, p_94702_, p_94703_);
   }
 
   @Override

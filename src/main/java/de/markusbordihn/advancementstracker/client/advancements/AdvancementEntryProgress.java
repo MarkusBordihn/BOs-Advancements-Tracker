@@ -212,50 +212,65 @@ public class AdvancementEntryProgress {
 
     if (namespaces != null) {
       for (String possibleNamespace : namespaces) {
+
+        // Normalize names for the namespace.
+        String criteriaName = criteria.startsWith(possibleNamespace + ":")
+            ? criteria.replace(possibleNamespace + ":", "")
+            : criteria;
+
         // Check for item in namespace.
-        String itemNameFormat = "item." + possibleNamespace + "." + criteria;
+        String itemNameFormat = "item." + possibleNamespace + "." + criteriaName;
         TranslatableComponent itemName = new TranslatableComponent(itemNameFormat);
         if (!itemName.getString().equals(itemNameFormat)) {
           return itemName.getString();
         }
 
         // Check for block in namespace.
-        String blockNameFormat = "block." + possibleNamespace + "." + criteria;
+        String blockNameFormat = "block." + possibleNamespace + "." + criteriaName;
         TranslatableComponent blockName = new TranslatableComponent(blockNameFormat);
         if (!blockName.getString().equals(blockNameFormat)) {
           return blockName.getString();
         }
 
         // Check for entity in namespace.
-        String entityNameFormat = "entity." + possibleNamespace + "." + criteria;
+        String entityNameFormat = "entity." + possibleNamespace + "." + criteriaName;
         TranslatableComponent entityName = new TranslatableComponent(entityNameFormat);
         if (!entityName.getString().equals(entityNameFormat)) {
           return entityName.getString();
         }
 
         // Check for enchantment in namespace.
-        String enchantmentNameFormat = "enchantment." + possibleNamespace + "." + criteria;
+        String enchantmentNameFormat = "enchantment." + possibleNamespace + "." + criteriaName;
         TranslatableComponent enchantmentName = new TranslatableComponent(enchantmentNameFormat);
         if (!enchantmentName.getString().equals(enchantmentNameFormat)) {
           return enchantmentName.getString();
         }
 
         // Check for effect in namespace.
-        String effectNameFormat = "effect." + possibleNamespace + "." + criteria;
+        String effectNameFormat = "effect." + possibleNamespace + "." + criteriaName;
         TranslatableComponent effectName = new TranslatableComponent(effectNameFormat);
         if (!effectName.getString().equals(effectNameFormat)) {
           return effectName.getString();
         }
 
         // Check for biome in namespace.
-        String biomeNameFormat = "biome." + possibleNamespace + "." + criteria;
+        String biomeNameFormat = "biome." + possibleNamespace + "." + criteriaName;
         TranslatableComponent biomeName = new TranslatableComponent(biomeNameFormat);
         if (!biomeName.getString().equals(biomeNameFormat)) {
           return biomeName.getString();
         }
       }
 
-      log.debug("Unable to translate {} with {} to a more meaningful name.", criteria, this.id);
+      String advancementNameFormat =
+          "advancement." + this.id.toString().replace(":", ".").replace("/", ".") + "."
+              + criteria.replace(":", ".").replace("/", ".");
+      TranslatableComponent advancementName = new TranslatableComponent(advancementNameFormat);
+      if (!advancementName.getString().equals(advancementNameFormat)) {
+        return advancementName.getString();
+      }
+
+      log.warn("Unable to translate {} ({}) to a more meaningful name.", criteria,
+          advancementNameFormat);
     }
     return criteria;
   }

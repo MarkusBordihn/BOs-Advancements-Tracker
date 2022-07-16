@@ -39,6 +39,17 @@ The tracked advancements are stored directly in the client settings file and cou
 They are stored per server, so you can have different tracked advancements for each single server.
 Local games (single-player) however sharing the same tracked advancements.
 
+## 🌐 Criteria Translation Support
+
+This mods adds support for criteria translation instead of having cryptic requirements like 1, 2, 3.
+The translated text is added over language files and you will see a corresponding message in the client log for untranslated advancements like:
+`Unable to translate summoned (advancement.minecraft.nether.summon_wither.summoned) to a more meaningful name.`
+
+Example **en_us.json** entry for the former line:
+`"advancement.minecraft.nether.summon_wither.summoned": "Summon a Wither",`
+
+You can add the translation directly into your mods, mod packs or in this mod over a PR.
+
 ## 🗄️Setting file
 
 The setting file allows you to disable / enable the overview or widget screen.

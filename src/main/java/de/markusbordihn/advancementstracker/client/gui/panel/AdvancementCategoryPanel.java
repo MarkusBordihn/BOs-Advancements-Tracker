@@ -248,14 +248,15 @@ public class AdvancementCategoryPanel
         parent.setSelectedRootAdvancement(this);
         setSelected(this);
       }
-      return false;
+      return super.mouseClicked(mouseX, mouseY, button);
     }
 
   }
 
   @Override
   public boolean isMouseOver(double mouseX, double mouseY) {
-    return !parent.showingAdvancementDetail() && super.isMouseOver(mouseX, mouseY);
+    return !parent.showingAdvancementDetail() && mouseY >= this.y0 && mouseY <= this.y1
+        && mouseX >= this.x0 && mouseX <= this.x1 + 5;
   }
 
   @Override
