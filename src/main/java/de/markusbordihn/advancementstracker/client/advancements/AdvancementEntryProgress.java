@@ -51,12 +51,12 @@ public class AdvancementEntryProgress {
   private ResourceLocation id;
   private String namespace = "";
 
-  // Progress
+  // Progress with default values
   private Date firstProgressDate;
   private Date lastProgressDate;
-  private Float progress;
+  private Float progress = 0f;
   private String progressString = "";
-  private boolean isDone;
+  private boolean isDone = false;
   private int progressStringWidth = 0;
   private int progressTotal = 0;
 

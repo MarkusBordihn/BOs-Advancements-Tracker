@@ -42,7 +42,6 @@ import net.minecraftforge.client.gui.ScrollPanel;
 import net.minecraftforge.common.ForgeHooks;
 
 import de.markusbordihn.advancementstracker.Constants;
-import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementDetailScreen;
 
 public class AdvancementInfoPanel extends ScrollPanel {
 

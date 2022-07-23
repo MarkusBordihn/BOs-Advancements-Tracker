@@ -1,11 +1,21 @@
 {
+  "advancements_tracker.advancementsScreen.noAdvancements": "未找到进度，\n可能你先要找点原木做一个工作台。",
+  "advancements_tracker.advancementsScreen.numCategories": "类别: %1$s",
+  "advancements_tracker.advancementsScreen.numCompleted": "%1$s of %2$s 已完成",
+  "advancements_tracker.advancementsScreen.showCompleted": "已完成",
+  "advancements_tracker.advancementsScreen.showOnlyRewarded": "只有奖励",
+  "advancements_tracker.advancementsScreen.title": "进度追踪器概览",
+  "advancements_tracker.advancementsWidget.hotkeyAdvancementOverview": "按 %1$s 打开概览。\n\n",
+  "advancements_tracker.advancementsWidget.hotkeyAdvancementTracker": "按 %1$s 显示/隐藏跟踪器。\n\n",
+  "advancements_tracker.advancementsWidget.noAdvancements": "未找到进度，\n重新开始？\n\n",
+  "advancements_tracker.advancementsWidget.noTrackedAdvancements": "无追踪中的进度，\n请在进度概览中添加。",
+  "advancements_tracker.advancementsWidget.notAllVisible": "\u2026 %1$s of %2$s 可见\u2026",
+  "advancements_tracker.advancementsWidget.title": "进度追踪器",
   "advancements_tracker.configScreen.title": "%1$s 设置",
   "advancements_tracker.keys.category": "进度追踪器",
   "advancements_tracker.keys.show_overview": "打开概览",
   "advancements_tracker.keys.show_widget": "打开 Widget",
-  "advancements_tracker.advancementsScreen.title": "进度追踪器概览",
-  "advancements_tracker.advancementsScreen.noAdvancements": "未找到进度，\n可能你先要找点原木做一个工作台。",
-  "advancements_tracker.advancementsWidget.title": "进度追踪器",
-  "advancements_tracker.advancementsWidget.noAdvancements": "未找到进度，\n重新开始？",
-  "advancements_tracker.advancementsWidget.noTrackedAdvancements": "无追踪中的进度，\n请在进度概览中添加。"
+  "advancements_tracker.sort.a_to_z": "A-Z",
+  "advancements_tracker.sort.normal": "关闭",
+  "advancements_tracker.sort.z_to_a": "Z-A"
 }

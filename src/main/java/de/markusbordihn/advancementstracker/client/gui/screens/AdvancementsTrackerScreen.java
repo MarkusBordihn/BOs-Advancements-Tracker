@@ -484,18 +484,16 @@ public class AdvancementsTrackerScreen extends Screen {
   }
 
   @Override
-  public boolean mouseDragged(double p_94699_, double p_94700_, int p_94701_, double p_94702_,
-      double p_94703_) {
+  public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX,
+      double deltaY) {
     if (this.showingAdvancementDetail()) {
-      this.showAdvancementDetailScreen.mouseDragged(p_94699_, p_94700_, p_94701_, p_94702_,
-          p_94703_);
+      this.showAdvancementDetailScreen.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
-    return super.mouseDragged(p_94699_, p_94700_, p_94701_, p_94702_, p_94703_);
+    return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
   }
 
   @Override
   public void tick() {
-
     if (!sorted) {
       reloadRootAdvancements(sortType);
       reloadChildAdvancements(sortType);
