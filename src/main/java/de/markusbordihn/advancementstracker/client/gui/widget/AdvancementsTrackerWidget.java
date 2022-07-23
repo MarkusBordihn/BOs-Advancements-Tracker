@@ -84,12 +84,20 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private static MutableComponent noAdvancementsText =
       Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
           .append(ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
+          .append(Component
+              .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+                  ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
+              .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
   private static MutableComponent noTrackedAdvancementsText =
       Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
           .append(Component
               .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
                   ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
+              .withStyle(ChatFormatting.YELLOW))
+          .append(Component
+              .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+                  ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
               .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
 
@@ -200,12 +208,12 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   }
 
   private void renderNoTrackedAdvancements(PoseStack poseStack, int x, int y) {
-    int textContentHeight = (this.font.lineHeight + 2) * 9;
+    int textContentHeight = (this.font.lineHeight + 2) * 11;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
     fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
     font.drawWordWrap(noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
-        textContentHeight - 10);
+        textContentHeight - 5);
     poseStack.popPose();
   }
 
@@ -215,7 +223,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.pushPose();
     fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
     font.drawWordWrap(noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
-        textContentHeight - 10);
+        textContentHeight - 5);
     poseStack.popPose();
   }
 
@@ -376,12 +384,20 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     // Update text for custom key-mapping.
     noAdvancementsText =
         Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
+            .append(Component
+                .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+                    ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
+                .withStyle(ChatFormatting.YELLOW))
             .withStyle(ChatFormatting.WHITE);
     noTrackedAdvancementsText =
         Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
             .append(Component
                 .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
                     ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
+                .withStyle(ChatFormatting.YELLOW))
+            .append(Component
+                .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+                    ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
                 .withStyle(ChatFormatting.YELLOW))
             .withStyle(ChatFormatting.WHITE);
   }

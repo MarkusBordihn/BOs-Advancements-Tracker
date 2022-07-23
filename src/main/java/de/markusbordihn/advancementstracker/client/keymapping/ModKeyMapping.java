@@ -60,16 +60,13 @@ public class ModKeyMapping {
 
   @SubscribeEvent
   public static void handleKeyboardKeyPressedEvent(InputEvent.Key event) {
-    if (ModKeyMapping.KEY_SHOW_WIDGET.isDown()) {
-      if (Boolean.TRUE.equals(CLIENT.widgetEnabled.get())) {
-        log.debug("Show/hide Advancements Widget ...");
-        AdvancementsTrackerWidget.toggleVisibility();
-      }
-    } else if (ModKeyMapping.KEY_SHOW_OVERVIEW.isDown()) {
-      if (Boolean.TRUE.equals(CLIENT.overviewEnabled.get())) {
-        log.debug("Show/hide Advancements Overview ...");
-        AdvancementsTrackerScreen.toggleVisibility();
-      }
+    if (ModKeyMapping.KEY_SHOW_WIDGET.isDown() && Boolean.TRUE.equals(CLIENT.widgetEnabled.get())) {
+      log.debug("Show/hide Advancements Widget ...");
+      AdvancementsTrackerWidget.toggleVisibility();
+    } else if (ModKeyMapping.KEY_SHOW_OVERVIEW.isDown()
+        && Boolean.TRUE.equals(CLIENT.overviewEnabled.get())) {
+      log.debug("Show/hide Advancements Overview ...");
+      AdvancementsTrackerScreen.toggleVisibility();
     }
   }
 
