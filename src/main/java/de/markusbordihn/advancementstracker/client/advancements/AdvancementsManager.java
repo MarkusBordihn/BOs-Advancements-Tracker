@@ -58,9 +58,11 @@ public class AdvancementsManager {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    // Ignore server side worlds.
     if (!event.getWorld().isClientSide()) {
       return;
     }
+
     reset();
   }
 

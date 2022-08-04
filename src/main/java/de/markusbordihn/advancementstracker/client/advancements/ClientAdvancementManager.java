@@ -38,7 +38,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.gui.screens.AdvancementsTrackerScreen;
 
-@EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(Dist.CLIENT)
 public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   private static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
@@ -55,9 +55,11 @@ public class ClientAdvancementManager implements ClientAdvancements.Listener {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    // Ignore server side worlds.
     if (!event.getWorld().isClientSide()) {
       return;
     }
+
     reset();
   }
 

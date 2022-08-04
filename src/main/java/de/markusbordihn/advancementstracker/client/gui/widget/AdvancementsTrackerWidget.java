@@ -126,6 +126,11 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    // Ignore server side worlds.
+    if (!event.getWorld().isClientSide()) {
+      return;
+    }
+
     updatePredefinedText();
     hudVisible = CLIENT.widgetEnabled.get() && CLIENT.widgetVisible.get();
     if (hudVisible) {
@@ -206,7 +211,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.pushPose();
     fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
         BACKGROUND_COLOR);
-    font.draw(poseStack, "Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
+    font.draw(poseStack, "☑ Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
     poseStack.popPose();
   }
 

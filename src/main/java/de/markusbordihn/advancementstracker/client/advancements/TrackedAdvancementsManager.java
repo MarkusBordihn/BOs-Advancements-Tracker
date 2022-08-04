@@ -57,9 +57,11 @@ public class TrackedAdvancementsManager {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    // Ignore server side worlds.
     if (!event.getWorld().isClientSide()) {
       return;
     }
+
     Minecraft minecraft = Minecraft.getInstance();
     ServerData serverData = minecraft != null ? minecraft.getCurrentServer() : null;
     if (serverData != null) {

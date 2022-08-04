@@ -43,9 +43,11 @@ public class AdvancementsEventManager {
 
   @SubscribeEvent
   public static void handleWorldEventLoad(WorldEvent.Load event) {
+    // Ignore server side worlds.
     if (!event.getWorld().isClientSide()) {
       return;
     }
+
     reset();
   }
 
@@ -87,6 +89,7 @@ public class AdvancementsEventManager {
   }
 
   public static void reset() {
+    log.debug("Resetting number of advancements ...");
     numberOfAdvancements = 0;
   }
 
