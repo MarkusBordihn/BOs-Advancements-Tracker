@@ -57,7 +57,8 @@ public class AdvancementsManager {
   protected AdvancementsManager() {}
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(LevelEvent.Load event) {
+  public static void handleLevelEventLoad(LevelEvent.Load event) {
+    // Ignore server side worlds.
     if (!event.getLevel().isClientSide()) {
       return;
     }

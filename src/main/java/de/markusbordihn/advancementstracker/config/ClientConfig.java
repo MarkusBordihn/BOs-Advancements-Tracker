@@ -102,7 +102,7 @@ public class ClientConfig {
           "Defines the max. height of the widget. Default is 0 which mean use the max. available height.")
           .defineInRange("widgetHeight", 0, 0, 600);
       widgetWidth = builder.comment("Defines the max.width of the widget.")
-          .defineInRange("widgetWidth", 120, 120, 600);
+          .defineInRange("widgetWidth", 135, 120, 600);
       widgetTop = builder.comment("Defines the top position relative to the widget position.")
           .defineInRange("widgetTop", 0, -400, 400);
       widgetLeft = builder.comment("Defines the left position relative to the widget position.")

@@ -67,7 +67,7 @@ import de.markusbordihn.advancementstracker.config.ClientConfig;
 import de.markusbordihn.advancementstracker.utils.gui.PositionManager;
 import de.markusbordihn.advancementstracker.utils.gui.PositionManager.BasePosition;
 
-@EventBusSubscriber(value = Dist.CLIENT)
+@EventBusSubscriber(Dist.CLIENT)
 public class AdvancementsTrackerWidget extends GuiComponent {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
@@ -81,22 +81,26 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private static final int BACKGROUND_COLOR = 0x08000000;
 
   // Pre-defined texts
+  private static final String HOT_KEY_ADVANCEMENT_TRACKER =
+      Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker";
+  private static final String HOT_KEY_ADVANCEMENT_OVERVIEW =
+      Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview";
   private static MutableComponent noAdvancementsText =
       Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
           .append(ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
           .append(Component
-              .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+              .translatable(HOT_KEY_ADVANCEMENT_TRACKER,
                   ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
               .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
   private static MutableComponent noTrackedAdvancementsText =
       Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
           .append(Component
-              .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
+              .translatable(HOT_KEY_ADVANCEMENT_OVERVIEW,
                   ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
               .withStyle(ChatFormatting.YELLOW))
           .append(Component
-              .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+              .translatable(HOT_KEY_ADVANCEMENT_TRACKER,
                   ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
               .withStyle(ChatFormatting.YELLOW))
           .withStyle(ChatFormatting.WHITE);
@@ -125,7 +129,12 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   }
 
   @SubscribeEvent
-  public static void handleWorldEventLoad(LevelEvent.Load event) {
+  public static void handleLevelEventLoad(LevelEvent.Load event) {
+    // Ignore server side worlds.
+    if (!event.getLevel().isClientSide()) {
+      return;
+    }
+
     updatePredefinedText();
     hudVisible = CLIENT.widgetEnabled.get() && CLIENT.widgetVisible.get();
     if (hudVisible) {
@@ -203,7 +212,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     poseStack.pushPose();
     fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
         BACKGROUND_COLOR);
-    font.draw(poseStack, "Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
+    font.draw(poseStack, "☑ Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
     poseStack.popPose();
   }
 
@@ -385,18 +394,18 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     noAdvancementsText =
         Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
             .append(Component
-                .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+                .translatable(HOT_KEY_ADVANCEMENT_TRACKER,
                     ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
                 .withStyle(ChatFormatting.YELLOW))
             .withStyle(ChatFormatting.WHITE);
     noTrackedAdvancementsText =
         Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noTrackedAdvancements")
             .append(Component
-                .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview",
+                .translatable(HOT_KEY_ADVANCEMENT_OVERVIEW,
                     ModKeyMapping.KEY_SHOW_OVERVIEW.getTranslatedKeyMessage())
                 .withStyle(ChatFormatting.YELLOW))
             .append(Component
-                .translatable(Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker",
+                .translatable(HOT_KEY_ADVANCEMENT_TRACKER,
                     ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
                 .withStyle(ChatFormatting.YELLOW))
             .withStyle(ChatFormatting.WHITE);
