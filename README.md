@@ -1,4 +1,4 @@
-# Advancements Tracker and Overview
+# Advancements Tracker and Overview (1.19.2)
 
 [![Advancements Tracker and Overview Downloads](http://cf.way2muchnoise.eu/full_453074_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
 [![Advancements Tracker and Overview Versions](http://cf.way2muchnoise.eu/versions/Minecraft_453074_all.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
@@ -88,6 +88,23 @@ This mod works great together with Better Advancements mod, but let me know if y
 ## ⭐Recommended additional Mods
 
 - [Better Advancements][better_advancements] to improve the UI and UX for the advancements system in minecraft
+
+## Version Status Overview 🛠️
+
+| Version        | Status                |
+| -------------- | --------------------- |
+| Fabric Version | ❌ Not planned        |
+| Forge 1.16.5   | ⚠️ Maintenance only   |
+| Forge 1.17.1   | ❌ Not planned        |
+| Forge 1.18.1   | ❌ Not planned        |
+| Forge 1.18.2   | ⚠️ Maintenance only   |
+| Forge 1.19     | ⚠️ Deprecated         |
+| Forge 1.19.1   | ⚠️ Deprecated         |
+| Forge 1.19.2   | ✔️ Active development |
+
+## License
+
+The MIT [LICENSE.md](LICENSE.md) applies only to the code in this repository. Images, models and other assets are explicitly excluded.
 
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
 [platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
