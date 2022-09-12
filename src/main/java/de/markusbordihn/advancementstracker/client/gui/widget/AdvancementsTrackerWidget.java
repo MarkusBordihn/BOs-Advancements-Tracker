@@ -54,6 +54,7 @@ import net.minecraft.world.level.Level;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -68,7 +69,7 @@ import de.markusbordihn.advancementstracker.utils.gui.PositionManager;
 import de.markusbordihn.advancementstracker.utils.gui.PositionManager.BasePosition;
 
 @EventBusSubscriber(Dist.CLIENT)
-public class AdvancementsTrackerWidget extends GuiComponent {
+public class AdvancementsTrackerWidget {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
@@ -78,13 +79,15 @@ public class AdvancementsTrackerWidget extends GuiComponent {
   private static final int TEXT_COLOR_WHITE = ChatFormatting.WHITE.getColor();
   private static final int TEXT_COLOR_YELLOW = ChatFormatting.YELLOW.getColor();
   private static final int TEXT_COLOR_GRAY = ChatFormatting.GRAY.getColor();
-  private static final int BACKGROUND_COLOR = 0x08000000;
+  private static final int BACKGROUND_COLOR = 0x70000000;
 
   // Pre-defined texts
   private static final String HOT_KEY_ADVANCEMENT_TRACKER =
       Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementTracker";
   private static final String HOT_KEY_ADVANCEMENT_OVERVIEW =
       Constants.MOD_PREFIX + "advancementsWidget.hotkeyAdvancementOverview";
+  private static final MutableComponent ADVANCEMENT_TITLE_TEXT =
+      Component.literal("☑ Advancements Tracker");
   private static MutableComponent noAdvancementsText =
       Component.translatable(Constants.MOD_PREFIX + "advancementsWidget.noAdvancements")
           .append(ModKeyMapping.KEY_SHOW_WIDGET.getTranslatedKeyMessage())
@@ -169,6 +172,11 @@ public class AdvancementsTrackerWidget extends GuiComponent {
       return;
     }
 
+    // Makes sure only to render widget together with scoreboard gui overlay.
+    if (event.getOverlay() != VanillaGuiOverlay.SCOREBOARD.type()) {
+      return;
+    }
+
     // Use Position Manager for Updates and update x and y reference.
     positionManager.updateWindow();
     x = positionManager.getPositionX();
@@ -176,14 +184,14 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Get pose stack and render buffer for additional effects.
     PoseStack poseStack = event.getPoseStack();
-    MultiBufferSource.BufferSource multiBufferSource =
-        Minecraft.getInstance().renderBuffers().bufferSource();
 
     // Render background and title
     renderTitle(poseStack);
 
     // Render tracked advancement or additional hints, if needed.
     if (TrackedAdvancementsManager.hasTrackedAdvancements()) {
+      MultiBufferSource.BufferSource multiBufferSource =
+          Minecraft.getInstance().renderBuffers().bufferSource();
       renderAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
     } else if (AdvancementsManager.hasAdvancements()) {
       renderNoTrackedAdvancements(poseStack, x, y + this.font.lineHeight + 4);
@@ -210,9 +218,9 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
   private void renderTitle(PoseStack poseStack) {
     poseStack.pushPose();
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
-        BACKGROUND_COLOR);
-    font.draw(poseStack, "☑ Advancements Tracker", x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
+    GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(),
+        y + this.font.lineHeight + 2, BACKGROUND_COLOR);
+    font.draw(poseStack, ADVANCEMENT_TITLE_TEXT, x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
     poseStack.popPose();
   }
 
@@ -220,7 +228,8 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     int textContentHeight = (this.font.lineHeight + 2) * 11;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
-    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
+    GuiComponent.fill(poseStack, x, y, x + textContentWidth, y + textContentHeight,
+        BACKGROUND_COLOR);
     font.drawWordWrap(noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 5);
     poseStack.popPose();
@@ -230,7 +239,8 @@ public class AdvancementsTrackerWidget extends GuiComponent {
     int textContentHeight = (this.font.lineHeight + 2) * 9;
     int textContentWidth = positionManager.getWidth();
     poseStack.pushPose();
-    fill(poseStack, x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
+    GuiComponent.fill(poseStack, x, y, x + textContentWidth, y + textContentHeight,
+        BACKGROUND_COLOR);
     font.drawWordWrap(noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 5);
     poseStack.popPose();
@@ -265,7 +275,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Background
     poseStack.pushPose();
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight,
+    GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight,
         BACKGROUND_COLOR);
     poseStack.popPose();
 
@@ -313,7 +323,7 @@ public class AdvancementsTrackerWidget extends GuiComponent {
 
     // Background
     poseStack.pushPose();
-    fill(poseStack, x, y, positionManager.getPositionXWidth(), y + expectedContentSize,
+    GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(), y + expectedContentSize,
         BACKGROUND_COLOR);
     poseStack.popPose();
 
