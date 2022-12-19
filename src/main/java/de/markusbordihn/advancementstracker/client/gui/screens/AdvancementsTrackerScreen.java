@@ -197,7 +197,7 @@ public class AdvancementsTrackerScreen extends Screen {
       return;
     }
     this.selectedRootAdvancement = advancementEntry;
-    log.debug("Selected root entry ... {}", this.selectedRootAdvancement);
+    log.debug("Selected root entry {}", this.selectedRootAdvancement);
     this.reloadChildAdvancements();
     this.numberOfCompletedAdvancements =
         AdvancementsManager.getNumberOfCompletedAdvancements(this.selectedRootAdvancement);
@@ -257,7 +257,7 @@ public class AdvancementsTrackerScreen extends Screen {
       return;
     }
     this.selectedChildAdvancement = advancementEntry;
-    log.debug("Selected child entry ... {}", this.selectedChildAdvancement);
+    log.debug("Selected child entry {}", this.selectedChildAdvancement);
   }
 
   public AdvancementEntry getSelectedChildAdvancement() {

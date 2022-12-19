@@ -36,6 +36,7 @@ import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
@@ -126,14 +127,16 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       this.icon = this.displayInfo.getIcon();
       this.title = this.displayInfo.getTitle().getString();
       this.titleWidth = this.font.width(this.title);
-      if (this.displayInfo.getTitle().getStyle().getColor() != null) {
-        this.titleColor = this.displayInfo.getTitle().getStyle().getColor().getValue();
+      TextColor titleTextColor = this.displayInfo.getTitle().getStyle().getColor();
+      if (titleTextColor != null) {
+        this.titleColor = titleTextColor.getValue();
       }
 
       // Description
       this.description = this.displayInfo.getDescription().getString();
-      if (this.displayInfo.getDescription().getStyle().getColor() != null) {
-        this.descriptionColor = this.displayInfo.getDescription().getStyle().getColor().getValue();
+      TextColor descriptionTextColor = this.displayInfo.getDescription().getStyle().getColor();
+      if (descriptionTextColor != null) {
+        this.descriptionColor = descriptionTextColor.getValue();
       }
 
       this.frameType = this.displayInfo.getFrame();
@@ -261,12 +264,14 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
       if (rewardsData != null) {
         // Getting recipes entries
         JsonArray recipesArray = GsonHelper.getAsJsonArray(rewardsData, "recipes", new JsonArray());
-        this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
-        for (int k = 0; k < this.rewardsRecipes.length; ++k) {
-          this.rewardsRecipes[k] = new ResourceLocation(
-              GsonHelper.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
-          this.hasRecipesReward = true;
-          this.hasRewardsData = true;
+        if (recipesArray != null) {
+          this.rewardsRecipes = new ResourceLocation[recipesArray.size()];
+          for (int k = 0; k < this.rewardsRecipes.length; ++k) {
+            this.rewardsRecipes[k] = new ResourceLocation(
+                GsonHelper.convertToString(recipesArray.get(k), "recipes[" + k + "]"));
+            this.hasRecipesReward = true;
+            this.hasRewardsData = true;
+          }
         }
       }
     }
