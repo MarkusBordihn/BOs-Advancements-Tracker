@@ -36,17 +36,28 @@
     "Tessellator",
     "untrack"
   ],
-  "cSpell.ignorePaths" : [
+  "cSpell.ignorePaths": [
     "*.yml",
     ".gradle",
     ".vscode",
     "build",
     "run",
-    "src/main/resources/assets/advancements_tracker/",
+    "src/main/resources/assets/advancements_tracker/"
   ],
   "java.configuration.updateBuildConfiguration": "automatic",
   "java.format.settings.url": "./java-google-style.xml",
   "java.format.settings.profile": "GoogleStyle",
   "java.dependency.showMembers": true,
-  "java.dependency.packagePresentation": "flat"
+  "java.dependency.packagePresentation": "flat",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.compile.nullAnalysis.nullable": [
+    "org.springframework.lang.Nullable",
+    "javax.annotation.Nullable",
+    "org.eclipse.jdt.annotation.Nullable"
+  ],
+  "java.compile.nullAnalysis.nonnull": [
+    "org.springframework.lang.NonNull",
+    "javax.annotation.Nonnull",
+    "org.eclipse.jdt.annotation.NonNull"
+  ]
 }

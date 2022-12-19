@@ -76,9 +76,6 @@ public class AdvancementsTrackerWidget {
   private static final ClientConfig.Config CLIENT = ClientConfig.CLIENT;
 
   // Pre-defined colors and placeholders
-  private static final int TEXT_COLOR_WHITE = ChatFormatting.WHITE.getColor();
-  private static final int TEXT_COLOR_YELLOW = ChatFormatting.YELLOW.getColor();
-  private static final int TEXT_COLOR_GRAY = ChatFormatting.GRAY.getColor();
   private static final int BACKGROUND_COLOR = 0x70000000;
 
   // Pre-defined texts
@@ -166,9 +163,13 @@ public class AdvancementsTrackerWidget {
   @SubscribeEvent()
   public void renderOverlay(RenderGuiOverlayEvent.Pre event) {
 
+    // Check if widget is enabled or debug overlay is open and ignore event.
+    if (!hudVisible || this.minecraft.options.renderDebug) {
+      return;
+    }
+
     // Disable overlay if visibility is disabled or if there is another screen besides chat.
-    if (!hudVisible || (this.minecraft != null && this.minecraft.screen != null
-        && !(this.minecraft.screen instanceof ChatScreen))) {
+    if (this.minecraft.screen != null && !(this.minecraft.screen instanceof ChatScreen)) {
       return;
     }
 
@@ -220,7 +221,7 @@ public class AdvancementsTrackerWidget {
     poseStack.pushPose();
     GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(),
         y + this.font.lineHeight + 2, BACKGROUND_COLOR);
-    font.draw(poseStack, ADVANCEMENT_TITLE_TEXT, x + 2.0f, y + 2.0f, TEXT_COLOR_WHITE);
+    font.draw(poseStack, ADVANCEMENT_TITLE_TEXT, x + 2.0f, y + 2.0f, Constants.FONT_COLOR_GRAY);
     poseStack.popPose();
   }
 
@@ -285,8 +286,10 @@ public class AdvancementsTrackerWidget {
         numberOfAdvancementsRendered, numberOfAdvancements);
     poseStack.pushPose();
     poseStack.scale(textScale, textScale, textScale);
-    font.drawShadow(poseStack, text, (x + 16) / textScale, (y + 2) / textScale, TEXT_COLOR_GRAY);
-    font.draw(poseStack, text, (x + 16) / textScale, (y + 2) / textScale, TEXT_COLOR_GRAY);
+    font.drawShadow(poseStack, text, (x + 16) / textScale, (y + 2) / textScale,
+        Constants.FONT_COLOR_GRAY);
+    font.draw(poseStack, text, (x + 16) / textScale, (y + 2) / textScale,
+        Constants.FONT_COLOR_GRAY);
     poseStack.popPose();
   }
 
@@ -331,15 +334,15 @@ public class AdvancementsTrackerWidget {
     poseStack.pushPose();
     poseStack.scale(titleScale, titleScale, titleScale);
     font.drawShadow(poseStack, titleText, (referenceLeftPosition + titlePaddingLeft) / titleScale,
-        referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
+        referenceTopPosition / titleScale, Constants.FONT_COLOR_YELLOW);
     font.draw(poseStack, titleText, (referenceLeftPosition + titlePaddingLeft) / titleScale,
-        referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
+        referenceTopPosition / titleScale, Constants.FONT_COLOR_YELLOW);
 
     // Show ellipsis if title is to long.
     if (titleWidth != maxFontWidth - titlePaddingLeft - titlePaddingRight) {
       font.draw(poseStack, Constants.ELLIPSIS,
           ((referenceLeftPosition + titlePaddingLeft) / titleScale) + titleWidthScaled,
-          referenceTopPosition / titleScale, TEXT_COLOR_YELLOW);
+          referenceTopPosition / titleScale, Constants.FONT_COLOR_YELLOW);
     }
     poseStack.popPose();
 
@@ -352,10 +355,10 @@ public class AdvancementsTrackerWidget {
       poseStack.scale(progressScale, progressScale, progressScale);
       font.drawShadow(poseStack, advancementEntry.getProgress().getProgressString(),
           progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
-          TEXT_COLOR_YELLOW);
+          Constants.FONT_COLOR_YELLOW);
       font.draw(poseStack, advancementEntry.getProgress().getProgressString(),
           progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
-          TEXT_COLOR_YELLOW);
+          Constants.FONT_COLOR_YELLOW);
       poseStack.popPose();
     }
     referenceTopPosition += font.lineHeight * titleScale + 3;

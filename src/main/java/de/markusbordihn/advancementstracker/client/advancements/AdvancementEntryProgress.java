@@ -191,8 +191,9 @@ public class AdvancementEntryProgress {
   private Date findLastProgressDate() {
     Date date = null;
     for (CriterionProgress criterionProgress : this.criteriaMap.values()) {
+      Date obtainedDate = criterionProgress.getObtained();
       if (criterionProgress.isDone()
-          && (date == null || criterionProgress.getObtained().after(date))) {
+          && (date == null || (obtainedDate != null && obtainedDate.after(date)))) {
         date = criterionProgress.getObtained();
       }
     }

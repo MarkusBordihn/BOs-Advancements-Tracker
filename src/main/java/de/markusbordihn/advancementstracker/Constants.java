@@ -42,4 +42,14 @@ public final class Constants {
 
   // Pre-defined Texts
   public static final Component ELLIPSIS = Component.literal("\u2026");
+
+  // Colors
+  public static final int FONT_COLOR_BLACK = 0;
+  public static final int FONT_COLOR_DARK_GREEN = 43520;
+  public static final int FONT_COLOR_DEFAULT = 4210752;
+  public static final int FONT_COLOR_GRAY = 11184810;
+  public static final int FONT_COLOR_GREEN = 5635925;
+  public static final int FONT_COLOR_RED = 16733525;
+  public static final int FONT_COLOR_WHITE = 16777215;
+  public static final int FONT_COLOR_YELLOW = 16777045;
 }
