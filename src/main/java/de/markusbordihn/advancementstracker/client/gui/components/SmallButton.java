@@ -41,22 +41,11 @@ public class SmallButton extends Button {
   private final int scaledHeight;
 
   public SmallButton(int x, int y, int width, int height, Component component, OnPress onPress) {
-    super(x, y, width, height, component, onPress);
+    super(x, y, width, height, component, onPress, Button.DEFAULT_NARRATION);
     this.minecraft = Minecraft.getInstance();
     this.font = this.minecraft.font;
-    this.scaledX = Math.round(this.x / SCALING);
-    this.scaledY = Math.round(this.y / SCALING);
-    this.scaledWidth = Math.round(this.width / SCALING);
-    this.scaledHeight = Math.round(this.height / SCALING);
-  }
-
-  public SmallButton(int x, int y, int width, int height, Component component,
-      Button.OnPress onPress, Button.OnTooltip onTooltip) {
-    super(x, y, width, height, component, onPress, onTooltip);
-    this.minecraft = Minecraft.getInstance();
-    this.font = this.minecraft.font;
-    this.scaledX = Math.round(this.x / SCALING);
-    this.scaledY = Math.round(this.y / SCALING);
+    this.scaledX = Math.round(this.getX() / SCALING);
+    this.scaledY = Math.round(this.getY() / SCALING);
     this.scaledWidth = Math.round(this.width / SCALING);
     this.scaledHeight = Math.round(this.height / SCALING);
   }
@@ -72,8 +61,8 @@ public class SmallButton extends Button {
 
     // Scaling down the button images
     int buttonPosTop = (46 + this.getYImage(this.isHoveredOrFocused()) * 20) / 2;
-    blit(poseStack, this.x, this.y, 0, buttonPosTop, this.width / 2, this.height, 256, 128);
-    blit(poseStack, this.x + this.width / 2, this.y, 200 - this.width / 2.0f, buttonPosTop,
+    blit(poseStack, this.getX(), this.getY(), 0, buttonPosTop, this.width / 2, this.height, 256, 128);
+    blit(poseStack, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2.0f, buttonPosTop,
         this.width / 2, this.height, 256, 128);
     this.renderBg(poseStack, minecraft, mouseX, mouseY);
 
@@ -84,11 +73,6 @@ public class SmallButton extends Button {
         this.scaledY + (this.scaledHeight - 8) / 2,
         getFGColor() | Mth.ceil(this.alpha * 255.0F) << 24);
     poseStack.popPose();
-
-    if (this.isHoveredOrFocused()) {
-      this.renderToolTip(poseStack, mouseX, mouseY);
-    }
-
   }
 
 }

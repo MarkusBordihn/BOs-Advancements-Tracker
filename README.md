@@ -1,4 +1,4 @@
-# Advancements Tracker and Overview (1.19.2)
+# Advancements Tracker and Overview (1.19.3)
 
 [![Advancements Tracker and Overview Downloads](http://cf.way2muchnoise.eu/full_453074_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
 [![Advancements Tracker and Overview Versions](http://cf.way2muchnoise.eu/versions/Minecraft_453074_all.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
