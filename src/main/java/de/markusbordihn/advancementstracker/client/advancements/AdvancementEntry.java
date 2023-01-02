@@ -148,10 +148,11 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
     }
 
     // Use background from root advancement if we don't have any itself.
-    if (this.background == null && this.rootAdvancement != null
-        && this.rootAdvancement.getDisplay() != null
-        && this.rootAdvancement.getDisplay().getBackground() != null) {
-      this.background = this.rootAdvancement.getDisplay().getBackground();
+    if (this.background == null && this.rootAdvancement != null) {
+      DisplayInfo rootAdvancementDisplayInfo = this.rootAdvancement.getDisplay();
+      if (rootAdvancementDisplayInfo != null) {
+        this.background = rootAdvancementDisplayInfo.getBackground();
+      }
     }
 
     // Stripped version for ui renderer.

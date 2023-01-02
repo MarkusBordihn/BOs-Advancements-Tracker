@@ -93,10 +93,10 @@ public class AdvancementsManager {
     Advancement rootAdvancement = advancement.getParent();
 
     // Try to add root advancement, if this is a child advancement.
+    while (rootAdvancement != null && rootAdvancement.getParent() != null) {
+      rootAdvancement = rootAdvancement.getParent();
+    }
     if (rootAdvancement != null) {
-      while (rootAdvancement.getParent() != null) {
-        rootAdvancement = rootAdvancement.getParent();
-      }
       addAdvancementRoot(rootAdvancement);
     }
 

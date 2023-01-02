@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
-
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.level.LevelEvent;
@@ -63,7 +63,7 @@ public class AdvancementsEventManager {
         }
         AdvancementsManager.addAdvancementRoot(advancement);
       } else {
-        while (rootAdvancement.getParent() != null) {
+        while (rootAdvancement != null && rootAdvancement.getParent() != null) {
           rootAdvancement = rootAdvancement.getParent();
         }
         AdvancementsManager.addAdvancementRoot(rootAdvancement);
@@ -72,16 +72,19 @@ public class AdvancementsEventManager {
 
       // Make sure that we are covering changes which are not catch by the advancements events.
       Minecraft minecraft = Minecraft.getInstance();
-      if (minecraft != null && minecraft.player != null && minecraft.player.connection != null
-          && minecraft.player.connection.getAdvancements() != null && !minecraft.player.connection
-              .getAdvancements().getAdvancements().getAllAdvancements().isEmpty()) {
-        int possibleNumberOfAdvancements = minecraft.player.connection.getAdvancements()
-            .getAdvancements().getAllAdvancements().size();
-        if (possibleNumberOfAdvancements > numberOfAdvancements) {
-          log.debug("Force sync of advancements because it seems we are missing some {} vs. {}",
-              possibleNumberOfAdvancements, numberOfAdvancements);
-          ClientAdvancementManager.reset();
-          numberOfAdvancements = possibleNumberOfAdvancements;
+      if (minecraft != null) {
+        LocalPlayer localPlayer = minecraft.player;
+        if (localPlayer != null && localPlayer.connection != null
+            && localPlayer.connection.getAdvancements() != null && !localPlayer.connection
+                .getAdvancements().getAdvancements().getAllAdvancements().isEmpty()) {
+          int possibleNumberOfAdvancements = localPlayer.connection.getAdvancements()
+              .getAdvancements().getAllAdvancements().size();
+          if (possibleNumberOfAdvancements > numberOfAdvancements) {
+            log.debug("Force sync of advancements because it seems we are missing some {} vs. {}",
+                possibleNumberOfAdvancements, numberOfAdvancements);
+            ClientAdvancementManager.reset();
+            numberOfAdvancements = possibleNumberOfAdvancements;
+          }
         }
       }
     }
