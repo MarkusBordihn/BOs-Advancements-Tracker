@@ -8,7 +8,7 @@
   "advancements_tracker.advancementsWidget.hotkeyAdvancementOverview": "按 %1$s 打开概览。\n\n",
   "advancements_tracker.advancementsWidget.hotkeyAdvancementTracker": "按 %1$s 显示/隐藏跟踪器。\n\n",
   "advancements_tracker.advancementsWidget.noAdvancements": "未找到进度，\n重新开始？\n\n",
-  "advancements_tracker.advancementsWidget.noTrackedAdvancements": "无追踪中的进度，\n请在进度概览中添加。",
+  "advancements_tracker.advancementsWidget.noTrackedAdvancements": "无追踪中的进度，\n请在进度概览中添加。\n",
   "advancements_tracker.advancementsWidget.notAllVisible": "\u2026 %1$s of %2$s 可见\u2026",
   "advancements_tracker.advancementsWidget.title": "进度追踪器",
   "advancements_tracker.configScreen.title": "%1$s 设置",
