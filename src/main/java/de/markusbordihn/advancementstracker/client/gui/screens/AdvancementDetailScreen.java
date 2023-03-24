@@ -170,7 +170,7 @@ public class AdvancementDetailScreen extends Screen {
     font.draw(poseStack, this.title, left + 22f, top + 6f, advancementEntry.getTitleColor());
 
     // Icon
-    if (this.advancementEntry.getIcon() != null) {
+    if (this.advancementEntry.getIcon() != null && minecraft != null) {
       minecraft.getItemRenderer().renderGuiItem(this.advancementEntry.getIcon(), left + 4, top + 1);
     }
 

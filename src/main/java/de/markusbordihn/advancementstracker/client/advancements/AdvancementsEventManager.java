@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.player.AdvancementEvent;
 import net.minecraftforge.event.level.LevelEvent;

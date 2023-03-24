@@ -16,6 +16,7 @@
     "Configurator",
     "Critera",
     "Framebuffer",
+    "gameplay",
     "GLFW",
     "gradlew",
     "Gson",

@@ -3,9 +3,11 @@
 [![Advancements Tracker and Overview Downloads](http://cf.way2muchnoise.eu/full_453074_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
 [![Advancements Tracker and Overview Versions](http://cf.way2muchnoise.eu/versions/Minecraft_453074_all.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
 
-Advancements Tracker is a Minecraft Forge Client Mod which give you an overlay which shows you the current process of your selected advancements to easier follow them.
-Additional you will get a better overview of Advancements with sorting and filter options.
-This mod will make achieving the advancements more easier, interesting and meaningful.
+Advancements Tracker is a powerful Minecraft Forge Client Mod that enhances your gaming experience by providing you with an intuitive overlay. This overlay enables you to easily track your progress towards completing your selected advancements, making the process smoother and more enjoyable.
+
+With Advancements Tracker, you can also access advanced sorting and filtering options, allowing you to gain a better overview of your advancements. This feature helps you identify which advancements to prioritize and which ones require more effort, making the overall gameplay experience more rewarding and meaningful.
+
+Say goodbye to the frustration of trying to keep track of your advancements on your own. With Advancements Tracker, you'll have all the information you need at your fingertips, making achieving your Minecraft goals a breeze.
 
 ## 🚀Features
 
@@ -100,6 +102,7 @@ This mod works great together with Better Advancements mod, but let me know if y
 | Forge 1.18.2   | ⚠️ Maintenance only   |
 | Forge 1.19     | ⚠️ Deprecated         |
 | Forge 1.19.1   | ⚠️ Deprecated         |
+| Forge 1.19.2   | ⚠️ Maintenance only   |
 | Forge 1.19.2   | ✔️ Active development |
 
 ## License
@@ -108,7 +111,6 @@ The MIT [LICENSE.md](LICENSE.md) applies only to the code in this repository. Im
 
 [better_advancements]: https://www.curseforge.com/minecraft/mc-mods/better-advancements
 [platys_advancement_and_recipe_pack]: https://www.curseforge.com/minecraft/customization/platys-advancement-and-recipe-pack
-[logo]: logo.gif
 [overview_example]: example/overview_example.png
 [advancement_criteria]: example/advancement_criteria.png
 [widget_example]: example/widget_example.png

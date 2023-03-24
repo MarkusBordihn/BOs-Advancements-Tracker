@@ -26,7 +26,7 @@ license="MIT"
   logoFile="logo.png"
   credits=""
   authors="Markus Bordihn"
-  description='''The Advancements Tracker mod gives you an overview over your advancements like a quest overview.'''
+  description='''Advancements Tracker is a Minecraft Forge Client Mod that simplifies the process of tracking and achieving advancements through an intuitive overlay with sorting and filtering options.'''
 
 [[dependencies.advancements_tracker]]
   modId="forge"
