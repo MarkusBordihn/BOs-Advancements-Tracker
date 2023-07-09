@@ -74,7 +74,7 @@ public class AdvancementEntry implements Comparator<AdvancementEntry> {
   private final Component descriptionComponent;
   private final Component titleComponent;
   private int titleWidth;
-  private int descriptionColor = 0xFFCCCCCC;
+  private int descriptionColor = 0xFFDDDDDD;
   private int titleColor = 0xFFFFFFFF;
 
   // Rewards

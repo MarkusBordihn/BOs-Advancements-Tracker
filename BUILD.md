@@ -16,11 +16,11 @@ For testing you basically only need the following gradlew commands.
 
 ## Test with Client
 
-`gradlew.bat runClient`
+`.\gradlew runClient`
 
 ## Test with Server
 
-`gradlew.bat runServer`
+`.\gradlew runServer`
 
 Note: Make sure to read and accept the eula.txt inside the run directory, otherwise the server will not start.
 

@@ -51,7 +51,7 @@ public class SmallButton extends Button {
   }
 
   @Override
-  public void renderButton(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+  public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
     RenderSystem.setShader(GameRenderer::getPositionTexShader);
     RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
@@ -60,11 +60,11 @@ public class SmallButton extends Button {
     RenderSystem.enableDepthTest();
 
     // Scaling down the button images
-    int buttonPosTop = (46 + this.getYImage(this.isHoveredOrFocused()) * 20) / 2;
-    blit(poseStack, this.getX(), this.getY(), 0, buttonPosTop, this.width / 2, this.height, 256, 128);
-    blit(poseStack, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2.0f, buttonPosTop,
-        this.width / 2, this.height, 256, 128);
-    this.renderBg(poseStack, minecraft, mouseX, mouseY);
+    int buttonPosTop = getTextureY() / 2;
+    blit(poseStack, this.getX(), this.getY(), 0, buttonPosTop, this.width / 2, this.height, 256,
+        128);
+    blit(poseStack, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2.0f,
+        buttonPosTop, this.width / 2, this.height, 256, 128);
 
     // Scaling down button text
     poseStack.pushPose();
@@ -73,6 +73,17 @@ public class SmallButton extends Button {
         this.scaledY + (this.scaledHeight - 8) / 2,
         getFGColor() | Mth.ceil(this.alpha * 255.0F) << 24);
     poseStack.popPose();
+  }
+
+  private int getTextureY() {
+    int i = 1;
+    if (!this.active) {
+      i = 0;
+    } else if (this.isHoveredOrFocused()) {
+      i = 2;
+    }
+
+    return 46 + i * 20;
   }
 
 }

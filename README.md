@@ -1,4 +1,4 @@
-# Advancements Tracker and Overview (1.19.3)
+# Advancements Tracker and Overview (1.19.4)
 
 [![Advancements Tracker and Overview Downloads](http://cf.way2muchnoise.eu/full_453074_downloads.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
 [![Advancements Tracker and Overview Versions](http://cf.way2muchnoise.eu/versions/Minecraft_453074_all.svg)](https://www.curseforge.com/minecraft/mc-mods/advancements-tracker)
@@ -103,7 +103,9 @@ This mod works great together with Better Advancements mod, but let me know if y
 | Forge 1.19     | ⚠️ Deprecated         |
 | Forge 1.19.1   | ⚠️ Deprecated         |
 | Forge 1.19.2   | ⚠️ Maintenance only   |
-| Forge 1.19.2   | ✔️ Active development |
+| Forge 1.19.2   | ⚠️ Maintenance only   |
+| Forge 1.19.3   | ⚠️ Maintenance only   |
+| Forge 1.19.4   | ✔️ Active development |
 
 ## License
 

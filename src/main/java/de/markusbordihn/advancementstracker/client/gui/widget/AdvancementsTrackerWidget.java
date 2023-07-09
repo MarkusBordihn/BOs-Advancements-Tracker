@@ -37,7 +37,6 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -49,6 +48,7 @@ import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -231,7 +231,7 @@ public class AdvancementsTrackerWidget {
     poseStack.pushPose();
     GuiComponent.fill(poseStack, x, y, x + textContentWidth, y + textContentHeight,
         BACKGROUND_COLOR);
-    font.drawWordWrap(noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
+    font.drawWordWrap(poseStack, noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 5);
     poseStack.popPose();
   }
@@ -242,7 +242,7 @@ public class AdvancementsTrackerWidget {
     poseStack.pushPose();
     GuiComponent.fill(poseStack, x, y, x + textContentWidth, y + textContentHeight,
         BACKGROUND_COLOR);
-    font.drawWordWrap(noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
+    font.drawWordWrap(poseStack, noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 5);
     poseStack.popPose();
   }
@@ -448,17 +448,18 @@ public class AdvancementsTrackerWidget {
     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     PoseStack modelPoseStack = RenderSystem.getModelViewStack();
     modelPoseStack.pushPose();
-    modelPoseStack.translate(x, y, 100.0F + itemRenderer.blitOffset);
+    modelPoseStack.translate(x, y, 100.0F);
     modelPoseStack.translate(8.0D, 8.0D, 0.0D);
     modelPoseStack.scale(scale, -scale, scale);
     modelPoseStack.scale(16.0F, 16.0F, 16.0F);
+
     RenderSystem.applyModelViewMatrix();
     PoseStack modelPoseStack1 = new PoseStack();
     boolean flag = !model.usesBlockLight();
     if (flag) {
       Lighting.setupForFlatItems();
     }
-    itemRenderer.render(itemStack, ItemTransforms.TransformType.GUI, false, modelPoseStack1,
+    itemRenderer.render(itemStack, ItemDisplayContext.GUI, false, modelPoseStack1,
         multiBufferSource, 15728880, OverlayTexture.NO_OVERLAY, model);
     multiBufferSource.endBatch();
     RenderSystem.enableDepthTest();

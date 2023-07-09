@@ -441,8 +441,9 @@ public class AdvancementsTrackerScreen extends Screen {
   @Override
   public void renderBackground(PoseStack poseStack) {
     // Background
-    this.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
-    this.fillGradient(poseStack, 0, height - 12, this.width, this.height, -1072689136, -804253680);
+    GuiComponent.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
+    GuiComponent.fillGradient(poseStack, 0, height - 12, this.width, this.height, -1072689136,
+        -804253680);
   }
 
   @Override
@@ -480,7 +481,8 @@ public class AdvancementsTrackerScreen extends Screen {
   }
 
   @Override
-  public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+  public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX,
+      double deltaY) {
     if (this.showingAdvancementDetail()) {
       this.showAdvancementDetailScreen.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }

@@ -87,6 +87,14 @@ public class AdvancementCategoryPanel
     }
   }
 
+  private void refreshSelection() {
+    RootAdvancementEntry rootAdvancementEntry = this.getSelected();
+    if (rootAdvancementEntry != null) {
+      this.setSelected(rootAdvancementEntry);
+      this.ensureVisible(rootAdvancementEntry);
+    }
+  }
+
   public class RootAdvancementEntry extends ObjectSelectionList.Entry<RootAdvancementEntry> {
 
     private static final ResourceLocation miscTexture =
@@ -102,6 +110,7 @@ public class AdvancementCategoryPanel
     private FormattedCharSequence titleParts;
     private List<FormattedCharSequence> descriptionParts;
     private boolean isSelected = false;
+    private boolean isMouseOvered = false;
     private int maxFontWidth;
     private int titleWidth;
 
@@ -130,7 +139,7 @@ public class AdvancementCategoryPanel
       if (this.advancementEntry.getBackground() == null) {
         return;
       }
-      if (isSelected) {
+      if (this.isSelected || this.isMouseOvered) {
         RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
       } else {
         RenderSystem.setShaderColor(0.4f, 0.4f, 0.4f, 1);
@@ -142,12 +151,12 @@ public class AdvancementCategoryPanel
       poseStack.popPose();
     }
 
-    private void renderIcon(int top) {
+    private void renderIcon(PoseStack poseStack, int top) {
       if (this.advancementEntry.getIcon() == null) {
         return;
       }
-      minecraft.getItemRenderer().renderGuiItem(this.advancementEntry.getIcon(), getLeft() + 1,
-          top + 6);
+      minecraft.getItemRenderer().renderGuiItem(poseStack, this.advancementEntry.getIcon(),
+          getLeft() + 1, top + 6);
     }
 
     private void renderTrackedAdvancementsStatus(PoseStack poseStack, int top, int left,
@@ -195,14 +204,28 @@ public class AdvancementCategoryPanel
       // Selection state
       this.isSelected = isSelectedItem(entryIdx);
 
+      // Mouse over state
+      this.isMouseOvered = this.isMouseOver(mouseX, mouseY);
+
       // Positions
       float textPositionLeft = (float) left + iconWidth;
 
       // Background
       this.renderBackground(poseStack, top, entryWidth, entryHeight);
 
+      // Select and mouse over effects
+      if (this.isSelected) {
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1);
+      } else {
+        if (this.isMouseOvered) {
+          RenderSystem.setShaderColor(0.9f, 0.9f, 0.9f, 1);
+        } else {
+          RenderSystem.setShaderColor(0.7f, 0.7f, 0.7f, 1);
+        }
+      }
+
       // Icon
-      this.renderIcon(top);
+      this.renderIcon(poseStack, top);
 
       // Tracked Advancements
       this.renderTrackedAdvancementsStatus(poseStack, top, left, entryWidth);

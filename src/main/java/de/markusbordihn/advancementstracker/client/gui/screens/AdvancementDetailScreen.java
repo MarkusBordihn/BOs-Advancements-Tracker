@@ -27,7 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -156,13 +156,13 @@ public class AdvancementDetailScreen extends Screen {
     RenderSystem.setShaderTexture(0, windowBackground);
 
     // Frame will be constructed in two parts, top and bottom.
-    this.blit(poseStack, left, top, 0, 0, maxWidth, heightPerPart);
-    this.blit(poseStack, left, top + heightPerPart, 0, 150 - heightPerPart, maxWidth,
+    GuiComponent.blit(poseStack, left, top, 0, 0, maxWidth, heightPerPart);
+    GuiComponent.blit(poseStack, left, top + heightPerPart, 0, 150 - heightPerPart, maxWidth,
         heightPerPart + 10);
 
     // Background with gradient.
-    this.fillGradient(poseStack, left + 9, top + 18, left + maxWidth - 9, top + maxHeight - 20,
-        -1072689136, -804253680);
+    GuiComponent.fillGradient(poseStack, left + 9, top + 18, left + maxWidth - 9,
+        top + maxHeight - 20, -1072689136, -804253680);
     RenderSystem.disableBlend();
 
     // Title
@@ -171,7 +171,8 @@ public class AdvancementDetailScreen extends Screen {
 
     // Icon
     if (this.advancementEntry.getIcon() != null && minecraft != null) {
-      minecraft.getItemRenderer().renderGuiItem(this.advancementEntry.getIcon(), left + 4, top + 1);
+      minecraft.getItemRenderer().renderGuiItem(poseStack, this.advancementEntry.getIcon(),
+          left + 4, top + 1);
     }
 
     poseStack.popPose();

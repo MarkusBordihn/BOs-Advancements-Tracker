@@ -106,6 +106,7 @@ public class AdvancementOverviewPanel
 
     private FormattedCharSequence titleParts;
     private List<FormattedCharSequence> descriptionParts;
+    private boolean isMouseOvered = false;
 
     // Cached positions and sizes
     private int maxFontWidth;
@@ -144,7 +145,11 @@ public class AdvancementOverviewPanel
       if (this.advancementEntry.getBackground() == null) {
         return;
       }
-      RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 0.25f);
+      if (this.isMouseOvered) {
+        RenderSystem.setShaderColor(0.6f, 0.6f, 0.6f, 1);
+      } else {
+        RenderSystem.setShaderColor(0.5f, 0.5f, 0.5f, 1);
+      }
       RenderSystem.setShaderTexture(0, this.advancementEntry.getBackground());
       poseStack.pushPose();
       GuiComponent.blit(poseStack, getLeft() + 1, top - 1, 0, 0, entryWidth - 2, entryHeight + 1,
@@ -152,12 +157,12 @@ public class AdvancementOverviewPanel
       poseStack.popPose();
     }
 
-    private void renderIcon(int top) {
+    private void renderIcon(PoseStack poseStack, int top) {
       if (this.advancementEntry.getIcon() == null) {
         return;
       }
-      minecraft.getItemRenderer().renderGuiItem(this.advancementEntry.getIcon(), getLeft() + 3,
-          top + 2);
+      minecraft.getItemRenderer().renderGuiItem(poseStack, this.advancementEntry.getIcon(),
+          getLeft() + 3, top + 2);
     }
 
     private void renderRewards(PoseStack poseStack, int top, int left, int entryWidth) {
@@ -283,6 +288,9 @@ public class AdvancementOverviewPanel
     public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
         int entryHeight, int mouseX, int mouseY, boolean isFocused, float partialTick) {
 
+      // Mouse over state
+      this.isMouseOvered = this.isMouseOver(mouseX, mouseY);
+
       // Positions
       float textPositionLeft = (float) left + iconWidth;
 
@@ -293,8 +301,15 @@ public class AdvancementOverviewPanel
       // Background
       this.renderBackground(poseStack, top, entryWidth, entryHeight);
 
+      // Mouse over effects
+      if (this.isMouseOvered) {
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1);
+      } else {
+        RenderSystem.setShaderColor(0.9f, 0.9f, 0.9f, 1);
+      }
+
       // Icon
-      this.renderIcon(top);
+      this.renderIcon(poseStack, top);
 
       // Title (only one line)
       font.drawShadow(poseStack, this.titleParts, textPositionLeft + 3, top + (float) 1,
