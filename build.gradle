@@ -167,7 +167,7 @@ curseforge {
   apiKey = "${credentials.curseforge_api_token}"
   project {
     id = "${curseforge_project_id}"
-    changelog = 'See https://github.com/MarkusBordihn/BOs-Advancements-Tracker/commits/main'
+    changelog = file("./CHANGELOG.md")
     releaseType = 'release'
     addGameVersion("1.19")
     addGameVersion("Forge")
