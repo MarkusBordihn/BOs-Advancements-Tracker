@@ -269,9 +269,9 @@ public class AdvancementsTrackerScreen extends Screen {
           Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCategories", numberOfRootAdvancements);
       poseStack.pushPose();
       poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
-      font.drawShadow(poseStack, text, (this.listWidth - PADDING - 48.0f) / scaleFactor,
+      font.drawShadow(poseStack, text, (this.listWidth - PADDING - 52.0f) / scaleFactor,
           (this.height - 8) / scaleFactor, 0xFFFFFF);
-      font.draw(poseStack, text, (this.listWidth - PADDING - 48.0f) / scaleFactor,
+      font.draw(poseStack, text, (this.listWidth - PADDING - 52.0f) / scaleFactor,
           (this.height - 8) / scaleFactor, 0xFFFFFF);
       poseStack.popPose();
     }
@@ -285,9 +285,9 @@ public class AdvancementsTrackerScreen extends Screen {
 
       poseStack.pushPose();
       poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
-      font.drawShadow(poseStack, text, (width - 80.0f) / scaleFactor,
+      font.drawShadow(poseStack, text, (width - 92.0f) / scaleFactor,
           (this.height - 8) / scaleFactor, 0xFFFFFF);
-      font.draw(poseStack, text, (width - 80.0f) / scaleFactor, (this.height - 8) / scaleFactor,
+      font.draw(poseStack, text, (width - 92.0f) / scaleFactor, (this.height - 8) / scaleFactor,
           0xFFFFFF);
       poseStack.popPose();
     }
@@ -304,7 +304,7 @@ public class AdvancementsTrackerScreen extends Screen {
     float scaleFactorIcon = 0.6f;
     poseStack.pushPose();
     poseStack.scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
-    GuiComponent.blit(poseStack, Math.round((this.listWidth + 10.0f) / scaleFactorIcon),
+    GuiComponent.blit(poseStack, Math.round((this.listWidth) / scaleFactorIcon),
         Math.round((this.height - 10) / scaleFactorIcon), iconPosition, 6, 15, 15, 256, 256);
     poseStack.popPose();
 
@@ -313,9 +313,9 @@ public class AdvancementsTrackerScreen extends Screen {
 
     poseStack.pushPose();
     poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
-    font.drawShadow(poseStack, text, Math.round((this.listWidth + 22.0f) / scaleFactorText),
+    font.drawShadow(poseStack, text, Math.round((this.listWidth + 12.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
-    font.draw(poseStack, text, Math.round((this.listWidth + 22.0f) / scaleFactorText),
+    font.draw(poseStack, text, Math.round((this.listWidth + 12.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
     poseStack.popPose();
   }
@@ -335,7 +335,7 @@ public class AdvancementsTrackerScreen extends Screen {
     float scaleFactorIcon = 0.6f;
     poseStack.pushPose();
     poseStack.scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
-    GuiComponent.blit(poseStack, Math.round((this.listWidth + 65.0f) / scaleFactorIcon),
+    GuiComponent.blit(poseStack, Math.round((this.listWidth + 78.0f) / scaleFactorIcon),
         Math.round((this.height - 10) / scaleFactorIcon), iconPosition, 6, 15, 15, 256, 256);
     poseStack.popPose();
 
@@ -345,9 +345,9 @@ public class AdvancementsTrackerScreen extends Screen {
         Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showOnlyRewarded");
     poseStack.pushPose();
     poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
-    font.drawShadow(poseStack, text, Math.round((this.listWidth + 77.0f) / scaleFactorText),
+    font.drawShadow(poseStack, text, Math.round((this.listWidth + 90.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), fontColor);
-    font.draw(poseStack, text, Math.round((this.listWidth + 77.0f) / scaleFactorText),
+    font.draw(poseStack, text, Math.round((this.listWidth + 90.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), fontColor);
     poseStack.popPose();
   }

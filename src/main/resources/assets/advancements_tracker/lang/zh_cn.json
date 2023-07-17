@@ -1,7 +1,10 @@
 {
+  "advancements_tracker.advancementsScreen.criteria": "條件：",
+  "advancements_tracker.advancementsScreen.experience": "%1$s 經驗",
   "advancements_tracker.advancementsScreen.noAdvancements": "未找到进度，\n可能你先要找点原木做一个工作台。",
   "advancements_tracker.advancementsScreen.numCategories": "类别: %1$s",
   "advancements_tracker.advancementsScreen.numCompleted": "%1$s of %2$s 已完成",
+  "advancements_tracker.advancementsScreen.rewards": "獎勵：",
   "advancements_tracker.advancementsScreen.showCompleted": "已完成",
   "advancements_tracker.advancementsScreen.showOnlyRewarded": "只有奖励",
   "advancements_tracker.advancementsScreen.title": "进度追踪器概览",
