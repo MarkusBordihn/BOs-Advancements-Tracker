@@ -20,10 +20,10 @@
 package de.markusbordihn.advancementstracker.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
@@ -51,7 +51,7 @@ public class SmallButton extends Button {
   }
 
   @Override
-  public void renderWidget(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+  public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
     RenderSystem.setShader(GameRenderer::getPositionTexShader);
     RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
     RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
@@ -61,18 +61,18 @@ public class SmallButton extends Button {
 
     // Scaling down the button images
     int buttonPosTop = getTextureY() / 2;
-    blit(poseStack, this.getX(), this.getY(), 0, buttonPosTop, this.width / 2, this.height, 256,
-        128);
-    blit(poseStack, this.getX() + this.width / 2, this.getY(), 200 - this.width / 2.0f,
-        buttonPosTop, this.width / 2, this.height, 256, 128);
+    guiGraphics.blit(WIDGETS_LOCATION, this.getX(), this.getY(), 0, buttonPosTop, this.width / 2,
+        this.height, 256, 128);
+    guiGraphics.blit(WIDGETS_LOCATION, this.getX() + this.width / 2, this.getY(),
+        200 - this.width / 2.0f, buttonPosTop, this.width / 2, this.height, 256, 128);
 
     // Scaling down button text
-    poseStack.pushPose();
-    poseStack.scale(SCALING, SCALING, SCALING);
-    drawCenteredString(poseStack, font, this.getMessage(), this.scaledX + this.scaledWidth / 2,
-        this.scaledY + (this.scaledHeight - 8) / 2,
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(SCALING, SCALING, SCALING);
+    guiGraphics.drawCenteredString(this.font, this.getMessage(),
+        this.scaledX + this.scaledWidth / 2, this.scaledY + (this.scaledHeight - 8) / 2,
         getFGColor() | Mth.ceil(this.alpha * 255.0F) << 24);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
   private int getTextureY() {
@@ -82,7 +82,6 @@ public class SmallButton extends Button {
     } else if (this.isHoveredOrFocused()) {
       i = 2;
     }
-
     return 46 + i * 20;
   }
 

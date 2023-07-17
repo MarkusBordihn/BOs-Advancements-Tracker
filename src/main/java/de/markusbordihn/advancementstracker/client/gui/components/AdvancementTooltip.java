@@ -22,11 +22,9 @@ package de.markusbordihn.advancementstracker.client.gui.components;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -35,7 +33,7 @@ import de.markusbordihn.advancementstracker.Constants;
 import de.markusbordihn.advancementstracker.client.advancements.AdvancementEntry;
 
 @OnlyIn(Dist.CLIENT)
-public class AdvancementTooltip extends GuiComponent {
+public class AdvancementTooltip {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
@@ -51,11 +49,11 @@ public class AdvancementTooltip extends GuiComponent {
     this.font = minecraft.font;
   }
 
-  public void renderTooltip(PoseStack poseStack, int mouseX, int mouseY) {
-    poseStack.pushPose();
-    font.draw(poseStack, advancementEntry.getTitle(), mouseX, mouseY, 0xFFFFFFFF);
-    fill(poseStack, mouseX, mouseY, mouseX + tooltipWith, mouseY + tooltipHeight, 0x80000000);
-    poseStack.popPose();
+  public void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    guiGraphics.pose().pushPose();
+    guiGraphics.drawString(this.font, advancementEntry.getTitle(), mouseX, mouseY, 0xFFFFFFFF);
+    guiGraphics.fill(mouseX, mouseY, mouseX + tooltipWith, mouseY + tooltipHeight, 0x80000000);
+    guiGraphics.pose().popPose();
   }
 
 }

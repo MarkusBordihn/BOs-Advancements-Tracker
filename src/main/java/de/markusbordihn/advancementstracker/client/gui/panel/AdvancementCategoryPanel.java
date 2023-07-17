@@ -25,10 +25,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -135,7 +134,8 @@ public class AdvancementCategoryPanel
       return advancementEntry;
     }
 
-    private void renderBackground(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
+    private void renderBackground(GuiGraphics guiGraphics, int top, int entryWidth,
+        int entryHeight) {
       if (this.advancementEntry.getBackground() == null) {
         return;
       }
@@ -144,52 +144,46 @@ public class AdvancementCategoryPanel
       } else {
         RenderSystem.setShaderColor(0.4f, 0.4f, 0.4f, 1);
       }
-      RenderSystem.setShaderTexture(0, this.advancementEntry.getBackground());
-      poseStack.pushPose();
-      GuiComponent.blit(poseStack, getLeft() + 1, top - 1, 0, 0, entryWidth - 2, entryHeight + 2,
-          16, 16);
-      poseStack.popPose();
+      guiGraphics.pose().pushPose();
+      guiGraphics.blit(this.advancementEntry.getBackground(), getLeft() + 1, top - 1, 0, 0,
+          entryWidth - 2, entryHeight + 2, 16, 16);
+      guiGraphics.pose().popPose();
     }
 
-    private void renderIcon(PoseStack poseStack, int top) {
+    private void renderIcon(GuiGraphics guiGraphics, int top) {
       if (this.advancementEntry.getIcon() == null) {
         return;
       }
-      minecraft.getItemRenderer().renderGuiItem(poseStack, this.advancementEntry.getIcon(),
-          getLeft() + 1, top + 6);
+      guiGraphics.renderItem(this.advancementEntry.getIcon(), getLeft() + 1, top + 6);
     }
 
-    private void renderTrackedAdvancementsStatus(PoseStack poseStack, int top, int left,
+    private void renderTrackedAdvancementsStatus(GuiGraphics guiGraphics, int top, int left,
         int entryWidth) {
       if (TrackedAdvancementsManager.hasTrackedAdvancement(this.advancementEntry)) {
-        RenderSystem.setShaderColor(1, 1, 1, 1);
-        RenderSystem.setShaderTexture(0, miscTexture);
-        poseStack.pushPose();
-        poseStack.scale(0.5f, 0.5f, 0.5f);
-        GuiComponent.blit(poseStack, (left + entryWidth - 12) * 2, (top + 1) * 2, 81, 6, 16, 16,
+        guiGraphics.pose().pushPose();
+        guiGraphics.pose().scale(0.5f, 0.5f, 0.5f);
+        guiGraphics.blit(miscTexture, (left + entryWidth - 12) * 2, (top + 1) * 2, 81, 6, 16, 16,
             256, 256);
-        poseStack.popPose();
+        guiGraphics.pose().popPose();
       }
     }
 
-    private void renderDecoration(PoseStack poseStack, int top, int entryWidth, int entryHeight) {
+    private void renderDecoration(GuiGraphics guiGraphics, int top, int entryWidth,
+        int entryHeight) {
       int topPosition = top - 2;
       int leftPosition = getLeft();
       int rightPosition = leftPosition + entryWidth - 2;
       int bottomPosition = top + entryHeight;
-
-      RenderSystem.setShaderColor(1, 1, 1, 1);
-      RenderSystem.setShaderTexture(0, miscTexture);
-      poseStack.pushPose();
-      GuiComponent.blit(poseStack, leftPosition, topPosition, 0, 0, entryWidth - 1, 1,
+      guiGraphics.pose().pushPose();
+      guiGraphics.blit(miscTexture, leftPosition, topPosition, 0, 0, entryWidth - 1, 1,
           entryWidth - 1, 256);
-      GuiComponent.blit(poseStack, rightPosition, topPosition + 1, 255, 0, 1, entryHeight + 2, 256,
+      guiGraphics.blit(miscTexture, rightPosition, topPosition + 1, 255, 0, 1, entryHeight + 2, 256,
           entryHeight);
-      GuiComponent.blit(poseStack, leftPosition, bottomPosition, 0, 255, entryWidth - 1, 1,
+      guiGraphics.blit(miscTexture, leftPosition, bottomPosition, 0, 255, entryWidth - 1, 1,
           entryWidth - 1, 256);
-      GuiComponent.blit(poseStack, leftPosition, topPosition + 1, 0, 0, 1, entryHeight + 2, 256,
+      guiGraphics.blit(miscTexture, leftPosition, topPosition + 1, 0, 0, 1, entryHeight + 2, 256,
           entryHeight);
-      poseStack.popPose();
+      guiGraphics.pose().popPose();
     }
 
     @Override
@@ -198,7 +192,7 @@ public class AdvancementCategoryPanel
     }
 
     @Override
-    public void render(PoseStack poseStack, int entryIdx, int top, int left, int entryWidth,
+    public void render(GuiGraphics guiGraphics, int entryIdx, int top, int left, int entryWidth,
         int entryHeight, int mouseX, int mouseY, boolean isFocused, float partialTick) {
 
       // Selection state
@@ -208,10 +202,10 @@ public class AdvancementCategoryPanel
       this.isMouseOvered = this.isMouseOver(mouseX, mouseY);
 
       // Positions
-      float textPositionLeft = (float) left + iconWidth;
+      int textPositionLeft = left + iconWidth;
 
       // Background
-      this.renderBackground(poseStack, top, entryWidth, entryHeight);
+      this.renderBackground(guiGraphics, top, entryWidth, entryHeight);
 
       // Select and mouse over effects
       if (this.isSelected) {
@@ -225,43 +219,39 @@ public class AdvancementCategoryPanel
       }
 
       // Icon
-      this.renderIcon(poseStack, top);
+      this.renderIcon(guiGraphics, top);
 
       // Tracked Advancements
-      this.renderTrackedAdvancementsStatus(poseStack, top, left, entryWidth);
+      this.renderTrackedAdvancementsStatus(guiGraphics, top, left, entryWidth);
 
       // Title (only one line)
       int currentTitleColor = isSelected ? 0xFFFF00 : this.titleColor;
-      font.drawShadow(poseStack, this.titleParts, textPositionLeft + 3, top + (float) 1,
-          currentTitleColor);
-      font.draw(poseStack, this.titleParts, textPositionLeft + 3, top + (float) 1,
+      guiGraphics.drawString(this.font, this.titleParts, textPositionLeft + 3, top + 1,
           currentTitleColor);
       if (titleWidth != maxFontWidth) {
-        font.draw(poseStack, Constants.ELLIPSIS, textPositionLeft + titleWidth, top + 1.0f,
-            currentTitleColor);
+        guiGraphics.drawString(this.font, Constants.ELLIPSIS, textPositionLeft + titleWidth,
+            top + 1, currentTitleColor, false);
       }
 
       // Description (two lines)
       int descriptionLines = 1;
       for (FormattedCharSequence descriptionPart : this.descriptionParts) {
-        float descriptionTopPosition = top + (float) (2 + font.lineHeight) * descriptionLines;
-        font.drawShadow(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
-            this.descriptionColor);
-        font.draw(poseStack, descriptionPart, textPositionLeft + 3, descriptionTopPosition,
-            this.descriptionColor);
+        int descriptionTopPosition = top + (2 + font.lineHeight) * descriptionLines;
+        guiGraphics.drawString(this.font, descriptionPart, textPositionLeft + 3,
+            descriptionTopPosition, this.descriptionColor);
         if (this.descriptionParts.size() == 3 && descriptionLines == 2) {
-          font.draw(poseStack, Constants.ELLIPSIS,
+          guiGraphics.drawString(this.font, Constants.ELLIPSIS,
               textPositionLeft + (font.width(descriptionPart) < maxFontWidth - 6
                   ? font.width(descriptionPart) + 6
                   : maxFontWidth - 6),
-              descriptionTopPosition, 0xFFFFFF);
+              descriptionTopPosition, 0xFFFFFF, false);
           break;
         }
         descriptionLines++;
       }
 
       // Decoration
-      this.renderDecoration(poseStack, top, entryWidth, entryHeight);
+      this.renderDecoration(guiGraphics, top, entryWidth, entryHeight);
     }
 
     @Override

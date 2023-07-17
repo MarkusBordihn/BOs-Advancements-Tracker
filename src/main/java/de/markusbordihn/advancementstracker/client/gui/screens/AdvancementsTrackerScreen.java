@@ -29,12 +29,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.lwjgl.glfw.GLFW;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 
@@ -262,94 +259,81 @@ public class AdvancementsTrackerScreen extends Screen {
     return this.selectedChildAdvancement;
   }
 
-  private void renderNumberOfRootAdvancements(PoseStack poseStack) {
+  private void renderNumberOfRootAdvancements(GuiGraphics guiGraphics) {
     if (numberOfRootAdvancements > 0) {
       float scaleFactor = 0.75f;
       Component text = Component.translatable(
           Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCategories", numberOfRootAdvancements);
-      poseStack.pushPose();
-      poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
-      font.drawShadow(poseStack, text, (this.listWidth - PADDING - 52.0f) / scaleFactor,
-          (this.height - 8) / scaleFactor, 0xFFFFFF);
-      font.draw(poseStack, text, (this.listWidth - PADDING - 52.0f) / scaleFactor,
-          (this.height - 8) / scaleFactor, 0xFFFFFF);
-      poseStack.popPose();
+      guiGraphics.pose().pushPose();
+      guiGraphics.pose().scale(scaleFactor, scaleFactor, scaleFactor);
+      guiGraphics.drawString(this.font, text,
+          Math.round((this.listWidth - PADDING - 52.0f) / scaleFactor),
+          Math.round((this.height - 8) / scaleFactor), 0xFFFFFF);
+      guiGraphics.pose().popPose();
     }
   }
 
-  private void renderAdvancementsStats(PoseStack poseStack) {
+  private void renderAdvancementsStats(GuiGraphics guiGraphics) {
     if (this.numberOfTotalAdvancements > 0) {
       float scaleFactor = 0.75f;
       Component text = Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "numCompleted",
           this.numberOfCompletedAdvancements, this.numberOfTotalAdvancements);
 
-      poseStack.pushPose();
-      poseStack.scale(scaleFactor, scaleFactor, scaleFactor);
-      font.drawShadow(poseStack, text, (width - 92.0f) / scaleFactor,
-          (this.height - 8) / scaleFactor, 0xFFFFFF);
-      font.draw(poseStack, text, (width - 92.0f) / scaleFactor, (this.height - 8) / scaleFactor,
-          0xFFFFFF);
-      poseStack.popPose();
+      guiGraphics.pose().pushPose();
+      guiGraphics.pose().scale(scaleFactor, scaleFactor, scaleFactor);
+      guiGraphics.drawString(this.font, text, Math.round((width - 92.0f) / scaleFactor),
+          Math.round((this.height - 8) / scaleFactor), 0xFFFFFF);
+      guiGraphics.pose().popPose();
     }
   }
 
-  private void renderCompletedCheckbox(PoseStack poseStack) {
+  private void renderCompletedCheckbox(GuiGraphics guiGraphics) {
     int iconPosition = 22;
     if (showCompletedAdvancements) {
       iconPosition = 42;
     }
-    RenderSystem.setShaderColor(1, 1, 1, 1);
-    RenderSystem.setShaderTexture(0, miscTexture);
-
     float scaleFactorIcon = 0.6f;
-    poseStack.pushPose();
-    poseStack.scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
-    GuiComponent.blit(poseStack, Math.round((this.listWidth) / scaleFactorIcon),
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
+    guiGraphics.blit(miscTexture, Math.round((this.listWidth) / scaleFactorIcon),
         Math.round((this.height - 10) / scaleFactorIcon), iconPosition, 6, 15, 15, 256, 256);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
 
     float scaleFactorText = 0.75f;
     Component text = Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showCompleted");
 
-    poseStack.pushPose();
-    poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
-    font.drawShadow(poseStack, text, Math.round((this.listWidth + 12.0f) / scaleFactorText),
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(scaleFactorText, scaleFactorText, scaleFactorText);
+    guiGraphics.drawString(this.font, text, Math.round((this.listWidth + 12.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
-    font.draw(poseStack, text, Math.round((this.listWidth + 12.0f) / scaleFactorText),
-        Math.round((this.height - 8) / scaleFactorText), 0xFFFFFF);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
   private static void toggleShowCompletedAdvancements() {
     showCompletedAdvancements = !showCompletedAdvancements;
   }
 
-  private void renderOnlyRewardedCheckbox(PoseStack poseStack) {
+  private void renderOnlyRewardedCheckbox(GuiGraphics guiGraphics) {
     int iconPosition = 22;
     if (showOnlyRewardedAdvancements) {
       iconPosition = 42;
     }
-    RenderSystem.setShaderColor(1, 1, 1, 1);
-    RenderSystem.setShaderTexture(0, miscTexture);
-
     float scaleFactorIcon = 0.6f;
-    poseStack.pushPose();
-    poseStack.scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
-    GuiComponent.blit(poseStack, Math.round((this.listWidth + 78.0f) / scaleFactorIcon),
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(scaleFactorIcon, scaleFactorIcon, scaleFactorIcon);
+    guiGraphics.blit(miscTexture, Math.round((this.listWidth + 78.0f) / scaleFactorIcon),
         Math.round((this.height - 10) / scaleFactorIcon), iconPosition, 6, 15, 15, 256, 256);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
 
     float scaleFactorText = 0.75f;
     int fontColor = showOnlyRewardedAdvancements ? 0xFF0000 : 0xFFFFFF;
     Component text =
         Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "showOnlyRewarded");
-    poseStack.pushPose();
-    poseStack.scale(scaleFactorText, scaleFactorText, scaleFactorText);
-    font.drawShadow(poseStack, text, Math.round((this.listWidth + 90.0f) / scaleFactorText),
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(scaleFactorText, scaleFactorText, scaleFactorText);
+    guiGraphics.drawString(this.font, text, Math.round((this.listWidth + 90.0f) / scaleFactorText),
         Math.round((this.height - 8) / scaleFactorText), fontColor);
-    font.draw(poseStack, text, Math.round((this.listWidth + 90.0f) / scaleFactorText),
-        Math.round((this.height - 8) / scaleFactorText), fontColor);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
   private static void toggleShowOnlyRewardedAdvancements() {
@@ -410,40 +394,40 @@ public class AdvancementsTrackerScreen extends Screen {
   }
 
   @Override
-  public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-    this.renderBackground(poseStack);
+  public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    this.renderBackground(guiGraphics);
 
     // Render panels for category and overview
-    this.advancementCategoryPanel.render(poseStack, mouseX, mouseY, partialTick);
-    this.advancementOverviewPanel.render(poseStack, mouseX, mouseY, partialTick);
+    this.advancementCategoryPanel.render(guiGraphics, mouseX, mouseY, partialTick);
+    this.advancementOverviewPanel.render(guiGraphics, mouseX, mouseY, partialTick);
 
-    super.render(poseStack, mouseX, mouseY, partialTick);
+    super.render(guiGraphics, mouseX, mouseY, partialTick);
 
     // Render stats
-    this.renderNumberOfRootAdvancements(poseStack);
-    this.renderAdvancementsStats(poseStack);
+    this.renderNumberOfRootAdvancements(guiGraphics);
+    this.renderAdvancementsStats(guiGraphics);
 
     // Title
-    font.draw(poseStack, this.title, this.listWidth + PADDING + 10f, 8, 16777215);
+    guiGraphics.drawString(this.font, this.title, this.listWidth + PADDING + 10, 8, 16777215,
+        false);
 
     // Checkbox for show/hide completed Advancements
-    this.renderCompletedCheckbox(poseStack);
+    this.renderCompletedCheckbox(guiGraphics);
 
     // Checkbox for show/hide rewarded Advancements
-    this.renderOnlyRewardedCheckbox(poseStack);
+    this.renderOnlyRewardedCheckbox(guiGraphics);
 
     // Advancement details
     if (this.showingAdvancementDetail()) {
-      this.showAdvancementDetailScreen.render(poseStack, mouseX, mouseY, partialTick);
+      this.showAdvancementDetailScreen.render(guiGraphics, mouseX, mouseY, partialTick);
     }
   }
 
   @Override
-  public void renderBackground(PoseStack poseStack) {
+  public void renderBackground(GuiGraphics guiGraphics) {
     // Background
-    GuiComponent.fillGradient(poseStack, 0, 0, this.width, this.height, -1072689136, -804253680);
-    GuiComponent.fillGradient(poseStack, 0, height - 12, this.width, this.height, -1072689136,
-        -804253680);
+    guiGraphics.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+    guiGraphics.fillGradient(0, height - 12, this.width, this.height, -1072689136, -804253680);
   }
 
   @Override

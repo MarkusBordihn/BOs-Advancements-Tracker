@@ -34,7 +34,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -183,21 +183,21 @@ public class AdvancementsTrackerWidget {
     x = positionManager.getPositionX();
     y = positionManager.getPositionY();
 
-    // Get pose stack and render buffer for additional effects.
-    PoseStack poseStack = event.getPoseStack();
+    // Get gui graphics and render buffer for additional effects.
+    GuiGraphics guiGraphics = event.getGuiGraphics();
 
     // Render background and title
-    renderTitle(poseStack);
+    renderTitle(guiGraphics);
 
     // Render tracked advancement or additional hints, if needed.
     if (TrackedAdvancementsManager.hasTrackedAdvancements()) {
       MultiBufferSource.BufferSource multiBufferSource =
           Minecraft.getInstance().renderBuffers().bufferSource();
-      renderAdvancements(poseStack, multiBufferSource, x, y + this.font.lineHeight + 4);
+      renderAdvancements(guiGraphics, multiBufferSource, x, y + this.font.lineHeight + 4);
     } else if (AdvancementsManager.hasAdvancements()) {
-      renderNoTrackedAdvancements(poseStack, x, y + this.font.lineHeight + 4);
+      renderNoTrackedAdvancements(guiGraphics, x, y + this.font.lineHeight + 4);
     } else {
-      renderNoAdvancements(poseStack, x, y + this.font.lineHeight + 4);
+      renderNoAdvancements(guiGraphics, x, y + this.font.lineHeight + 4);
     }
   }
 
@@ -217,39 +217,38 @@ public class AdvancementsTrackerWidget {
     hudVisible = !hudVisible;
   }
 
-  private void renderTitle(PoseStack poseStack) {
-    poseStack.pushPose();
-    GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(),
-        y + this.font.lineHeight + 2, BACKGROUND_COLOR);
-    font.draw(poseStack, ADVANCEMENT_TITLE_TEXT, x + 2.0f, y + 2.0f, Constants.FONT_COLOR_GRAY);
-    poseStack.popPose();
+  private void renderTitle(GuiGraphics guiGraphics) {
+    guiGraphics.pose().pushPose();
+    guiGraphics.fill(x, y, positionManager.getPositionXWidth(), y + this.font.lineHeight + 2,
+        BACKGROUND_COLOR);
+    guiGraphics.drawString(this.font, ADVANCEMENT_TITLE_TEXT, x + 2, y + 2,
+        Constants.FONT_COLOR_GRAY, false);
+    guiGraphics.pose().popPose();
   }
 
-  private void renderNoTrackedAdvancements(PoseStack poseStack, int x, int y) {
+  private void renderNoTrackedAdvancements(GuiGraphics guiGraphics, int x, int y) {
     int textContentHeight = (this.font.lineHeight + 2) * 11;
     int textContentWidth = positionManager.getWidth();
-    poseStack.pushPose();
-    GuiComponent.fill(poseStack, x, y, x + textContentWidth, y + textContentHeight,
-        BACKGROUND_COLOR);
-    font.drawWordWrap(poseStack, noTrackedAdvancementsText, x + 5, y + 5, textContentWidth - 10,
-        textContentHeight - 5);
-    poseStack.popPose();
+    guiGraphics.pose().pushPose();
+    guiGraphics.fill(x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
+    guiGraphics.drawWordWrap(this.font, noTrackedAdvancementsText, x + 5, y + 5,
+        textContentWidth - 10, textContentHeight - 5);
+    guiGraphics.pose().popPose();
   }
 
-  private void renderNoAdvancements(PoseStack poseStack, int x, int y) {
+  private void renderNoAdvancements(GuiGraphics guiGraphics, int x, int y) {
     int textContentHeight = (this.font.lineHeight + 2) * 9;
     int textContentWidth = positionManager.getWidth();
-    poseStack.pushPose();
-    GuiComponent.fill(poseStack, x, y, x + textContentWidth, y + textContentHeight,
-        BACKGROUND_COLOR);
-    font.drawWordWrap(poseStack, noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
+    guiGraphics.pose().pushPose();
+    guiGraphics.fill(x, y, x + textContentWidth, y + textContentHeight, BACKGROUND_COLOR);
+    guiGraphics.drawWordWrap(this.font, noAdvancementsText, x + 5, y + 5, textContentWidth - 10,
         textContentHeight - 5);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
-  private void renderAdvancements(PoseStack poseStack,
+  private void renderAdvancements(GuiGraphics guiGraphics,
       MultiBufferSource.BufferSource multiBufferSource, int x, int y) {
-    poseStack.pushPose();
+    guiGraphics.pose().pushPose();
     int topPos = y;
     int numberOfAdvancementsRendered = 0;
     try {
@@ -257,10 +256,10 @@ public class AdvancementsTrackerWidget {
         // Check if the screen space is big enough to render all advancements.
         if (topPos + (font.lineHeight * 4) < positionManager.getWindowHeightScaled()) {
           topPos +=
-              renderAdvancement(poseStack, multiBufferSource, x, topPos, advancementEntry) + 2;
+              renderAdvancement(guiGraphics, multiBufferSource, x, topPos, advancementEntry) + 2;
           numberOfAdvancementsRendered++;
         } else {
-          renderAdvancementEllipsis(poseStack, x, topPos, trackedAdvancements.size(),
+          renderAdvancementEllipsis(guiGraphics, x, topPos, trackedAdvancements.size(),
               numberOfAdvancementsRendered);
           break;
         }
@@ -268,32 +267,30 @@ public class AdvancementsTrackerWidget {
     } catch (ConcurrentModificationException exception) {
       log.debug("Advancement list was modified during rendering. This is expected in some cases.");
     }
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
-  private void renderAdvancementEllipsis(PoseStack poseStack, int x, int y,
+  private void renderAdvancementEllipsis(GuiGraphics guiGraphics, int x, int y,
       int numberOfAdvancements, int numberOfAdvancementsRendered) {
 
     // Background
-    poseStack.pushPose();
-    GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(), y + font.lineHeight,
+    guiGraphics.pose().pushPose();
+    guiGraphics.fill(x, y, positionManager.getPositionXWidth(), y + font.lineHeight,
         BACKGROUND_COLOR);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
 
     // Note that not all tracked advancements are visible.
     float textScale = 0.75f;
     Component text = Component.translatable(Constants.ADVANCEMENTS_WIDGET_PREFIX + "notAllVisible",
         numberOfAdvancementsRendered, numberOfAdvancements);
-    poseStack.pushPose();
-    poseStack.scale(textScale, textScale, textScale);
-    font.drawShadow(poseStack, text, (x + 16) / textScale, (y + 2) / textScale,
-        Constants.FONT_COLOR_GRAY);
-    font.draw(poseStack, text, (x + 16) / textScale, (y + 2) / textScale,
-        Constants.FONT_COLOR_GRAY);
-    poseStack.popPose();
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(textScale, textScale, textScale);
+    guiGraphics.drawString(this.font, text, Math.round((x + 16) / textScale),
+        Math.round((y + 2) / textScale), Constants.FONT_COLOR_GRAY);
+    guiGraphics.pose().popPose();
   }
 
-  private int renderAdvancement(PoseStack poseStack,
+  private int renderAdvancement(GuiGraphics guiGraphics,
       MultiBufferSource.BufferSource multiBufferSource, int x, int y,
       AdvancementEntry advancementEntry) {
 
@@ -325,67 +322,64 @@ public class AdvancementsTrackerWidget {
             * (descriptionParts.size() <= 3 ? descriptionParts.size() : 3)));
 
     // Background
-    poseStack.pushPose();
-    GuiComponent.fill(poseStack, x, y, positionManager.getPositionXWidth(), y + expectedContentSize,
+    guiGraphics.pose().pushPose();
+    guiGraphics.fill(x, y, positionManager.getPositionXWidth(), y + expectedContentSize,
         BACKGROUND_COLOR);
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
 
     // Title (only one line)
-    poseStack.pushPose();
-    poseStack.scale(titleScale, titleScale, titleScale);
-    font.drawShadow(poseStack, titleText, (referenceLeftPosition + titlePaddingLeft) / titleScale,
-        referenceTopPosition / titleScale, Constants.FONT_COLOR_YELLOW);
-    font.draw(poseStack, titleText, (referenceLeftPosition + titlePaddingLeft) / titleScale,
-        referenceTopPosition / titleScale, Constants.FONT_COLOR_YELLOW);
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(titleScale, titleScale, titleScale);
+    guiGraphics.drawString(this.font, titleText,
+        Math.round((referenceLeftPosition + titlePaddingLeft) / titleScale),
+        Math.round(referenceTopPosition / titleScale), Constants.FONT_COLOR_YELLOW);
 
     // Show ellipsis if title is to long.
     if (titleWidth != maxFontWidth - titlePaddingLeft - titlePaddingRight) {
-      font.draw(poseStack, Constants.ELLIPSIS,
-          ((referenceLeftPosition + titlePaddingLeft) / titleScale) + titleWidthScaled,
-          referenceTopPosition / titleScale, Constants.FONT_COLOR_YELLOW);
+      guiGraphics.drawString(this.font, Constants.ELLIPSIS,
+          Math.round(((referenceLeftPosition + titlePaddingLeft) / titleScale) + titleWidthScaled),
+          Math.round(referenceTopPosition / titleScale), Constants.FONT_COLOR_YELLOW, false);
     }
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
 
     // Show Progress, if we have more than one requirements.
     if (advancementEntry.getProgress().getProgressTotal() > 1) {
       float progressScale = 0.6f;
       int progressPositionLeft = referenceLeftPosition + maxFontWidth
           - Math.round(advancementEntry.getProgress().getProgressStringWidth() * progressScale) - 2;
-      poseStack.pushPose();
-      poseStack.scale(progressScale, progressScale, progressScale);
-      font.drawShadow(poseStack, advancementEntry.getProgress().getProgressString(),
-          progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
-          Constants.FONT_COLOR_YELLOW);
-      font.draw(poseStack, advancementEntry.getProgress().getProgressString(),
-          progressPositionLeft / progressScale, (referenceTopPosition - 1) / progressScale,
-          Constants.FONT_COLOR_YELLOW);
-      poseStack.popPose();
+      guiGraphics.pose().pushPose();
+      guiGraphics.pose().scale(progressScale, progressScale, progressScale);
+      guiGraphics.drawString(this.font, advancementEntry.getProgress().getProgressString(),
+          Math.round(progressPositionLeft / progressScale),
+          Math.round((referenceTopPosition - 1) / progressScale), Constants.FONT_COLOR_YELLOW);
+      guiGraphics.pose().popPose();
     }
     referenceTopPosition += font.lineHeight * titleScale + 3;
 
     // Icon
     if (advancementEntry.getIcon() != null) {
-      poseStack.pushPose();
+      guiGraphics.pose().pushPose();
       renderGuiItem(advancementEntry.getIcon(), multiBufferSource, referenceLeftPosition - 4,
           referenceTopPosition - 14, 0.65f);
-      poseStack.popPose();
+      guiGraphics.pose().popPose();
     }
 
     // Description (max three lines)
-    poseStack.pushPose();
-    poseStack.scale(descriptionScale, descriptionScale, descriptionScale);
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().scale(descriptionScale, descriptionScale, descriptionScale);
     for (FormattedCharSequence descriptionPart : descriptionParts) {
       boolean shouldEnd = false;
-      font.drawShadow(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
-          referenceTopPosition / descriptionScale, advancementEntry.getDescriptionColor());
-      font.draw(poseStack, descriptionPart, referenceLeftPosition / descriptionScale,
-          referenceTopPosition / descriptionScale, advancementEntry.getDescriptionColor());
+      guiGraphics.drawString(this.font, descriptionPart,
+          Math.round(referenceLeftPosition / descriptionScale),
+          Math.round(referenceTopPosition / descriptionScale),
+          advancementEntry.getDescriptionColor());
       if ((descriptionParts.size() >= 3 && descriptionLines == 3)) {
-        font.draw(poseStack, Constants.ELLIPSIS, (referenceLeftPosition / descriptionScale)
+        guiGraphics.drawString(this.font, Constants.ELLIPSIS, Math.round((referenceLeftPosition
+            / descriptionScale)
             + ((font.width(descriptionPart) / descriptionScale) < maxFontWidth / descriptionScale
                 - 3 ? (font.width(descriptionPart) / descriptionScale) - 7
-                    : (maxFontWidth / descriptionScale) - 7),
-            referenceTopPosition / descriptionScale, 0xFFFFFF);
+                    : (maxFontWidth / descriptionScale) - 7)),
+            Math.round(referenceTopPosition / descriptionScale), 0xFFFFFF, false);
         shouldEnd = true;
       } else if (descriptionParts.size() == 2 && descriptionLines == 2) {
         shouldEnd = true;
@@ -396,7 +390,7 @@ public class AdvancementsTrackerWidget {
       }
       descriptionLines++;
     }
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
 
     // Return actual content position
     return referenceTopPosition - y;

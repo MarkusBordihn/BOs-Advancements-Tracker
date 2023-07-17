@@ -7,6 +7,7 @@ For the full changelog, please go to the [Git Hub History][history] instead.
 
 ### 2023.07.17
 
+- Refactored code for 1.20-46.0.14
 - Added Swedish translation (Thanks to @Regnander)
 
 ### 2023.07.09

@@ -27,11 +27,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -113,19 +113,19 @@ public class AdvancementInfoPanel extends ScrollPanel {
   }
 
   @Override
-  protected void drawPanel(PoseStack poseStack, int entryRight, int relativeY, Tesselator tess,
+  protected void drawPanel(GuiGraphics guiGraphics, int entryRight, int relativeY, Tesselator tess,
       int mouseX, int mouseY) {
-    poseStack.pushPose();
-    poseStack.translate(0, 0, 201);
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().translate(0, 0, 201);
     for (FormattedCharSequence line : lines) {
       if (line != null) {
         RenderSystem.enableBlend();
-        this.font.drawShadow(poseStack, line, left + (float) PADDING, relativeY, 0xFFFFFF);
+        guiGraphics.drawString(this.font, line, left + PADDING, relativeY, 0xFFFFFF);
         RenderSystem.disableBlend();
       }
       relativeY += font.lineHeight;
     }
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
 }

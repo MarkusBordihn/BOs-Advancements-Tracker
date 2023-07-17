@@ -26,10 +26,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
+
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -46,7 +45,8 @@ public class AdvancementDetailScreen extends Screen {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static final ResourceLocation windowBackground = new ResourceLocation("textures/gui/advancements/window.png");
+  private static final ResourceLocation windowBackground =
+      new ResourceLocation("textures/gui/advancements/window.png");
 
   private AdvancementEntry advancementEntry;
   private AdvancementEntryProgress progress;
@@ -100,9 +100,8 @@ public class AdvancementDetailScreen extends Screen {
           Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "rewards").getString());
 
       if (this.advancementEntry.hasExperienceReward()) {
-        info.add(
-            "+ " + Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "experience",
-                this.advancementEntry.getRewardsExperience()).getString());
+        info.add("+ " + Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "experience",
+            this.advancementEntry.getRewardsExperience()).getString());
       }
 
       if (this.advancementEntry.hasLootReward()) {
@@ -127,56 +126,54 @@ public class AdvancementDetailScreen extends Screen {
     maxWidth = 252;
     left = (width - maxWidth) / 2;
     top = (height - maxHeight) / 2;
-    this.advancementInfoPanel = new AdvancementInfoPanel(minecraft, maxWidth - 18, maxHeight - 38, top + 18, left + 3);
+    this.advancementInfoPanel =
+        new AdvancementInfoPanel(minecraft, maxWidth - 18, maxHeight - 38, top + 18, left + 3);
     this.advancementInfoPanel.setInfo(prepareInfoContent());
     this.addRenderableWidget(this.advancementInfoPanel);
   }
 
   @Override
-  public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
-    this.renderBackground(poseStack);
+  public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    this.renderBackground(guiGraphics);
 
-    super.render(poseStack, mouseX, mouseY, partialTick);
+    super.render(guiGraphics, mouseX, mouseY, partialTick);
 
     if (this.advancementInfoPanel != null) {
-      this.advancementInfoPanel.render(poseStack, mouseX, mouseY, partialTick);
+      this.advancementInfoPanel.render(guiGraphics, mouseX, mouseY, partialTick);
     }
   }
 
   @Override
-  public void renderBackground(PoseStack poseStack) {
+  public void renderBackground(GuiGraphics guiGraphics) {
 
     // Make sure we use a higher z-index.
-    poseStack.pushPose();
-    poseStack.translate(0, 0, 101);
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().translate(0, 0, 101);
 
     // Background and frame.
     int heightPerPart = maxHeight / 2;
     RenderSystem.enableBlend();
-    RenderSystem.setShader(GameRenderer::getPositionTexShader);
-    RenderSystem.setShaderTexture(0, windowBackground);
 
     // Frame will be constructed in two parts, top and bottom.
-    GuiComponent.blit(poseStack, left, top, 0, 0, maxWidth, heightPerPart);
-    GuiComponent.blit(poseStack, left, top + heightPerPart, 0, 150 - heightPerPart, maxWidth,
+    guiGraphics.blit(windowBackground, left, top, 0, 0, maxWidth, heightPerPart);
+    guiGraphics.blit(windowBackground, left, top + heightPerPart, 0, 150 - heightPerPart, maxWidth,
         heightPerPart + 10);
 
     // Background with gradient.
-    GuiComponent.fillGradient(poseStack, left + 9, top + 18, left + maxWidth - 9,
-        top + maxHeight - 20, -1072689136, -804253680);
+    guiGraphics.fillGradient(left + 9, top + 18, left + maxWidth - 9, top + maxHeight - 20,
+        -1072689136, -804253680);
     RenderSystem.disableBlend();
 
     // Title
-    font.drawShadow(poseStack, this.title, left + 22f, top + 6f, advancementEntry.getTitleColor());
-    font.draw(poseStack, this.title, left + 22f, top + 6f, advancementEntry.getTitleColor());
+    guiGraphics.drawString(this.font, this.title, left + 22, top + 6,
+        advancementEntry.getTitleColor());
 
     // Icon
     if (this.advancementEntry.getIcon() != null && minecraft != null) {
-      minecraft.getItemRenderer().renderGuiItem(poseStack, this.advancementEntry.getIcon(),
-          left + 4, top + 1);
+      guiGraphics.renderItem(this.advancementEntry.getIcon(), left + 4, top + 1);
     }
 
-    poseStack.popPose();
+    guiGraphics.pose().popPose();
   }
 
   @Override
