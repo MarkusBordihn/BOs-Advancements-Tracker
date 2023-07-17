@@ -46,8 +46,7 @@ public class AdvancementDetailScreen extends Screen {
 
   protected static final Logger log = LogManager.getLogger(Constants.LOG_NAME);
 
-  private static final ResourceLocation windowBackground =
-      new ResourceLocation("textures/gui/advancements/window.png");
+  private static final ResourceLocation windowBackground = new ResourceLocation("textures/gui/advancements/window.png");
 
   private AdvancementEntry advancementEntry;
   private AdvancementEntryProgress progress;
@@ -78,7 +77,8 @@ public class AdvancementDetailScreen extends Screen {
     if (this.progress.getRemainingCriteriaNumber() > 0
         || this.progress.getCompletedCriteriaNumber() > 0) {
       info.add(" ");
-      info.add("Criteria:");
+      info.add(
+          Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "criteria").getString());
       if (this.progress.getRemainingCriteriaNumber() > 0) {
         for (String remainingCriteria : this.progress.getRemainingCriteriaHumanReadable()) {
           info.add("❌ " + remainingCriteria);
@@ -96,10 +96,13 @@ public class AdvancementDetailScreen extends Screen {
     if (this.advancementEntry.hasExperienceReward() || this.advancementEntry.hasLootReward()
         || this.advancementEntry.hasRecipesReward()) {
       info.add(" ");
-      info.add("Rewards:");
+      info.add(
+          Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "rewards").getString());
 
       if (this.advancementEntry.hasExperienceReward()) {
-        info.add("+ " + this.advancementEntry.getRewardsExperience() + " exp");
+        info.add(
+            "+ " + Component.translatable(Constants.ADVANCEMENTS_SCREEN_PREFIX + "experience",
+                this.advancementEntry.getRewardsExperience()).getString());
       }
 
       if (this.advancementEntry.hasLootReward()) {
@@ -124,12 +127,10 @@ public class AdvancementDetailScreen extends Screen {
     maxWidth = 252;
     left = (width - maxWidth) / 2;
     top = (height - maxHeight) / 2;
-    this.advancementInfoPanel =
-        new AdvancementInfoPanel(minecraft, maxWidth - 18, maxHeight - 38, top + 18, left + 3);
+    this.advancementInfoPanel = new AdvancementInfoPanel(minecraft, maxWidth - 18, maxHeight - 38, top + 18, left + 3);
     this.advancementInfoPanel.setInfo(prepareInfoContent());
     this.addRenderableWidget(this.advancementInfoPanel);
   }
-
 
   @Override
   public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
