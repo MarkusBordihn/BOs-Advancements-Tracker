@@ -440,13 +440,13 @@ public class AdvancementsTrackerScreen extends Screen {
         this.showAdvancementDetail(false);
       }
       return false;
-    } else if (button == 0 && mouseX > this.listWidth + 10.0f && mouseX < this.listWidth + 18.0f
+    } else if (button == 0 && mouseX > this.listWidth  && mouseX < this.listWidth + 12.0f
         && mouseY > this.height - 11) {
       // Handle clicks on the show complete advancements checkbox.
       toggleShowCompletedAdvancements();
       reloadChildAdvancements();
       return false;
-    } else if (button == 0 && mouseX > this.listWidth + 65.0f && mouseX < this.listWidth + 73.0f
+    } else if (button == 0 && mouseX > this.listWidth + 77.0f && mouseX < this.listWidth + 89.0f
         && mouseY > this.height - 11) {
       // Handle clicks on the show only rewarded advancements.
       toggleShowOnlyRewardedAdvancements();

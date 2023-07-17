@@ -134,13 +134,21 @@ public class AdvancementDetailScreen extends Screen {
 
   @Override
   public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    // Make sure we use a higher z-index.
+    guiGraphics.pose().pushPose();
+    guiGraphics.pose().translate(0, 0, 201);
+
+    // Background and frame.
     this.renderBackground(guiGraphics);
 
+    // Render advancement screen.
     super.render(guiGraphics, mouseX, mouseY, partialTick);
 
+    // Render advancement info panel.
     if (this.advancementInfoPanel != null) {
       this.advancementInfoPanel.render(guiGraphics, mouseX, mouseY, partialTick);
     }
+    guiGraphics.pose().popPose();
   }
 
   @Override
@@ -148,7 +156,7 @@ public class AdvancementDetailScreen extends Screen {
 
     // Make sure we use a higher z-index.
     guiGraphics.pose().pushPose();
-    guiGraphics.pose().translate(0, 0, 101);
+    guiGraphics.pose().translate(0, 0, 201);
 
     // Background and frame.
     int heightPerPart = maxHeight / 2;
