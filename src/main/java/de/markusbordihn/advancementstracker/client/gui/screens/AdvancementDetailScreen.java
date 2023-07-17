@@ -31,6 +31,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 import net.minecraftforge.api.distmarker.Dist;
@@ -78,7 +79,8 @@ public class AdvancementDetailScreen extends Screen {
     if (this.progress.getRemainingCriteriaNumber() > 0
         || this.progress.getCompletedCriteriaNumber() > 0) {
       info.add(" ");
-      info.add("Criteria:");
+      info.add(
+          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "criteria").getString());
       if (this.progress.getRemainingCriteriaNumber() > 0) {
         for (String remainingCriteria : this.progress.getRemainingCriteriaHumanReadable()) {
           info.add("❌ " + remainingCriteria);
@@ -96,10 +98,13 @@ public class AdvancementDetailScreen extends Screen {
     if (this.advancementEntry.hasExperienceReward() || this.advancementEntry.hasLootReward()
         || this.advancementEntry.hasRecipesReward()) {
       info.add(" ");
-      info.add("Rewards:");
+      info.add(
+          new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "rewards").getString());
 
       if (this.advancementEntry.hasExperienceReward()) {
-        info.add("+ " + this.advancementEntry.getRewardsExperience() + " exp");
+        info.add(
+            "+ " + new TranslatableComponent(Constants.ADVANCEMENTS_SCREEN_PREFIX + "experience",
+                this.advancementEntry.getRewardsExperience()).getString());
       }
 
       if (this.advancementEntry.hasLootReward()) {

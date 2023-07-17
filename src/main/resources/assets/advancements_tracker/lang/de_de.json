@@ -1,8 +1,12 @@
 {
+  "advancements_tracker.advancementsScreen.criteria": "Kriterien:",
+  "advancements_tracker.advancementsScreen.experience": "%1$s Erfahrungspunkte",
   "advancements_tracker.advancementsScreen.noAdvancements": "Keine Erungenschaften gefunden! Vielleicht solltest du Holz sammeln und eine Werkbank bauen.",
   "advancements_tracker.advancementsScreen.numCategories": "Kategorien: %1$s",
   "advancements_tracker.advancementsScreen.numCompleted": "%1$s von %2$s abgschlossen",
+  "advancements_tracker.advancementsScreen.rewards": "Belohnungen:",
   "advancements_tracker.advancementsScreen.showCompleted": "Abgeschlossene",
+  "advancements_tracker.advancementsScreen.showOnlyRewarded": "Nur Belohnte",
   "advancements_tracker.advancementsScreen.title": "Advancements Tracker Übersicht",
   "advancements_tracker.advancementsWidget.hotkeyAdvancementOverview": "Drücke %1$s um die Übersicht zu öffnen.\n\n",
   "advancements_tracker.advancementsWidget.hotkeyAdvancementTracker": "Drücke %1$s um den Tracker zu öffen/schliesen.\n\n",
