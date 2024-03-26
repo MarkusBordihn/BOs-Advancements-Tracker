@@ -19,6 +19,8 @@
 
 package de.markusbordihn.advancementstracker.client.keymapping;
 
+import net.minecraft.client.Minecraft;
+import net.minecraftforge.event.TickEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,7 +61,8 @@ public class ModKeyMapping {
       InputConstants.Type.KEYSYM.getOrCreate(GLFW.GLFW_KEY_L), Constants.KEY_PREFIX + "category");
 
   @SubscribeEvent
-  public static void handleKeyboardKeyPressedEvent(InputEvent.Key event) {
+  public static void handleKeyboardKeyPressedEvent(TickEvent.ClientTickEvent event) {
+    if(event.phase == TickEvent.Phase.END) return;
     if (ModKeyMapping.KEY_SHOW_WIDGET.isDown() && Boolean.TRUE.equals(CLIENT.widgetEnabled.get())) {
       log.debug("Show/hide Advancements Widget ...");
       AdvancementsTrackerWidget.toggleVisibility();
